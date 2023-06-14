@@ -1,0 +1,165 @@
+{
+	"info": {
+		"_postman_id": "46ad7bea-0b16-4a0a-b98a-f7f72f9bc97b",
+		"name": "nft",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17478370"
+	},
+	"item": [
+		{
+			"name": "Get all auctions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/auction?page=1&count=20",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auction"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "count",
+							"value": "20"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get auction by id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/auction/{{auctionID}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auction",
+						"{{auctionID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Auctions By NFT",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/auction/contract/{{contractAddress}}?tokenId={{tokenId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auction",
+						"contract",
+						"{{contractAddress}}"
+					],
+					"query": [
+						{
+							"key": "tokenId",
+							"value": "{{tokenId}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Auctions by owner",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/auction/owner/{{ownerAddress}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auction",
+						"owner",
+						"{{ownerAddress}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get NFTS by user",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/nft/owner/{{ownerAddress}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"nft",
+						"owner",
+						"{{ownerAddress}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET nft",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/nft/contract/{{contractAddress}}/token/{{tokenId}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"nft",
+						"contract",
+						"{{contractAddress}}",
+						"token",
+						"{{tokenId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "auctionID",
+			"value": "0"
+		},
+		{
+			"key": "contractAddress",
+			"value": "0xB5E7041cA1B7024C77cEdCcB3da205a660643697"
+		},
+		{
+			"key": "tokenId",
+			"value": "1500250"
+		},
+		{
+			"key": "ownerAddress",
+			"value": "0x397FCa941083a7c18D199B99C16aef7E93F7C32e"
+		}
+	]
+}

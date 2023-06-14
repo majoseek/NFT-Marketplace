@@ -1,5 +1,6 @@
-
-
+/**
+ *Submitted for verification at Etherscan.io on 2023-06-14
+*/
 
 pragma solidity ^0.8.4;
 
@@ -186,8 +187,14 @@ contract NFTAuction {
 
     address public contractOwner;
     uint256 public auctionCount;
+
+    mapping(address => uint256[]) public auctionsByNFT; // Stores auction IDs for each NFT
+    mapping(uint256 => Bid[]) public bidsByAuctionId; // Stores bids for each auction ID
     mapping(uint256 => Auction) public auctions;
+    mapping(uint256 => uint256) public bidsCountByAuction;
     mapping(address => uint256) public pendingReturns;
+    mapping(address => mapping(uint256 => uint256)) public nftToAuction;
+
 
     event AuctionCreated(uint256 id, string title, uint128 startingPrice, uint128 reservePrice, uint256 expiryTime);
     event AuctionCancelled(uint256 id);
@@ -232,8 +239,15 @@ contract NFTAuction {
     ) public {
         IERC721 token = IERC721(assetAddress);
 
-        require(token.ownerOf(assetRecordId) == msg.sender, "You must own the NFT to create an auction");
-        token.approve(address(this), assetRecordId);
+        require(
+            token.getApproved(assetRecordId) == address(this) ||
+            token.isApprovedForAll(msg.sender, address(this)),
+            "The auction contract is not approved to transfer this NFT"
+        );
+        require(
+            nftToAuction[assetAddress][assetRecordId] == 0,
+            "The NFT is currently involved in an auction"
+        );
 
         Auction storage newAuction = auctions[auctionCount];
 
@@ -249,11 +263,13 @@ contract NFTAuction {
         newAuction.distributionCut = distributionCut;
         newAuction.status = Status.Pending;
         newAuction.sellerAddress = msg.sender;
+        nftToAuction[assetAddress][assetRecordId] = auctionCount;
 
         auctionCount++;
 
         token.transferFrom(msg.sender, address(this), newAuction.assetRecordId);
         newAuction.status = Status.Active;
+        auctionsByNFT[assetAddress].push(newAuction.auctionRecordId);
 
         emit AuctionCreated(newAuction.auctionRecordId, newAuction.title, newAuction.startingPrice, newAuction.reservePrice, newAuction.expiryTime);
     }
@@ -262,6 +278,7 @@ contract NFTAuction {
         Auction storage auction = auctions[auctionId];
         require(msg.sender != auction.sellerAddress, "Owner cannot bid on their own NFT");
         require(auction.status == Status.Active, "Auction is not active");
+        require(auction.expiryTime > block.timestamp, "Auction has expired");
 
         if (auction.bids.length > 0) {
             require(msg.value >= auction.highestBid.amount + auction.minimumIncrement, "Must increment bid by the minimum amount");
@@ -273,6 +290,8 @@ contract NFTAuction {
         auction.highestBid = Bid({bidder: msg.sender, amount: msg.value});
         auction.bids.push(auction.highestBid);
 
+        bidsByAuctionId[auctionId].push(auction.highestBid);
+        bidsCountByAuction[auctionId]++;
 
         emit BidPlaced(auctionId, msg.sender, msg.value);
     }
@@ -301,7 +320,7 @@ contract NFTAuction {
         } else {
             emit AuctionEndedWithoutWinner(auctionId, 0, auction.reservePrice);
         }
-
+        nftToAuction[auction.assetAddress][auction.assetRecordId] = 0;
         auction.status = Status.Inactive;
     }
 
@@ -358,5 +377,29 @@ contract NFTAuction {
             require(success, "Transfer failed.");
             emit AuctionWithdrawn(msg.sender, amount);
         }
+    }
+
+    function withdrawNFT(uint256 auctionId) public onlyAuctionOwner(auctionId) {
+        Auction storage auction = auctions[auctionId];
+
+        // Ensure the auction is not active
+        require(auction.status == Status.Inactive, "Cannot withdraw NFT from an active auction");
+
+        IERC721 token = IERC721(auction.assetAddress);
+
+        // Ensure the auction contract still owns the NFT
+        require(token.ownerOf(auction.assetRecordId) == address(this), "The NFT is no longer owned by the auction contract");
+
+        // Transfer the NFT back to the owner
+        token.transferFrom(address(this), auction.sellerAddress, auction.assetRecordId);
+        nftToAuction[auction.assetAddress][auction.assetRecordId] = 0;
+    }
+
+    function getAuctionsByNFT(address contractAddress) external view returns (uint256[] memory) {
+        return auctionsByNFT[contractAddress];
+    }
+
+    function getBidByAuctionId(uint256 _auctionId) external view returns (Bid[] memory) {
+        return bidsByAuctionId[_auctionId];
     }
 }

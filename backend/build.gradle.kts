@@ -53,14 +53,18 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
 //    implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:+")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:+")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.web3j:core:4.10.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:mongodb")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+
 }
 
 dependencyManagement {
@@ -71,7 +75,7 @@ dependencyManagement {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        freeCompilerArgs = listOf("-Xjsr305=strict")
+        freeCompilerArgs = listOf("-Xjsr305=strict", "-Xcontext-receivers")
         jvmTarget = "17"
     }
 }

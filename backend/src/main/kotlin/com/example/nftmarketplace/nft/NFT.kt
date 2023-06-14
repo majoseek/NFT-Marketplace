@@ -1,21 +1,22 @@
 package com.example.nftmarketplace.nft
 
-import org.springframework.data.mongodb.core.mapping.Document
+import com.example.nftmarketplace.nft.data.FileExtension
 
-@Document(collection = "nfts")
 data class NFT(
-    @org.springframework.data.annotation.Id
-    val id: String? = null,
-    val name: String,
-    val ownerID: String,
-    val type: Type,
+    val contractAddress: String?,
+    val tokenID: Long?,
+    val name: String?,
+    val ownerAddress: String?,
+    val url: String?,
     val description: String,
+    val type: Type,
 ) {
     enum class Type {
-        IMAGE,
-        VIDEO,
-        AUDIO,
-        TEXT
+        Image,
+        Video,
+        Audio,
+        Text,
+        Other;
     }
 }
 
