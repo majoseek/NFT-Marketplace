@@ -25,7 +25,11 @@ solidity {
         OutputComponent.BIN,
         OutputComponent.ABI,
     )
-    executable = "/home/wojtek/Documents/Studia/inż/NFT-Marketplace/backend/solc/solc-static-linux"
+    executable = if (System.getProperties()["os.name"].toString().contains("windows")) {
+        "./solc/solc-windows.exe"
+    } else {
+        "./solc/solc-static-linux"
+    }
     version = "0.8.18"
     optimizeRuns = 200
 }
