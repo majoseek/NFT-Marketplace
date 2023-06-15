@@ -13,7 +13,7 @@ class AlchemyNFTs {
 fun AlchemyNFT.toNFT(ownerAddress: String? = null) = this.media.firstOrNull()?.raw.let { url ->
     NFT(
         contractAddress = contract.address,
-        tokenID = id.tokenId.toLongOrNull(),
+        tokenID = id.tokenId.substringAfter("x").toLongOrNull(16),
         name = title,
         description = description,
         ownerAddress = ownerAddress,

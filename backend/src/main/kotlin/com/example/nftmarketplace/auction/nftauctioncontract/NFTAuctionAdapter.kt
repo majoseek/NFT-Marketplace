@@ -9,9 +9,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.plus
 import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,7 +19,6 @@ import org.web3j.tuples.generated.Tuple13
 import org.web3j.utils.Convert
 import java.math.BigInteger
 import java.util.concurrent.CompletableFuture
-import kotlin.coroutines.coroutineContext
 
 typealias NFTAuctionTuple = Tuple13<BigInteger, String, String, String, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, String, Bid?>
 
@@ -40,11 +39,13 @@ class NFTAuctionAdapter(@Autowired private val contract: NFTAuction) : AuctionPo
                 if (totalCount > startIndex + count) count else (totalCount.toInt() - startIndex).coerceAtLeast(0)
             ) { index ->
                 // optimize this
-                contract.auctions(BigInteger.valueOf(index.toLong() + startIndex)).sendAsync().waitAndGet()
-                    .toNFTAuctionObject()
+                async {
+                    contract.auctions(BigInteger.valueOf(index.toLong() + startIndex)).sendAsync().waitAndGet()
+                        .toNFTAuctionObject()
+                }
             }
         }
-        return list
+        return list.awaitAll()
     }
 
     override suspend fun getAuctionById(auctionId: Long): NFTAuctionObject = with(scope) {
