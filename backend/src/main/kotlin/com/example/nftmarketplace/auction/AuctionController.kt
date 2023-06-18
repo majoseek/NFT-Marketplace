@@ -26,13 +26,17 @@ class AuctionController(
     @GetMapping("")
     suspend fun getAllAuctions(
         @RequestParam("page") page: Int? = null,
-        @RequestParam("count") count: Int? = null
-    ): ResponseEntity<AuctionPagedResponse> = AuctionPagedResponse(
-        auctions = auctionService.getAllAuctions(page ?: 1, count ?: 20)?.map { it.toAuctionElement() } ?: emptyList(),
-        page = page ?: 1,
-        size = count ?: 20,
-        count = auctionService.getTotalAuctions() ?: 0
-    ).getResponseEntity()
+        @RequestParam("count") count: Int? = null,
+        @RequestParam("status") status: NFTAuctionObject.Status? = null
+    ): ResponseEntity<AuctionPagedResponse> {
+        val auctions = auctionService.getAllAuctions(page ?: 1, count ?: 20, status = status)?.map { it.toAuctionElement() } ?: emptyList()
+        return AuctionPagedResponse(
+            auctions = auctions,
+            page = page ?: 1,
+            size = auctions.size,
+            count = auctionService.getTotalAuctions() ?: 0
+        ).getResponseEntity()
+    }
 
     @GetMapping("/{auctionId}")
     suspend fun getAuctionById(@PathVariable("auctionId") auctionId: Long): ResponseEntity<AuctionResponse> {

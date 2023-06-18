@@ -1,4 +1,8 @@
 /**
+ *Submitted for verification at Etherscan.io on 2023-06-17
+*/
+
+/**
  *Submitted for verification at Etherscan.io on 2023-06-14
 */
 
@@ -166,6 +170,7 @@ contract NFTAuction {
     struct Bid {
         address bidder;
         uint256 amount;
+        uint256 timestamp;
     }
 
     struct Auction {
@@ -189,6 +194,7 @@ contract NFTAuction {
     uint256 public auctionCount;
 
     mapping(address => uint256[]) public auctionsByNFT; // Stores auction IDs for each NFT
+    mapping(uint256 => uint256[]) public auctionsByStatus;
     mapping(uint256 => Bid[]) public bidsByAuctionId; // Stores bids for each auction ID
     mapping(uint256 => Auction) public auctions;
     mapping(uint256 => uint256) public bidsCountByAuction;
@@ -287,7 +293,9 @@ contract NFTAuction {
             require(msg.value >= auction.startingPrice, "Must place bid of at least the starting price");
         }
 
-        auction.highestBid = Bid({bidder: msg.sender, amount: msg.value});
+        auction.highestBid = Bid(
+            {bidder: msg.sender, amount: msg.value, timestamp: block.timestamp}
+        );
         auction.bids.push(auction.highestBid);
 
         bidsByAuctionId[auctionId].push(auction.highestBid);
@@ -401,5 +409,24 @@ contract NFTAuction {
 
     function getBidByAuctionId(uint256 _auctionId) external view returns (Bid[] memory) {
         return bidsByAuctionId[_auctionId];
+    }
+
+    function getAuctionsByStatus(Status _status) public view returns (uint256[] memory) {
+        uint256[] memory statusAuctions = new uint256[](auctionCount);
+        uint256 counter = 0;
+
+        for (uint256 i = 0; i < auctionCount; i++) {
+            if (auctions[i].status == _status) {
+                statusAuctions[counter] = i;
+                counter++;
+            }
+        }
+
+        // resize memory array to save space
+        uint256[] memory result = new uint256[](counter);
+        for(uint256 i = 0; i < counter; i++){
+            result[i] = statusAuctions[i];
+        }
+        return result;
     }
 }

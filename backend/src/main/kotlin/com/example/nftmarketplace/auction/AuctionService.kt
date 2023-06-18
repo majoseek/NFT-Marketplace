@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service
 @Service
 class AuctionService(@Autowired private val auctionPort: AuctionPort) {
 
-    suspend fun getAllAuctions(page: Int, count: Int): List<NFTAuctionObject>? = getOrPrintError {
-        auctionPort.getAllAuctions(page, count)
+    suspend fun getAllAuctions(page: Int, count: Int, status: NFTAuctionObject.Status? = null): List<NFTAuctionObject>? = getOrPrintError {
+        auctionPort.getAllAuctions(page, count, status)
     }
 
     suspend fun getAuctionById(auctionId: Long): NFTAuctionObject? = getOrPrintError {

@@ -5,12 +5,14 @@ import com.example.nftmarketplace.auction.AuctionPort
 import com.example.nftmarketplace.auction.NFTToken
 import com.example.nftmarketplace.nftauction.NFTAuction
 import com.example.nftmarketplace.nftauction.NFTAuction.Bid
+import com.example.nftmarketplace.toLocalDateTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.plus
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -19,6 +21,7 @@ import org.web3j.tuples.generated.Tuple13
 import org.web3j.utils.Convert
 import java.math.BigInteger
 import java.util.concurrent.CompletableFuture
+import kotlin.math.min
 
 typealias NFTAuctionTuple = Tuple13<BigInteger, String, String, String, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, String, Bid?>
 
@@ -26,26 +29,25 @@ typealias NFTAuctionTuple = Tuple13<BigInteger, String, String, String, BigInteg
 class NFTAuctionAdapter(@Autowired private val contract: NFTAuction) : AuctionPort {
 
     private val scope = CoroutineScope(Dispatchers.IO) + SupervisorJob()
-    // auctionRecordId uint256, title string, description string, assetAddress address, assetRecordId uint256, startingPrice uint128, reservePrice uint128, minimumIncrement uint128, distributionCut uint8, expiryTime uint256, status uint8, sellerAddress address, highestBid tuple
     // We would create a database for this adapter which stores events
 
-    override suspend fun getAllAuctions(page: Int, count: Int): List<NFTAuctionObject> {
+    override suspend fun getAllAuctions(
+        page: Int,
+        count: Int,
+        status: NFTAuctionObject.Status?,
+    ): List<NFTAuctionObject> = with(scope) {
         require(page > 0)
         val startIndex = (page - 1) * count
         val totalCount = getTotalAuctions()
-        val list = with(scope) {
-            //
-            List(
-                if (totalCount > startIndex + count) count else (totalCount.toInt() - startIndex).coerceAtLeast(0)
-            ) { index ->
-                // optimize this
-                async {
-                    contract.auctions(BigInteger.valueOf(index.toLong() + startIndex)).sendAsync().waitAndGet()
-                        .toNFTAuctionObject()
-                }
-            }
-        }
-        return list.awaitAll()
+        val indexes = status?.toBigInteger()?.let {
+            (contract.getAuctionsByStatus(it).sendAsync().waitAndGet() as? List<BigInteger>)?.slice(
+                startIndex..startIndex+page * 20
+            )?.map { it.toInt() }.orEmpty()
+        } ?: (startIndex..min((startIndex + page * 20).toLong(), totalCount)).toList()
+
+        return indexes.map {
+            async { contract.auctions(BigInteger.valueOf(it.toLong())).sendAsync().get() }
+        }.awaitAll().map { it.toNFTAuctionObject() }
     }
 
     override suspend fun getAuctionById(auctionId: Long): NFTAuctionObject = with(scope) {
@@ -72,7 +74,6 @@ class NFTAuctionAdapter(@Autowired private val contract: NFTAuction) : AuctionPo
 
     override suspend fun getAuctionByStatus(status: NFTAuctionObject.Status) = with(scope) {
         TODO()
-
     }
 
     override suspend fun getTotalAuctions(): Long = with(scope) {
@@ -93,40 +94,54 @@ class NFTAuctionAdapter(@Autowired private val contract: NFTAuction) : AuctionPo
 }
 
 
-private fun BigInteger.toStatus(): NFTAuctionObject.Status? = when (this.toInt()) {
+private fun BigInteger.toStatus(expiryDate: Long): NFTAuctionObject.Status? = when (this.toInt()) {
     0 -> NFTAuctionObject.Status.Pending
-    1 -> NFTAuctionObject.Status.Active
+    1 -> if (expiryDate >= Clock.System.now().epochSeconds) NFTAuctionObject.Status.Active else NFTAuctionObject.Status.Expired
     2 -> NFTAuctionObject.Status.Cancelled
     else -> null
 }
 
-private fun NFTAuctionTuple.toNFTAuctionObject(bids: List<Bid>? = null) = NFTAuctionObject(
-    auctionID = component1().toLong(),
-    title = component2(),
-    description = component3(),
-    nft = NFTToken(
-        address = component4(),
-        tokenID = component5().toLong()
-    ),
-    startingPrice = Convert.fromWei(component6().toBigDecimal(), Convert.Unit.ETHER),
-    reservePrice = Convert.fromWei(component7().toBigDecimal(), Convert.Unit.ETHER),
-    minimumIncrement = Convert.fromWei(component8().toBigDecimal(), Convert.Unit.ETHER),
-    expiryTime = component10().toLong().let {
-        Instant.fromEpochSeconds(it).toLocalDateTime(timeZone = TimeZone.UTC)
-    },
-    status = component11().toStatus() ?: com.example.nftmarketplace.auction.NFTAuctionObject.Status.Cancelled,
-    highestBid = component13()?.let {
-        if (it.amount != BigInteger.ZERO) {
+private fun NFTAuctionTuple.toNFTAuctionObject(bids: List<Bid>? = null): NFTAuctionObject {
+    return NFTAuctionObject(
+        auctionID = component1().toLong(),
+        title = component2(),
+        description = component3(),
+        nft = NFTToken(
+            address = component4(),
+            tokenID = component5().toLong()
+        ),
+        startingPrice = Convert.fromWei(component6().toBigDecimal(), Convert.Unit.ETHER),
+        reservePrice = Convert.fromWei(component7().toBigDecimal(), Convert.Unit.ETHER),
+        minimumIncrement = Convert.fromWei(component8().toBigDecimal(), Convert.Unit.ETHER),
+        expiryTime = component10().toLong().let {
+            Instant.fromEpochSeconds(it).toLocalDateTime(timeZone = TimeZone.UTC)
+        },
+        status = component11().toStatus(component10().toLong()) ?: NFTAuctionObject.Status.Cancelled,
+        highestBid = component13()?.let {
+            if (it.amount != BigInteger.ZERO) {
+                NFTAuctionObject.Bid(
+                    bidder = it.bidder,
+                    amount = Convert.fromWei(it.amount.toBigDecimal(), Convert.Unit.ETHER),
+                    timestamp = it.timestamp.toLocalDateTime(),
+                )
+            } else null
+        },
+        bids = bids?.map { bid ->
             NFTAuctionObject.Bid(
-                bidder = it.bidder,
-                amount = Convert.fromWei(it.amount.toBigDecimal(), Convert.Unit.ETHER)
+                bidder = bid.bidder,
+                amount = Convert.fromWei(bid.amount.toBigDecimal(), Convert.Unit.ETHER),
+                timestamp = bid.timestamp.toLocalDateTime(),
             )
-        } else null
-    },
-    bids = bids?.map { bid ->
-        NFTAuctionObject.Bid(
-            bidder = bid.bidder,
-            amount = Convert.fromWei(bid.amount.toBigDecimal(), Convert.Unit.ETHER)
-        )
+        }?.sortedByDescending { it.timestamp }
+    )
+}
+
+
+fun NFTAuctionObject.Status.toBigInteger() = BigInteger.valueOf(
+    when (this) {
+        NFTAuctionObject.Status.Pending -> 0
+        NFTAuctionObject.Status.Expired,
+        NFTAuctionObject.Status.Active -> 1
+        NFTAuctionObject.Status.Cancelled -> 2
     }
 )

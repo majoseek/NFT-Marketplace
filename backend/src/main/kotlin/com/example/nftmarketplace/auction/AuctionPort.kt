@@ -1,7 +1,7 @@
 package com.example.nftmarketplace.auction
 
 interface AuctionPort {
-    suspend fun getAllAuctions(page: Int, count: Int): List<NFTAuctionObject>
+    suspend fun getAllAuctions(page: Int, count: Int, status: NFTAuctionObject.Status? = null): List<NFTAuctionObject>
 
     suspend fun getAuctionById(auctionId: Long): NFTAuctionObject
 

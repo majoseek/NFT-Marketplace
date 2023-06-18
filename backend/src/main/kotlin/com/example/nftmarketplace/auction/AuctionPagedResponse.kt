@@ -1,6 +1,7 @@
 package com.example.nftmarketplace.auction
 
 import com.example.nftmarketplace.nft.NFT
+import com.example.nftmarketplace.toBidResponse
 import java.math.BigDecimal
 
 data class AuctionPagedResponse(
@@ -20,7 +21,7 @@ fun NFTAuctionObject.toAuctionElement(): AuctionElement {
         reservePrice = reservePrice,
         minimumIncrement = minimumIncrement,
         expiryTime = expiryTime.toString(),
-        highestBid = highestBid,
+        highestBid = highestBid?.toBidResponse(),
         status = status,
     )
 }
@@ -34,7 +35,7 @@ data class AuctionElement(
     val reservePrice: BigDecimal,
     val minimumIncrement: BigDecimal,
     val expiryTime: String,
-    val highestBid: NFTAuctionObject.Bid? = null,
+    val highestBid: BidResponse? = null,
     val status: NFTAuctionObject.Status,
 )
 
@@ -47,8 +48,14 @@ data class AuctionResponse(
     val reservePrice: BigDecimal,
     val minimumIncrement: BigDecimal,
     val expiryTime: String,
-    val bids: List<NFTAuctionObject.Bid>? = null,
+    val bids: List<BidResponse>? = null,
     val status: NFTAuctionObject.Status,
+)
+
+data class BidResponse(
+    val bidder: String,
+    val amount: BigDecimal,
+    val timestamp: String,
 )
 
 

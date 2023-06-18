@@ -12,7 +12,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/auction?page=1&count=20",
+					"raw": "localhost:8080/auction?page=1&count=20&status=Pending",
 					"host": [
 						"localhost"
 					],
@@ -28,6 +28,11 @@
 						{
 							"key": "count",
 							"value": "20"
+						},
+						{
+							"key": "status",
+							"value": "Pending",
+							"description": "[Active, Pending, Cancelled]"
 						}
 					]
 				}
@@ -127,7 +132,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/nft/contract/{{contractAddress}}/token/{{tokenId}}",
+					"raw": "localhost:8080/nft/contract/{{contractAddress}}/token/1393943",
 					"host": [
 						"localhost"
 					],
@@ -137,7 +142,7 @@
 						"contract",
 						"{{contractAddress}}",
 						"token",
-						"{{tokenId}}"
+						"1393943"
 					]
 				}
 			},
