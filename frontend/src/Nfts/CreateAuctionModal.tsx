@@ -89,13 +89,13 @@ const CreateAuctionModal = ({
 
         (nftContract.methods.setApprovalForAll as any)(address, true)
             .send({ from: userAccountAddress, gas: 3000000 })
-            .on('transactionHash', function (hash: any) {
+            .on('transactionHash', (hash: string) => {
                 console.log('transactionHash approval', hash);
             })
-            .on('receipt', function (receipt: any) {
+            .on('receipt', (receipt: string) => {
                 console.log('receipt approval', receipt);
             })
-            .on('confirmation', function (confirmationNumber: any) {
+            .on('confirmation', (confirmationNumber: string) => {
                 console.log('confirmation approval', confirmationNumber);
                 setAuctionCreateState('CREATE');
                 (auctionContract.methods.createAuction as any)(
@@ -110,13 +110,13 @@ const CreateAuctionModal = ({
                     0
                 )
                     .send({ from: userAccountAddress, gas: 3000000 })
-                    .on('transactionHash', function (hash: any) {
+                    .on('transactionHash', (hash: string) => {
                         console.log('transactionHash', hash);
                     })
-                    .on('receipt', function (receipt: any) {
+                    .on('receipt', (receipt: string) => {
                         console.log('receipt', receipt);
                     })
-                    .on('confirmation', function (confirmationNumber: any) {
+                    .on('confirmation', (confirmationNumber: string) => {
                         console.log('confirmation', confirmationNumber);
                         setAuctionDescription(undefined);
                         setAuctionTitle(undefined);

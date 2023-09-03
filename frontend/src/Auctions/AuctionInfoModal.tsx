@@ -43,13 +43,13 @@ const AuctionInfoModal = ({ auctionId, visible, setVisible }: Props) => {
                 gas: 3000000,
                 value: bidAmountInWei,
             })
-            .on('transactionHash', function (hash: any) {
+            .on('transactionHash', (hash: string) => {
                 console.log('transactionHash', hash);
             })
-            .on('receipt', function (receipt: any) {
+            .on('receipt', (receipt: string) => {
                 console.log('receipt', receipt);
             })
-            .on('confirmation', function (confirmationNumber: any) {
+            .on('confirmation', (confirmationNumber: string) => {
                 console.log('confirmation', confirmationNumber);
                 setIsBidding(false);
             })
