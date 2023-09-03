@@ -17,7 +17,7 @@ const App = () => {
                 window.web3 = new Web3(window.web3.currentProvider);
             } else {
                 console.log(
-                    'Non-Ethereum browser detected. You should consider trying MetaMask!'
+                    'Non-Ethereum browser detected. You should add MetaMask to your extensions!'
                 );
                 return;
             }
