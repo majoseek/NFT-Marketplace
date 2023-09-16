@@ -1,29 +1,48 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import Web3 from 'web3';
 import Auctions from '../Auctions/Auctions';
 import Nfts from '../Nfts/Nfts';
-import { Divider, Spin } from 'antd';
+import { Button, Divider, Spin } from 'antd';
 import * as Styled from './App.styles';
+import { useAppSelector } from './../hooks/useAppSelector';
+import { useAppDispatch } from '../hooks/useAppDispatch';
+import { setIsMetaMaskConnected } from '../store/appSlice';
 
 const App = () => {
-    const [web3Enabled, setWeb3Enabled] = useState(false);
+    const isMetaMaskConnected = useAppSelector(
+        (state) => state.app.isMetaMaskConnected
+    );
+    const dispatch = useAppDispatch();
+
+    const handleConnectWallet = async () => {
+        if (window.ethereum) {
+            window.web3 = new Web3(window.ethereum);
+            try {
+                await window.ethereum.enable();
+                dispatch(setIsMetaMaskConnected(true));
+            } catch (err) {
+                console.log(err);
+            }
+        } else if (window.web3)
+            window.web3 = new Web3(window.web3.currentProvider);
+        else
+            console.log(
+                'Non-Ethereum browser detected. You should add MetaMask to your extensions!'
+            );
+    };
 
     useEffect(() => {
         const init = async () => {
-            if (window.ethereum) {
-                window.web3 = new Web3(window.ethereum);
-                try {
-                    await window.ethereum.enable();
-                    setWeb3Enabled(true);
-                } catch (err) {
-                    console.log(err);
-                }
-            } else if (window.web3)
-                window.web3 = new Web3(window.web3.currentProvider);
-            else
-                console.log(
-                    'Non-Ethereum browser detected. You should add MetaMask to your extensions!'
-                );
+            console.log('WYKONUJE');
+            const accounts = await window.ethereum.request({
+                method: 'eth_accounts',
+            });
+            if (accounts.length) {
+                console.log(`You're connected to: ${accounts[0]}`);
+                dispatch(setIsMetaMaskConnected(true));
+            } else {
+                console.log('Metamask is not connected');
+            }
         };
 
         init();
@@ -31,11 +50,18 @@ const App = () => {
 
     return (
         <Styled.Container>
-            {web3Enabled ? (
+            <Button
+                onClick={handleConnectWallet}
+                disabled={isMetaMaskConnected}
+            >
+                Connect wallet
+            </Button>
+            {isMetaMaskConnected ? (
                 <>
-                    <Auctions />
+                    <h3>Enabled</h3>
+                    {/* <Auctions />
                     <Divider />
-                    <Nfts />
+                    <Nfts /> */}
                 </>
             ) : (
                 <Spin />
