@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import bgImage from '../assets/bgStars.png';
 import Web3 from 'web3';
-import Auctions from '../Auctions/Auctions';
-import Nfts from '../Nfts/Nfts';
-import { Button, Divider, Spin } from 'antd';
+import Auctions from '../pages/Auctions/Auctions';
+import Nfts from '../pages/Nfts/Nfts';
+import LandingImage from '../assets/landingImg.svg';
+import { Button, Divider, Spin, Typography } from 'antd';
 import * as Styled from './App.styles';
-import { useAppSelector } from './../hooks/useAppSelector';
+import { useAppSelector } from '../hooks/useAppSelector';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { setIsMetaMaskConnected } from '../store/appSlice';
+import LandingPage from '../pages/LandingPage/LandingPage';
 
 const App = () => {
     const isMetaMaskConnected = useAppSelector(
@@ -50,12 +53,12 @@ const App = () => {
 
     return (
         <Styled.Container>
-            <Button
+            {/* <Button
                 onClick={handleConnectWallet}
                 disabled={isMetaMaskConnected}
             >
                 Connect wallet
-            </Button>
+            </Button> */}
             {isMetaMaskConnected ? (
                 <>
                     <h3>Enabled</h3>
@@ -64,7 +67,7 @@ const App = () => {
                     <Nfts /> */}
                 </>
             ) : (
-                <Spin />
+                <LandingPage />
             )}
         </Styled.Container>
     );

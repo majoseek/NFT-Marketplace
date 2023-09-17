@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Auction } from '../types/auction';
+import { Auction } from '../../types/auction';
 import axios from 'axios';
 import * as Styled from './Auctions.styles';
 import { Button, Divider } from 'antd';

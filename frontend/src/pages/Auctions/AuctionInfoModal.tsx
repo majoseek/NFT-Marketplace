@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { AuctionDetails } from '../types/auction';
+import { AuctionDetails } from '../../types/auction';
 import axios from 'axios';
 import { Input, Modal, Spin } from 'antd';
 import * as Styled from './AuctionInfoModal.styles';
-import { abi, address } from '../config';
+import { abi, address } from '../../config';
 
 type Props = {
     auctionId: number;

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import CreateAuctionModal from './CreateAuctionModal';
-import { Nft } from '../types/nft';
+import { Nft } from '../../types/nft';
 import * as Styled from './Nfts.styles';
 import { Button, Divider } from 'antd';
 

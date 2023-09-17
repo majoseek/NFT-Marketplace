@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Input, Modal, Spin } from 'antd';
 import * as Styled from './CreateAuctionModal.styles';
-import { Nft } from '../types/nft';
-import { abi, address, nftAbi } from '../config';
+import { Nft } from '../../types/nft';
+import { abi, address, nftAbi } from '../../config';
 
 type Props = {
     nftId: number;
