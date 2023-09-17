@@ -1,15 +1,15 @@
 import rocketImage from '@/assets/hero-ilustration.svg';
 import * as Styled from './LandingPage.styles';
-import { Button } from 'antd';
+import Button from '@/components/Button';
 
 const LandingPage = () => {
     return (
         <Styled.LandingPage>
             <Styled.LeftSide>
                 <Styled.LandingTitle>
-                    THE FIRST NFT for Transparency and Community-Driven
+                    Embrace the NFT Revolution
                 </Styled.LandingTitle>
-                <Button>Get started</Button>
+                <Button type="primary">GET STARTED</Button>
             </Styled.LeftSide>
             <img src={rocketImage} alt="" />
         </Styled.LandingPage>
