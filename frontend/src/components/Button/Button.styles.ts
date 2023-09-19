@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 export const Button = styled(ButtonAntd)`
     &&& {
+        width: fit-content;
         height: 40px;
         background: linear-gradient(
             90deg,
@@ -16,7 +17,7 @@ export const Button = styled(ButtonAntd)`
         font-weight: 600;
 
         &:hover {
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
     }
 `;

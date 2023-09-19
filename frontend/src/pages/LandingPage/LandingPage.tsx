@@ -9,6 +9,10 @@ const LandingPage = () => {
                 <Styled.LandingTitle>
                     Embrace the NFT Revolution
                 </Styled.LandingTitle>
+                <Styled.LandingDescription>
+                    Connect your wallet and explore a world of unique digital
+                    assets
+                </Styled.LandingDescription>
                 <Button type="primary">GET STARTED</Button>
             </Styled.LeftSide>
             <img src={rocketImage} alt="" />

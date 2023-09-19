@@ -19,7 +19,11 @@ export const LandingPage = styled.section`
 `;
 
 export const LeftSide = styled.div`
-    margin-top: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 200px 32px;
+    gap: 16px;
 `;
 
 export const LandingTitle = styled(Typography.Title)`
@@ -27,5 +31,13 @@ export const LandingTitle = styled(Typography.Title)`
         color: #e9e1fd;
         max-width: 570px;
         font-family: 'Chillax', sans-serif;
+        text-align: center;
     }
+`;
+
+export const LandingDescription = styled(Typography.Text)`
+    color: #e9e1fd;
+    font-family: 'Chillax', sans-serif;
+    text-align: center;
+    font-size: 1.1rem;
 `;
