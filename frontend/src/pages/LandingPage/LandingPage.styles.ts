@@ -5,24 +5,27 @@ import bgImage from '@/assets/Background.svg';
 export const LandingPage = styled.section`
     width: 100%;
     height: 100%;
-    display: flex;
-    justify-content: space-around;
     background-image: url(${bgImage});
     background-repeat: no-repeat;
     background-color: currentColor;
+`;
 
-    img {
-        width: 512px;
-        height: 512px;
-        align-self: center;
-    }
+export const SidesWrapper = styled.div`
+    display: flex;
+    justify-content: space-around;
+`;
+
+export const LandingImg = styled.img`
+    width: 512px;
+    height: 512px;
+    align-self: center;
 `;
 
 export const LeftSide = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 200px 32px;
+    margin: 148px 32px;
     gap: 16px;
 `;
 
