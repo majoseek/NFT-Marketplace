@@ -4,7 +4,7 @@ import bgImage from '@/assets/Background.svg';
 
 export const LandingPage = styled.section`
     width: 100%;
-    height: 100%;
+    min-height: 100vh;
     background-image: url(${bgImage});
     background-repeat: no-repeat;
     background-color: currentColor;
@@ -13,6 +13,7 @@ export const LandingPage = styled.section`
 export const SidesWrapper = styled.div`
     display: flex;
     justify-content: space-around;
+    flex-wrap: wrap;
 `;
 
 export const LandingImg = styled.img`

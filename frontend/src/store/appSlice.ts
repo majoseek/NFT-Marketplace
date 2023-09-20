@@ -2,18 +2,21 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
 export interface AppState {
-    isMetaMaskConnected: boolean;
+    isMetaMaskConnected: boolean | undefined;
 }
 
 const initialState: AppState = {
-    isMetaMaskConnected: false,
+    isMetaMaskConnected: undefined,
 };
 
 export const appSlice = createSlice({
     name: 'counter',
     initialState,
     reducers: {
-        setIsMetaMaskConnected: (state, action: PayloadAction<boolean>) => {
+        setIsMetaMaskConnected: (
+            state,
+            action: PayloadAction<AppState['isMetaMaskConnected']>
+        ) => {
             state.isMetaMaskConnected = action.payload;
         },
     },
