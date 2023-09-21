@@ -38,9 +38,9 @@ const App = () => {
                     <Nfts /> */}
                 </>
             ) : isMetaMaskConnected === false ? (
-                <LoadingPage title="Loading MetaMask..." />
+                <LandingPage />
             ) : (
-                <Spin />
+                <LoadingPage title="Loading MetaMask..." />
             )}
         </>
     );

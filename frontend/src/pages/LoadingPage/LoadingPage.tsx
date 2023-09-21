@@ -8,7 +8,7 @@ type Props = {
 const LoadingPage = ({ title }: Props) => (
     <Styled.Wrapper>
         <Spin indicator={<Styled.LoadingSpin />} />
-        {title && <Styled.LoadingTitle>{title}</Styled.LoadingTitle>}
+        {title && <Styled.LoadingTitle level={3}>{title}</Styled.LoadingTitle>}
     </Styled.Wrapper>
 );
 
