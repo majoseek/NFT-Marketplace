@@ -2,7 +2,7 @@ export const theme = {
     textColors: {
         primary: 'white',
         secondary: '#637592',
-        teritary: '#B6BFCD',
+        tertiary: '#B6BFCD',
     },
     backgroundColors: {
         primary: '#080A0C',

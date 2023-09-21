@@ -3,29 +3,28 @@ import * as Styled from './LandingPage.styles';
 import Button from '@/components/Button';
 import Header from '@/components/Header';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { setIsMetaMaskConnected } from '@/store/appSlice';
-import Web3 from 'web3';
+import { setWallets } from '@/store/appSlice';
 import { message } from 'antd';
 
 const LandingPage = () => {
     const dispatch = useAppDispatch();
 
     const handleConnectWallet = async () => {
-        if (window.ethereum) {
-            window.web3 = new Web3(window.ethereum);
-            try {
-                await window.ethereum.enable();
-                dispatch(setIsMetaMaskConnected(true));
-            } catch (err) {
-                console.log(err);
-                message.info(`We've sent you notification on MetaMask!`);
-            }
-        } else if (window.web3)
-            window.web3 = new Web3(window.web3.currentProvider);
-        else
+        if (!window.ethereum && !window.web3) {
             message.error(
                 'Non-Ethereum browser detected. You should add MetaMask to your extensions!'
             );
+            return;
+        }
+
+        try {
+            const accounts = await window.ethereum.request({
+                method: 'eth_requestAccounts',
+            });
+            dispatch(setWallets(accounts));
+        } catch {
+            message.info('Connecting wallet, please check MetaMask extension!');
+        }
     };
 
     return (

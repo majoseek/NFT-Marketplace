@@ -1,49 +1,73 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Web3 from 'web3';
 import Auctions from '../pages/Auctions/Auctions';
 import Nfts from '../pages/Nfts/Nfts';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useAppDispatch } from '../hooks/useAppDispatch';
-import { setIsMetaMaskConnected } from '../store/appSlice';
+import { setHasMetaMaskProvider, setWallets } from '../store/appSlice';
 import LandingPage from '../pages/LandingPage';
+import detectEthereumProvider from '@metamask/detect-provider';
 import LoadingPage from '@/pages/LoadingPage';
+import ErrorPage from '@/pages/ErrorPage';
 
 const App = () => {
-    const isMetaMaskConnected = useAppSelector(
-        (state) => state.app.isMetaMaskConnected
+    const hasMetaMaskProvider = useAppSelector(
+        (state) => state.app.hasMetaMaskProvider
     );
+    const wallets = useAppSelector((state) => state.app.wallets);
     const dispatch = useAppDispatch();
+    const [isLoadingExtensions, setIsLoadingExtensions] = useState(true);
 
     useEffect(() => {
-        const init = async () => {
-            if (!window.ethereum && !window.web3) {
-                dispatch(setIsMetaMaskConnected(false));
-                return;
-            }
-
-            const accounts = await window.ethereum.request({
-                method: 'eth_accounts',
-            });
-            if (accounts.length) dispatch(setIsMetaMaskConnected(true));
-            else dispatch(setIsMetaMaskConnected(false));
+        const refreshAccounts = (accounts: unknown[]) => {
+            if (accounts.length > 0) dispatch(setWallets(accounts));
+            else dispatch(setWallets([]));
         };
 
-        init();
+        const getProvider = async () => {
+            const provider = await detectEthereumProvider({ silent: true });
+            dispatch(setHasMetaMaskProvider(Boolean(provider)));
+
+            if (provider) {
+                const accounts = await window.ethereum.request({
+                    method: 'eth_accounts',
+                });
+                refreshAccounts(accounts);
+                window.ethereum.on('accountsChanged', refreshAccounts);
+            }
+        };
+
+        const extensionTimeout = setTimeout(() => {
+            setIsLoadingExtensions(false);
+        }, 2000);
+
+        getProvider();
+
+        return () => {
+            clearTimeout(extensionTimeout);
+            window.ethereum?.removeListener('accountsChanged', refreshAccounts);
+        };
     }, []);
 
     return (
         <>
-            {isMetaMaskConnected === true ? (
+            {isLoadingExtensions || hasMetaMaskProvider === undefined ? (
+                <LoadingPage title="Loading marketplace ..." />
+            ) : hasMetaMaskProvider === true &&
+              wallets &&
+              wallets.length > 0 ? (
                 <>
                     <h3>Enabled</h3>
                     {/* <Auctions />
                     <Divider />
                     <Nfts /> */}
                 </>
-            ) : isMetaMaskConnected === false ? (
+            ) : hasMetaMaskProvider === true &&
+              wallets &&
+              wallets.length === 0 ? (
                 <LandingPage />
             ) : (
-                <LoadingPage title="Loading MetaMask..." />
+                <ErrorPage title="Non-ethereum browser detected!" />
             )}
         </>
     );

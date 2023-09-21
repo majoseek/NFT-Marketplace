@@ -1,11 +1,11 @@
-import { LoadingOutlined } from '@ant-design/icons';
+import { WarningOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
 import styled from 'styled-components';
 
-export const LoadingSpin = styled(LoadingOutlined)`
+export const ErrorIcon = styled(WarningOutlined)`
     &&& {
         font-size: 64px;
-        color: ${({ theme }) => theme.textColors.tertiary};
+        color: ${({ theme }) => theme.colors.primary};
     }
 `;
 
@@ -19,7 +19,7 @@ export const Wrapper = styled.div`
     background-color: ${({ theme }) => theme.backgroundColors['primary']};
 `;
 
-export const LoadingTitle = styled(Typography.Title)`
+export const ErrorTitle = styled(Typography.Title)`
     && {
         color: ${({ theme }) => theme.textColors.primary};
     }

@@ -2,26 +2,32 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
 export interface AppState {
-    isMetaMaskConnected: boolean | undefined;
+    hasMetaMaskProvider: boolean | undefined;
+    wallets: unknown[] | undefined;
 }
 
 const initialState: AppState = {
-    isMetaMaskConnected: undefined,
+    hasMetaMaskProvider: undefined,
+    wallets: undefined,
 };
 
 export const appSlice = createSlice({
     name: 'counter',
     initialState,
     reducers: {
-        setIsMetaMaskConnected: (
+        setHasMetaMaskProvider: (
             state,
-            action: PayloadAction<AppState['isMetaMaskConnected']>
+            action: PayloadAction<AppState['hasMetaMaskProvider']>
         ) => {
-            state.isMetaMaskConnected = action.payload;
+            state.hasMetaMaskProvider = action.payload;
+        },
+
+        setWallets: (state, action: PayloadAction<AppState['wallets']>) => {
+            state.wallets = action.payload;
         },
     },
 });
 
-export const { setIsMetaMaskConnected } = appSlice.actions;
+export const { setHasMetaMaskProvider, setWallets } = appSlice.actions;
 
 export default appSlice.reducer;
