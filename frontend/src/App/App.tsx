@@ -1,9 +1,7 @@
 import { useEffect } from 'react';
-import bgImage from '../assets/bgStars.png';
 import Web3 from 'web3';
 import Auctions from '../pages/Auctions/Auctions';
 import Nfts from '../pages/Nfts/Nfts';
-import { Spin } from 'antd';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { setIsMetaMaskConnected } from '../store/appSlice';
@@ -18,6 +16,11 @@ const App = () => {
 
     useEffect(() => {
         const init = async () => {
+            if (!window.ethereum && !window.web3) {
+                dispatch(setIsMetaMaskConnected(false));
+                return;
+            }
+
             const accounts = await window.ethereum.request({
                 method: 'eth_accounts',
             });

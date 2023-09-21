@@ -18,9 +18,7 @@ const LandingPage = () => {
                 dispatch(setIsMetaMaskConnected(true));
             } catch (err) {
                 console.log(err);
-                message.error(
-                    'There was an error while connecting your wallet'
-                );
+                message.info(`We've sent you notification on MetaMask!`);
             }
         } else if (window.web3)
             window.web3 = new Web3(window.web3.currentProvider);

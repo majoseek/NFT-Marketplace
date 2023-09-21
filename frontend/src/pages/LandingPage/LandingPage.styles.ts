@@ -32,7 +32,7 @@ export const LeftSide = styled.div`
 
 export const LandingTitle = styled(Typography.Title)`
     &&& {
-        color: #e9e1fd;
+        color: ${({ theme }) => theme.textColors.primary};
         max-width: 570px;
         font-family: 'Chillax', sans-serif;
         text-align: center;
@@ -40,7 +40,7 @@ export const LandingTitle = styled(Typography.Title)`
 `;
 
 export const LandingDescription = styled(Typography.Text)`
-    color: #e9e1fd;
+    color: ${({ theme }) => theme.textColors.primary};
     font-family: 'Chillax', sans-serif;
     text-align: center;
     font-size: 1.1rem;

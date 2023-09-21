@@ -7,10 +7,10 @@ export const Button = styled(ButtonAntd)`
         height: 40px;
         background: linear-gradient(
             90deg,
-            rgba(120, 52, 243, 1) 0%,
-            rgba(65, 17, 150, 1) 100%
+            ${({ theme }) => theme.colors.primary} 0%,
+            ${({ theme }) => theme.colors.primaryDark} 100%
         );
-        color: #e9e1fd;
+        color: ${({ theme }) => theme.textColors.primary};
         border: none;
         font-family: 'Roboto', sans-serif;
         font-family: 'Space Mono', monospace;
