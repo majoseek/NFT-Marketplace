@@ -58,6 +58,7 @@ const App = () => {
               wallets.length > 0 ? (
                 <>
                     <h3>Enabled</h3>
+                    <Auctions />
                     {/* <Auctions />
                     <Divider />
                     <Nfts /> */}
