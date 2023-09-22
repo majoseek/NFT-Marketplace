@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Auction } from '../../types/auction';
 import axios from 'axios';
 import * as Styled from './Auctions.styles';
 import { Button, Divider } from 'antd';
 import AuctionInfoModal from './AuctionInfoModal';
+import { AuctionResponse } from '@/api/types/auction';
 
 const Auctions = () => {
-    const [auctions, setAuctions] = useState<Auction[]>([]);
+    const [auctions, setAuctions] = useState<AuctionResponse['auctions']>([]);
     const [isAuctionModalInfoVisible, setIsAuctionModalInfoVisible] =
         useState(false);
     const [selectedAuctionId, setSelectedAuctionId] = useState<number | null>(
@@ -14,9 +14,11 @@ const Auctions = () => {
     );
 
     useEffect(() => {
-        axios.get('/auction?page=1&count=20&status=Active').then((res: any) => {
-            setAuctions(res.data.auctions);
-        });
+        axios
+            .get('/auction?page=1&count=20&status=Active')
+            .then((res: { data: AuctionResponse }) => {
+                setAuctions(res.data.auctions);
+            });
     }, []);
 
     const handlePlaceBid = (auctionId: number) => {

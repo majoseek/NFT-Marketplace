@@ -5,5 +5,5 @@ export type Nft = {
     ownerAddress: string;
     url: string;
     description: string;
-    type: string;
+    type: 'Image' | 'Video' | 'Audio' | 'Text' | 'Other';
 };

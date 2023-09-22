@@ -39,7 +39,7 @@ const App = () => {
 
         const extensionTimeout = setTimeout(() => {
             setIsLoadingExtensions(false);
-        }, 2000);
+        }, 1000);
 
         !isLoadingExtensions && getProvider();
 

@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import CreateAuctionModal from './CreateAuctionModal';
-import { Nft } from '../../types/nft';
 import * as Styled from './Nfts.styles';
 import { Button, Divider } from 'antd';
+import { Nft } from '@/api/types/nft';
+import { useAppSelector } from '@/hooks/useAppSelector';
 
 const Nfts = () => {
     const [nfts, setNfts] = useState<Nft[]>([]);
@@ -13,16 +14,17 @@ const Nfts = () => {
     const [selectedNftAddress, setSelectedNftAddress] = useState<string | null>(
         null
     );
+    const wallets = useAppSelector((state) => state.app.wallets);
 
     useEffect(() => {
-        const init = async () => {
-            const accounts = await window.web3.eth.getAccounts();
-            const userAccountAddress = accounts[0];
-            axios.get(`/nft/owner/${userAccountAddress}`).then((res: any) => {
+        if (!wallets || wallets.length < 1) return;
+
+        const userAccountAddress = wallets[0];
+        axios
+            .get(`/nft/owner/${userAccountAddress}`)
+            .then((res: { data: Nft[] }) => {
                 setNfts(res.data);
             });
-        };
-        init();
     }, []);
 
     const handleSelectNft = (nftId: number, nftAddress: string) => {
