@@ -26,28 +26,28 @@ const App = () => {
 
         const getProvider = async () => {
             const provider = await detectEthereumProvider({ silent: true });
-            dispatch(setHasMetaMaskProvider(Boolean(provider)));
 
             if (provider) {
                 const accounts = await window.ethereum.request({
                     method: 'eth_accounts',
                 });
                 refreshAccounts(accounts);
+                dispatch(setHasMetaMaskProvider(true));
                 window.ethereum.on('accountsChanged', refreshAccounts);
-            }
+            } else dispatch(setHasMetaMaskProvider(false));
         };
 
         const extensionTimeout = setTimeout(() => {
             setIsLoadingExtensions(false);
         }, 2000);
 
-        getProvider();
+        !isLoadingExtensions && getProvider();
 
         return () => {
             clearTimeout(extensionTimeout);
             window.ethereum?.removeListener('accountsChanged', refreshAccounts);
         };
-    }, []);
+    }, [isLoadingExtensions]);
 
     return (
         <>
