@@ -1,6 +1,9 @@
 export type Nft = {
-    contractAddress: string;
+    address: string;
     tokenID: number;
+};
+
+export type NftDetails = Nft & {
     name: string;
     ownerAddress: string;
     url: string;

@@ -1,7 +1,4 @@
-type NftToken = {
-    address: string;
-    tokenID: number;
-};
+import { Nft, NftDetails } from './nft';
 
 type BidResponse = {
     bidder: string;
@@ -9,20 +6,20 @@ type BidResponse = {
     timestamp: string;
 };
 
-type NftStatus = 'pending' | 'active' | 'canceled' | 'expired';
+type Status = 'pending' | 'active' | 'canceled' | 'expired';
 
 export type AuctionResponse = {
     auctions: {
         auctionID: number;
         title: string;
         description: string;
-        nft: NftToken;
+        nft: Nft;
         startingPrice: number;
         reservePrice: number;
         minimumIncrement: number;
         expiryTime: string;
         highestBid?: BidResponse;
-        status: NftStatus;
+        status: Status;
     }[];
     page: number;
     size: number;
@@ -33,19 +30,11 @@ export type AuctionDetails = {
     auctionID: number;
     title: string;
     description: string;
-    nft: {
-        contractAddress: string;
-        tokenID: number;
-        name: string;
-        ownerAddress: null;
-        url: string;
-        description: string;
-        type: string;
-    };
+    nft: NftDetails;
     startingPrice: number;
     reservePrice: number;
     minimumIncrement: number;
     expiryTime: string;
     bids: { bidder: string; amount: number }[];
-    status: string;
+    status: Status;
 };
