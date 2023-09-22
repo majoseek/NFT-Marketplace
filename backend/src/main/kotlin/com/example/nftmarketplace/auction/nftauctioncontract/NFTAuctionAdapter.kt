@@ -41,10 +41,10 @@ class NFTAuctionAdapter(@Autowired private val contract: NFTAuction) : AuctionPo
         val totalCount = getTotalAuctions()
         val indexes = status?.toBigInteger()?.let {
             val auctionsIds = contract.getAuctionsByStatus(it).sendAsync().waitAndGet() as? List<BigInteger>
-           auctionsIds?.slice(
-                startIndex..min(startIndex + page * 20, auctionsIds.size - 1)
+            auctionsIds?.slice(
+                startIndex until min(startIndex + page * count, auctionsIds.size)
             )?.map { it.toInt() }.orEmpty()
-        } ?: (startIndex..min(startIndex + page * 20, totalCount.toInt())).toList()
+        } ?: (startIndex until min(startIndex + page * count, totalCount.toInt())).toList()
 
         return indexes.map {
             async { contract.auctions(BigInteger.valueOf(it.toLong())).sendAsync().get() }
@@ -143,6 +143,7 @@ fun NFTAuctionObject.Status.toBigInteger() = BigInteger.valueOf(
         NFTAuctionObject.Status.Pending -> 0
         NFTAuctionObject.Status.Expired,
         NFTAuctionObject.Status.Active -> 1
+
         NFTAuctionObject.Status.Cancelled -> 2
     }
 )

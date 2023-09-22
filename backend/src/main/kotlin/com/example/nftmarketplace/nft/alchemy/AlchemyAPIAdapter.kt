@@ -18,7 +18,7 @@ import kotlin.coroutines.coroutineContext
 class AlchemyAPIAdapter(
     @Autowired private val webClient: WebClient
 ) : NFTPort {
-    override suspend fun getNFT(contractAddress: String, tokenId: String): NFT {
+    override suspend fun getNFT(contractAddress: String, tokenId: String, withOwner: Boolean): NFT {
         with (CoroutineScope(coroutineContext)) {
             val nft = async {
                 webClient.get()
@@ -30,6 +30,8 @@ class AlchemyAPIAdapter(
                             .build()
                     }.retrieve().awaitBody<AlchemyNFT>()
             }
+            if (!withOwner) return nft.await().toNFT()
+
             val owner = async { getNFTOwner(contractAddress, tokenId) }
             return nft.await().toNFT(owner.await())
         }

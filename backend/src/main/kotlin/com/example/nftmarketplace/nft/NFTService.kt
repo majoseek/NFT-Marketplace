@@ -10,8 +10,8 @@ class NFTService(@Autowired private val nftPort: NFTPort) {
     // TODO add some logic, caching etc
 
 
-    suspend fun getNFT(contractAddress: String, tokenId: String) = getOrPrintError {
-        nftPort.getNFT(contractAddress, tokenId)
+    suspend fun getNFT(contractAddress: String, tokenId: String, withOwner: Boolean) = getOrPrintError {
+        nftPort.getNFT(contractAddress, tokenId, withOwner)
     }
 
     suspend fun getOwnedNFTs(ownerAddress: String) = getOrPrintError {

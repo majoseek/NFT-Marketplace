@@ -7,7 +7,7 @@ data class AlchemyNFT(
     @JsonProperty("contract")
     val contract: Contract,
     @JsonProperty("contractMetadata")
-    val contractMetadata: ContractMetadata,
+    val contractMetadata: ContractMetadata? = null,
     @JsonProperty("description")
     val description: String,
     @JsonProperty("id")

@@ -29,7 +29,7 @@ class AuctionService(@Autowired private val auctionPort: AuctionPort) {
         auctionPort.getAuctionByOwner(ownerAddress)
     }
 
-    suspend fun getTotalAuctions(): Long? = getOrPrintError {
+    suspend fun getTotalAuctionsSize(): Long? = getOrPrintError {
         auctionPort.getTotalAuctions()
     }
 }

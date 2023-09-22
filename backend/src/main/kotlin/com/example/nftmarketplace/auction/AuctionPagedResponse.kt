@@ -1,6 +1,7 @@
 package com.example.nftmarketplace.auction
 
 import com.example.nftmarketplace.nft.NFT
+import com.example.nftmarketplace.nft.NFTService
 import com.example.nftmarketplace.toBidResponse
 import java.math.BigDecimal
 
@@ -11,26 +12,29 @@ data class AuctionPagedResponse(
     val count: Long
 ) 
 
-fun NFTAuctionObject.toAuctionElement(): AuctionElement {
-    return AuctionElement(
-        auctionID = auctionID,
-        title = title,
-        description = description,
-        nft = nft,
-        startingPrice = startingPrice,
-        reservePrice = reservePrice,
-        minimumIncrement = minimumIncrement,
-        expiryTime = expiryTime.toString(),
-        highestBid = highestBid?.toBidResponse(),
-        status = status,
-    )
+suspend fun NFTAuctionObject.toAuctionElement(nftService: NFTService): AuctionElement {
+    val nft = nftService.getNFT(nft.address, nft.tokenID.toString(), false)
+    nft?.let {
+        return AuctionElement(
+            auctionID = auctionID,
+            title = title,
+            description = description,
+            nft = nft,
+            startingPrice = startingPrice,
+            reservePrice = reservePrice,
+            minimumIncrement = minimumIncrement,
+            expiryTime = expiryTime.toString(),
+            highestBid = highestBid?.toBidResponse(),
+            status = status,
+        )
+    } ?: throw RuntimeException("NFT not found")
 }
 
 data class AuctionElement(
     val auctionID: Long,
     val title: String,
     val description: String,
-    val nft: NFTToken,
+    val nft: NFT,
     val startingPrice: BigDecimal,
     val reservePrice: BigDecimal,
     val minimumIncrement: BigDecimal,

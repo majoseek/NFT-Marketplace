@@ -21,7 +21,7 @@ class NFTController(@Autowired private val nftService: NFTService) {
     suspend fun getNFTs(
         @PathVariable("contractAddress") contractAddress: String,
         @PathVariable("tokenId") tokenId: String
-    ) = nftService.getNFT(contractAddress, tokenId)?.let { nft ->
+    ) = nftService.getNFT(contractAddress, tokenId, true)?.let { nft ->
         ResponseEntity.ok(nft)
     } ?: ResponseEntity.badRequest().build()
 
