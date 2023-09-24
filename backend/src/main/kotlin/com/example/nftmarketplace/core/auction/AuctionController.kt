@@ -1,9 +1,17 @@
-package com.example.nftmarketplace.auction
+package com.example.nftmarketplace.core.auction
 
+import com.example.nftmarketplace.auction.AuctionPagedResponse
+import com.example.nftmarketplace.auction.AuctionResponse
+import com.example.nftmarketplace.auction.storage.db.AuctionRepository
+import com.example.nftmarketplace.core.data.AuctionDomainModel
+import com.example.nftmarketplace.auction.toAuctionElement
 import com.example.nftmarketplace.getResponseEntity
-import com.example.nftmarketplace.nft.NFT
-import com.example.nftmarketplace.nft.NFTService
+import com.example.nftmarketplace.core.data.NFTDomainModel
+import com.example.nftmarketplace.nft.NFTAdapter
 import com.example.nftmarketplace.toAuctionResponse
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.reactive.asFlow
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -16,21 +24,21 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/auction")
 class AuctionController(
     @Autowired private val auctionService: AuctionService,
-    @Autowired private val nftService: NFTService
+    @Autowired private val nftAdapter: NFTAdapter,
 ) {
-    private suspend fun getNft(contractAddress: String, tokenId: Long): NFT? {
-        return nftService.getNFT(contractAddress, tokenId.toString(), true)
+    private suspend fun getNft(contractAddress: String, tokenId: Long): NFTDomainModel? {
+        return nftAdapter.getNFT(contractAddress, tokenId.toString(), true)
     }
 
     @GetMapping("")
     suspend fun getAllAuctions(
         @RequestParam("page") page: Int? = null,
         @RequestParam("count") count: Int? = null,
-        @RequestParam("status") status: NFTAuctionObject.Status? = null
+        @RequestParam("status") status: AuctionDomainModel.Status? = null
     ): ResponseEntity<AuctionPagedResponse> {
-        val auctions = auctionService.getAllAuctions(page ?: 1, count ?: 20, status = status)?.map {
-            it.toAuctionElement(nftService)
-        } ?: emptyList()
+        val auctions = auctionService.getAllAuctions(page ?: 1, count ?: 20, status).map {
+            it.toAuctionElement()
+        }.toList()
         return AuctionPagedResponse(
             auctions = auctions,
             page = page ?: 1,
@@ -43,14 +51,13 @@ class AuctionController(
     suspend fun getAuctionById(@PathVariable("auctionId") auctionId: Long): ResponseEntity<AuctionResponse> {
         val auction = auctionService.getAuctionById(auctionId)
         return auction?.toAuctionResponse(
-            getNft(auction.nft.address, auction.nft.tokenID) ?: NFT(
+            getNft(auction.nft.address, auction.nft.tokenID) ?: NFTDomainModel(
                 contractAddress = auction.nft.address,
                 tokenID = auction.nft.tokenID,
                 name = null,
                 null,
                 null,
                 "",
-                NFT.Type.Other
             )
         ).getResponseEntity()
     }
@@ -60,9 +67,9 @@ class AuctionController(
     suspend fun getAuctionByNFT(
         @PathVariable("contractAddress") contractAddress: String,
         @RequestParam("tokenId") tokenId: Long? = null
-    ) = auctionService.getAuctionByNFT(contractAddress, tokenId)?.map { it.toAuctionElement(nftService) }.getResponseEntity()
+    ) = auctionService.getAuctionByNFT(contractAddress, tokenId)?.map { it.toAuctionElement() }.getResponseEntity()
 
     @GetMapping("/owner/{ownerAddress}")
     suspend fun getAuctionByOwner(@PathVariable("ownerAddress") ownerAddress: String) =
-        auctionService.getAuctionByOwner(ownerAddress)?.map { it.toAuctionElement(nftService) }.getResponseEntity()
+        auctionService.getAuctionByOwner(ownerAddress)?.map { it.toAuctionElement() }.getResponseEntity()
 }

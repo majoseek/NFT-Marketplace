@@ -1,20 +1,21 @@
-package com.example.nftmarketplace.auction
+package com.example.nftmarketplace.core.data
 
+import com.example.nftmarketplace.auction.NFTToken
 import com.fasterxml.jackson.annotation.JsonProperty
 import kotlinx.datetime.LocalDateTime
 import java.math.BigDecimal
 
 
-data class NFTAuctionObject(
+data class AuctionDomainModel(
     val auctionID: Long,
     val title: String,
     val description: String,
     val nft: NFTToken,
-    val startingPrice: BigDecimal,
-    val reservePrice: BigDecimal,
-    val minimumIncrement: BigDecimal,
+    val startingPrice: BigDecimal? = null,
+    val reservePrice: BigDecimal? = null,
+    val minimumIncrement: BigDecimal? = null,
     val expiryTime: LocalDateTime,
-    val bids: List<Bid>? = null,
+    val bids: List<Bid> = emptyList(),
     val highestBid: Bid? = null,
     val status: Status,
 ) {
@@ -27,6 +28,8 @@ data class NFTAuctionObject(
         Cancelled, // 2
         @JsonProperty(value = "expired")
         Expired, // 3
+        @JsonProperty(value = "won")
+        Won, // 4
     }
     data class Bid(
         val bidder: String,

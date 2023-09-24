@@ -1,6 +1,6 @@
 package com.example.nftmarketplace.auction.nftauctioncontract
 
-import com.example.nftmarketplace.auction.AuctionPort
+import com.example.nftmarketplace.core.AuctionPort
 import com.example.nftmarketplace.nftauction.NFTAuction
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -13,11 +13,6 @@ import org.web3j.tx.gas.DefaultGasProvider
 
 @Configuration
 class NFTAuctionContractConfiguration {
-
-    @Bean
-    fun auctionPort(
-        @Autowired nftAuction: NFTAuction,
-    ): AuctionPort = NFTAuctionAdapter(nftAuction)
 
     @Bean
     fun web3j(

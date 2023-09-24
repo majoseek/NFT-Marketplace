@@ -50,7 +50,7 @@ web3j {
 extra["testcontainersVersion"] = "1.17.6"
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
 //    implementation("org.springframework.boot:spring-boot-starter-mail")
 //    implementation("org.springframework.boot:spring-boot-starter-quartz")
 //    implementation("org.springframework.boot:spring-boot-starter-security")

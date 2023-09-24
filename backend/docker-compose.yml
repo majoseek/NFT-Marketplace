@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  mongo:
+    container_name: mongo
+    image: mongo:6.0.2
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - '27017:27017'
