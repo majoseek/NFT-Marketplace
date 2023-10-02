@@ -36,7 +36,7 @@ const Nfts = () => {
     return (
         <Styled.NftsContainer>
             <h2>Owned NFTs</h2>
-            {nfts.map((nft) => (
+            {/* {nfts.map((nft) => (
                 <div key={nft.tokenID}>
                     <Divider />
                     <Styled.NftWrapper>
@@ -57,7 +57,7 @@ const Nfts = () => {
                         </Button>
                     </Styled.NftWrapper>
                 </div>
-            ))}
+            ))} */}
             {selectedNftId !== null && selectedNftAddress !== null && (
                 <CreateAuctionModal
                     nftId={selectedNftId}

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Input, Modal, Spin } from 'antd';
 import * as Styled from './CreateAuctionModal.styles';
-import { Nft } from '../../types/nft';
+import { Nft } from '@/api/types/nft';
 import { abi, address, nftAbi } from '../../config';
 
 type Props = {
@@ -139,7 +139,7 @@ const CreateAuctionModal = ({
         >
             {nftDetails ? (
                 <Styled.CreateAuctionWrapper>
-                    {auctionCreateState === 'APPROVE' ? (
+                    {/* {auctionCreateState === 'APPROVE' ? (
                         <>
                             <h2>Approving auction...</h2>
                             <Spin />
@@ -180,7 +180,7 @@ const CreateAuctionModal = ({
                                 onChange={handleChangeDuration}
                             />
                         </>
-                    )}
+                    )} */}
                 </Styled.CreateAuctionWrapper>
             ) : (
                 <Spin />
