@@ -12,22 +12,27 @@ class AuctionService(
     @Autowired private val auctionPort: AuctionPort,
 ) {
 
-    suspend fun getAllAuctions(page: Int, count: Int, status: AuctionDomainModel.Status? = null): Flow<AuctionDomainModel> =
+    suspend fun getAllAuctions(
+        page: Int,
+        count: Int,
+        status: AuctionDomainModel.Status? = null
+    ): Flow<AuctionDomainModel> =
         auctionPort.getAllAuctions(page, count, status)
 
     suspend fun getAuctionById(auctionId: Long): AuctionDomainModel? = getOrPrintError {
         auctionPort.getAuctionById(auctionId)
     }
 
-    suspend fun getAuctionByNFT(contractAddress: String, tokenId: Long? = null): List<AuctionDomainModel>? = getOrPrintError {
-        tokenId?.let {
-            auctionPort.getAuctionByNFT(contractAddress, tokenId)?.let { auction ->
-                listOf(auction)
+    suspend fun getAuctionByNFT(contractAddress: String, tokenId: Long? = null): List<AuctionDomainModel>? =
+        getOrPrintError {
+            tokenId?.let {
+                auctionPort.getAuctionByNFT(contractAddress, tokenId)?.let { auction ->
+                    listOf(auction)
+                }
+            } ?: run {
+                auctionPort.getAuctionsByContract(contractAddress)
             }
-        } ?: run {
-            auctionPort.getAuctionsByContract(contractAddress)
         }
-    }
 
     suspend fun getAuctionByOwner(ownerAddress: String): List<AuctionDomainModel>? = getOrPrintError {
         auctionPort.getAuctionByOwner(ownerAddress)
@@ -35,5 +40,9 @@ class AuctionService(
 
     suspend fun getTotalAuctionsSize(): Long? = getOrPrintError {
         auctionPort.getTotalAuctions()
+    }
+
+    suspend fun getAuctionsBids(auctionId: Long): Flow<AuctionDomainModel.Bid> {
+        return auctionPort.getAuctionsBids(auctionId)
     }
 }

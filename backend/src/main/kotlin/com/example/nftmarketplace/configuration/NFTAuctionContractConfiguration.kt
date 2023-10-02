@@ -1,6 +1,5 @@
-package com.example.nftmarketplace.auction.nftauctioncontract
+package com.example.nftmarketplace.configuration
 
-import com.example.nftmarketplace.core.AuctionPort
 import com.example.nftmarketplace.nftauction.NFTAuction
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value

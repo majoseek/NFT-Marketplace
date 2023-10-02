@@ -1,4 +1,4 @@
-package com.example.nftmarketplace.nft.alchemy
+package com.example.nftmarketplace.configuration
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean

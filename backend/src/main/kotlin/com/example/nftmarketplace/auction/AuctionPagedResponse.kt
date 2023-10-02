@@ -1,70 +1,58 @@
 package com.example.nftmarketplace.auction
 
-import com.example.nftmarketplace.core.data.NFTDomainModel
 import com.example.nftmarketplace.core.data.AuctionDomainModel
+import com.example.nftmarketplace.nft.storage.db.NFTEntity
+import com.example.nftmarketplace.restapi.auctions.AuctionStatus
+import com.example.nftmarketplace.restapi.auctions.AuctionsPagedResponse
+import com.example.nftmarketplace.restapi.nfts.NFTResponse
 import com.example.nftmarketplace.toBidResponse
-import java.math.BigDecimal
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlin.time.Duration.Companion.minutes
 
-data class AuctionPagedResponse(
-    val auctions: List<AuctionElement>,
-    val page: Int,
-    val size: Int,
-    val count: Long
-)
 
-fun AuctionDomainModel.toAuctionElement(): AuctionElement {
-    return AuctionElement(
+fun AuctionDomainModel.toAuctionElement(): AuctionsPagedResponse.AuctionElement {
+    return AuctionsPagedResponse.AuctionElement(
         auctionID = auctionID,
         title = title,
         description = description,
-        nft = NFTDomainModel(
+        nft = NFTResponse(
             contractAddress = nft.address,
             tokenID = nft.tokenID,
             name = nft.name,
             url = nft.url,
-            type = nft.type?.name?.let { NFTDomainModel.Type.valueOf(it) } ?: NFTDomainModel.Type.Other,
+            type = nft.type?.toResponseType() ?: NFTResponse.Type.Other,
             description = nft.description,
             ownerAddress = nft.ownerAddress
         ),
-        startingPrice = startingPrice,
-        reservePrice = reservePrice,
-        minimumIncrement = minimumIncrement,
         expiryTime = expiryTime.toString(),
         highestBid = highestBid?.toBidResponse(),
-        status = status,
+        status = toStatusResponse(),
     )
 }
 
-data class AuctionElement(
-    val auctionID: Long,
-    val title: String,
-    val description: String,
-    val nft: NFTDomainModel,
-    val startingPrice: BigDecimal?,
-    val reservePrice: BigDecimal?,
-    val minimumIncrement: BigDecimal?,
-    val expiryTime: String,
-    val highestBid: BidResponse? = null,
-    val status: AuctionDomainModel.Status,
-)
+fun NFTEntity.Type.toResponseType() = when (this) {
+    NFTEntity.Type.Image -> NFTResponse.Type.Image
+    NFTEntity.Type.Video -> NFTResponse.Type.Video
+    NFTEntity.Type.Audio -> NFTResponse.Type.Audio
+    NFTEntity.Type.Text -> NFTResponse.Type.Text
+    NFTEntity.Type.Other -> NFTResponse.Type.Other
+}
 
-data class AuctionResponse(
-    val auctionID: Long,
-    val title: String,
-    val description: String,
-    val nft: NFTDomainModel,
-    val startingPrice: BigDecimal? = null,
-    val reservePrice: BigDecimal? = null,
-    val minimumIncrement: BigDecimal? = null,
-    val expiryTime: String,
-    val bids: List<BidResponse> = emptyList(),
-    val status: AuctionDomainModel.Status,
-)
+fun AuctionDomainModel.toStatusResponse() =
+    when (this.status) {
+        AuctionDomainModel.Status.Pending -> null
+        AuctionDomainModel.Status.Active -> {
+            if (expiryTime.toInstant(TimeZone.UTC).plus(30.minutes) > Clock.System.now()) {
+                AuctionStatus.Active
+            } else {
+                AuctionStatus.Ending
+            }
+        }
 
-data class BidResponse(
-    val bidder: String,
-    val amount: BigDecimal,
-    val timestamp: String,
-)
-
+        AuctionDomainModel.Status.Cancelled -> AuctionStatus.Cancelled
+        AuctionDomainModel.Status.Expired -> AuctionStatus.Expired
+        AuctionDomainModel.Status.Won -> AuctionStatus.Completed
+    }
 

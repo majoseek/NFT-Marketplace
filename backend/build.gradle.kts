@@ -55,7 +55,7 @@ dependencies {
 //    implementation("org.springframework.boot:spring-boot-starter-quartz")
 //    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
-//    implementation("org.springframework.boot:spring-boot-starter-websocket")
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:+")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:+")
@@ -67,8 +67,7 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:mongodb")
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
 }
 
 dependencyManagement {

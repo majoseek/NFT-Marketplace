@@ -17,4 +17,6 @@ interface AuctionPort {
     suspend fun getAuctionByNFT(contractAddress: String, tokenId: Long): AuctionDomainModel?
 
     suspend fun getAuctionsByContract(contractAddress: String): List<AuctionDomainModel>
+
+    suspend fun getAuctionsBids(auctionId: Long): Flow<AuctionDomainModel.Bid>
 }

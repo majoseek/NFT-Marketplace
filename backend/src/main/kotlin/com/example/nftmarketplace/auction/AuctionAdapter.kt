@@ -5,12 +5,14 @@ import com.example.nftmarketplace.auction.storage.db.AuctionEntity
 import com.example.nftmarketplace.auction.storage.db.AuctionRepository
 import com.example.nftmarketplace.core.AuctionPort
 import com.example.nftmarketplace.core.NFTPort
+import com.example.nftmarketplace.core.auction.AuctionEvents
 import com.example.nftmarketplace.core.data.AuctionDomainModel
 import com.example.nftmarketplace.nft.storage.db.NFTEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.web3j.utils.Convert
@@ -85,5 +87,19 @@ class AuctionAdapter(
 
     override suspend fun getAuctionsByContract(contractAddress: String): List<AuctionDomainModel> {
         return auctionContract.getAuctionsByContract(contractAddress)
+    }
+
+    override suspend fun getAuctionsBids(auctionId: Long): Flow<AuctionDomainModel.Bid> {
+        return auctionContract
+            .getAuctionsEvents()
+            .filterIsInstance<AuctionEvents.BidPlaced>()
+            .filter { it.id == auctionId }
+            .map {
+                AuctionDomainModel.Bid(
+                    bidder = it.bidderAddress,
+                    amount = Convert.fromWei(it.amount.toString(), Convert.Unit.ETHER),
+                    timestamp = it.timestamp
+                )
+            }
     }
 }

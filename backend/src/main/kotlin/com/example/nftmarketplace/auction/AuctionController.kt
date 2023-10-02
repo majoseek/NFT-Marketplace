@@ -1,18 +1,22 @@
-package com.example.nftmarketplace.core.auction
+package com.example.nftmarketplace.auction
 
-import com.example.nftmarketplace.auction.AuctionPagedResponse
-import com.example.nftmarketplace.auction.AuctionResponse
-import com.example.nftmarketplace.auction.storage.db.AuctionRepository
+import com.example.nftmarketplace.core.auction.AuctionService
 import com.example.nftmarketplace.core.data.AuctionDomainModel
-import com.example.nftmarketplace.auction.toAuctionElement
-import com.example.nftmarketplace.getResponseEntity
 import com.example.nftmarketplace.core.data.NFTDomainModel
+import com.example.nftmarketplace.getResponseEntity
 import com.example.nftmarketplace.nft.NFTAdapter
+import com.example.nftmarketplace.restapi.auctions.AuctionResponse
+import com.example.nftmarketplace.restapi.auctions.AuctionsPagedResponse
+import com.example.nftmarketplace.restapi.auctions.BidElement
 import com.example.nftmarketplace.toAuctionResponse
+import com.example.nftmarketplace.toBidResponse
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.reactive.asFlow
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -35,11 +39,11 @@ class AuctionController(
         @RequestParam("page") page: Int? = null,
         @RequestParam("count") count: Int? = null,
         @RequestParam("status") status: AuctionDomainModel.Status? = null
-    ): ResponseEntity<AuctionPagedResponse> {
+    ): ResponseEntity<AuctionsPagedResponse> {
         val auctions = auctionService.getAllAuctions(page ?: 1, count ?: 20, status).map {
             it.toAuctionElement()
         }.toList()
-        return AuctionPagedResponse(
+        return AuctionsPagedResponse(
             auctions = auctions,
             page = page ?: 1,
             size = auctions.size,
@@ -72,4 +76,17 @@ class AuctionController(
     @GetMapping("/owner/{ownerAddress}")
     suspend fun getAuctionByOwner(@PathVariable("ownerAddress") ownerAddress: String) =
         auctionService.getAuctionByOwner(ownerAddress)?.map { it.toAuctionElement() }.getResponseEntity()
+
+    @GetMapping("/{auctionId}/bids", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    suspend fun getBids(@PathVariable("auctionId") auctionId: Long): Flow<Any> {
+        val initialFlow = flowOf(auctionService.getAuctionById(auctionId)?.bids?.map { it.toBidResponse() }.orEmpty())
+
+        return merge(initialFlow, auctionService.getAuctionsBids(auctionId).map {
+            BidElement(
+                bidder = it.bidder,
+                amount = it.amount,
+                timestamp = it.timestamp.toString()
+            )
+        })
+    }
 }

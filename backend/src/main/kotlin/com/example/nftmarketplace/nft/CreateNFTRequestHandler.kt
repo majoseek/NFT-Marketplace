@@ -1,6 +1,5 @@
 package com.example.nftmarketplace.nft
 
-import com.example.nftmarketplace.core.NFTAlreadyExistsException
 import com.example.nftmarketplace.nft.alchemy.AlchemyAPIAdapter
 import com.example.nftmarketplace.nft.storage.db.NFTEntity
 import com.example.nftmarketplace.nft.storage.db.NFTId
@@ -24,7 +23,7 @@ class CrateNFTRequestHandlerImpl(
 ) : CreateNFTRequestHandler {
     override suspend fun handle(request: CreateNFTRequest): NFTEntity {
         if (nftRepository.existsById(NFTId(request.contractAddress, request.tokenId.toLong())).awaitSingle()) {
-            throw NFTAlreadyExistsException(request.contractAddress, request.tokenId) // TODO
+            throw Exception("${request.contractAddress}, ${request.tokenId}") // TODO
         }
         val nft = alchemyAPIAdapter.getNFT(request.contractAddress, request.tokenId, true)
         val owner = alchemyAPIAdapter.getNFTOwner(request.contractAddress, request.tokenId)

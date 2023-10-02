@@ -10,9 +10,5 @@ interface NFTPort {
 
     suspend fun getNFTs(contractAddress: String, ownerAddress: String? = null): List<NFTDomainModel>
 
-    @Throws(NFTAlreadyExistsException::class)
     suspend fun getOrCreateNFT(contractAddress: String, tokenId: String): NFTDomainModel
 }
-
-class NFTAlreadyExistsException(contractAddress: String, tokenId: String) :
-    RuntimeException("NFT with contractAddress: $contractAddress and tokenId: $tokenId already exists")

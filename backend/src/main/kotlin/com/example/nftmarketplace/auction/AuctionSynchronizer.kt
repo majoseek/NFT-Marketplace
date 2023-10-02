@@ -31,16 +31,16 @@ class AuctionSynchronizer(
 ) {
     private val coroutineScope = CoroutineScope(Dispatchers.IO) + SupervisorJob()
 
-    @Scheduled(fixedDelay = 3 * 60 * 60 * 1000)
+    @Scheduled(fixedRate = 3 * 60 * 60 * 1000)
     suspend fun synchronizeWithContract() {
         contractHelper.getAllAuctions(1, Int.MAX_VALUE, null).onEach {
-            nftPort.getOrCreateNFT(
-                contractAddress = it.nft.address,
-                tokenId = it.nft.tokenID.toString()
-            )
             if (!auctionRepository.existsById(it.auctionID).awaitSingle()) {
                 onAuctionNotFoundInDatabase(it)
             } else {
+                nftPort.getOrCreateNFT(
+                    contractAddress = it.nft.address,
+                    tokenId = it.nft.tokenID.toString()
+                )
                 println("Auction with id ${it.auctionID} already exists in database")
             }
         }.launchIn(coroutineScope)
@@ -48,6 +48,7 @@ class AuctionSynchronizer(
 
     suspend fun startSynchronizing() {
         contractHelper.getAuctionsEvents().onEach { event: AuctionEvents ->
+            println("Event: $event")
             when (event) {
                 is AuctionEvents.Created -> {
                     if (!auctionRepository.existsById(event.id).awaitSingle()) {
@@ -103,6 +104,10 @@ class AuctionSynchronizer(
         auctionRepository.findById(auctionId).awaitSingleOrNull()
 
     private suspend  fun onAuctionNotFoundInDatabase(auction: AuctionDomainModel) {
+        nftPort.getOrCreateNFT(
+            contractAddress = auction.nft.address,
+            tokenId = auction.nft.tokenID.toString()
+        )
         println("Auction not found in database")
         auctionRepository.save(auction.toAuctionEntity()).awaitSingle()
     }
