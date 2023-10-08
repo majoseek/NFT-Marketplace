@@ -13,4 +13,6 @@ enum class AuctionStatus {
     Ending,
     @JsonProperty("completed")
     Completed,
+    @JsonProperty("not_started")
+    NotStarted,
 }

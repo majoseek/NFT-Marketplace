@@ -4,13 +4,13 @@ import com.example.nftmarketplace.restapi.nfts.NFTResponse
 import java.math.BigDecimal
 
 data class AuctionResponse(
-    val auctionID: Long,
+    val auctionId: Long,
     val title: String,
     val description: String,
-    val nft: NFTResponse,
+    val nft: NFTResponse? = null,
     val startingPrice: BigDecimal? = null,
     val minimumIncrement: BigDecimal? = null,
     val expiryTime: String,
-    val bids: List<BidElement> = emptyList(),
+    val highestBids: List<BidElement>? = null,
     val status: AuctionStatus
 )

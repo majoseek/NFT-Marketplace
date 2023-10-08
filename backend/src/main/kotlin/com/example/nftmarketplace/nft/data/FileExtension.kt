@@ -1,6 +1,5 @@
 package com.example.nftmarketplace.nft.data
 
-import com.example.nftmarketplace.core.data.NFTDomainModel
 import com.example.nftmarketplace.nft.storage.db.NFTEntity
 
 object FileExtension {
@@ -29,11 +28,11 @@ object FileExtension {
     const val PDF = "pdf"
 
     fun getTypeFromExtension(extension: String?) = when(extension) {
-        JPG, PNG, JPEG, GIF, BMP, SVG, WEBP -> NFTDomainModel.Type.Image
-        MP4, AVI, MOV, FLV, WMV -> NFTDomainModel.Type.Video
-        MP3, WAV, FLAC, AAC -> NFTDomainModel.Type.Audio
-        TXT, DOC, DOCX, PDF -> NFTDomainModel.Type.Text
-        else -> NFTDomainModel.Type.Other
+        JPG, PNG, JPEG, GIF, BMP, SVG, WEBP -> NFT.Type.Image
+        MP4, AVI, MOV, FLV, WMV -> NFT.Type.Video
+        MP3, WAV, FLAC, AAC -> NFT.Type.Audio
+        TXT, DOC, DOCX, PDF -> NFT.Type.Text
+        else -> NFT.Type.Other
     }
 
     fun getNFTEntityTypeFromExtension(extension: String?) = when(extension) {

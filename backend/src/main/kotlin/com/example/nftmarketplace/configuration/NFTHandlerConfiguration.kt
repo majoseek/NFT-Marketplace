@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Scope
 
-@Configuration("NFTAdapterConfiguration")
-class Configuration {
+@Configuration("NFTHandlerConfiguration")
+class NFTHandlerConfiguration {
 
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)

@@ -16,6 +16,7 @@ data class NFTEntity(
     val url: String,
     val type: Type,
     val ownerAddress: String? = null,
+    val auctionId: Long? = null,
 ) {
     enum class Type {
         Image,

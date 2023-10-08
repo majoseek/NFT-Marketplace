@@ -3,6 +3,7 @@ package com.example.nftmarketplace.nft.alchemy
 import com.example.nftmarketplace.nft.alchemy.data.AlchemyNFT
 import com.example.nftmarketplace.nft.alchemy.data.AlchemyNFTs
 import com.example.nftmarketplace.nft.alchemy.data.OwnersResponse
+import com.example.nftmarketplace.nft.data.NFT
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,7 +16,7 @@ import kotlin.coroutines.coroutineContext
 class AlchemyAPIAdapter(
     @Autowired private val webClient: WebClient
 ) {
-    suspend fun getNFT(contractAddress: String, tokenId: String, withOwner: Boolean): AlchemyNFT {
+    suspend fun getNFT(contractAddress: String, tokenId: String, withOwner: Boolean): NFT {
         with (CoroutineScope(coroutineContext)) {
             val nft = async {
                 webClient.get()
@@ -27,14 +28,14 @@ class AlchemyAPIAdapter(
                             .build()
                     }.retrieve().awaitBody<AlchemyNFT>()
             }
-            if (!withOwner) return nft.await()
+            if (!withOwner) return nft.await().toNFT()
 
             val owner = async { getNFTOwner(contractAddress, tokenId) }
-            return nft.await()
+            return nft.await().toNFT(owner.await())
         }
     }
 
-    suspend fun getOwnedNFTs(ownerAddress: String): List<AlchemyNFT> {
+    suspend fun getOwnedNFTs(ownerAddress: String): List<NFT> {
         val nfts = webClient.get()
             .uri {
                 it.path("getNFTs")
@@ -42,10 +43,10 @@ class AlchemyAPIAdapter(
                     .build()
             }.retrieve()
             .awaitBody<AlchemyNFTs>()
-        return nfts.ownedNfts
+        return nfts.ownedNfts.map { it.toNFT() }
     }
 
-    suspend fun getNFTs(contractAddress: String, ownerAddress: String?): List<AlchemyNFT> {
+    suspend fun getNFTs(contractAddress: String, ownerAddress: String?): List<NFT> {
         val nfts = webClient.get()
             .uri {
                 it.path("getNFTs")
@@ -55,7 +56,7 @@ class AlchemyAPIAdapter(
                     .build()
             }.retrieve()
             .awaitBody<AlchemyNFTs>()
-        return nfts.ownedNfts
+        return nfts.ownedNfts.map { it.toNFT() }
     }
 
     suspend fun getNFTOwner(contractAddress: String, tokenId: String): String {
@@ -69,3 +70,4 @@ class AlchemyAPIAdapter(
         return nft.owners.firstOrNull().orEmpty()
     }
 }
+

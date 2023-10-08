@@ -11,7 +11,6 @@ import org.springframework.web.reactive.function.client.WebClient
 @Configuration(value = "alchemyAPIConfiguration")
 class AlchemyAPIConfiguration {
 
-
     @Bean
     fun webClient(
         @Value("\${alchemy.api.url}") url: String,

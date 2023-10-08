@@ -12,7 +12,7 @@ data class AuctionsPagedResponse(
         val auctionID: Long,
         val title: String,
         val description: String,
-        val nft: NFTResponse,
+        val nft: NFTResponse?,
         val expiryTime: String,
         val highestBid: BidElement? = null,
         val status: AuctionStatus? = null,

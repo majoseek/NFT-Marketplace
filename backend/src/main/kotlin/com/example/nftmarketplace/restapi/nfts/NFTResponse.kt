@@ -2,7 +2,7 @@ package com.example.nftmarketplace.restapi.nfts
 
 data class NFTResponse(
     val contractAddress: String,
-    val tokenID: Long,
+    val tokenId: Long,
     val name: String?,
     val ownerAddress: String?,
     val url: String?,

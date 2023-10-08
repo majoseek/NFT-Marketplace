@@ -15,14 +15,13 @@ class NFTController(@Autowired private val nftAdapter: NFTAdapter) {
         @PathVariable("ownerAddress") ownerAddress: String
     ) = nftAdapter.getOwnedNFTs(ownerAddress)?.let { nfts ->
         ResponseEntity.ok(nfts)
-    } ?: ResponseEntity.badRequest().build()
+    }
 
     @GetMapping("/contract/{contractAddress}/token/{tokenId}")
     suspend fun getNFTs(
         @PathVariable("contractAddress") contractAddress: String,
-        @PathVariable("tokenId") tokenId: String
+        @PathVariable("tokenId") tokenId: Long
     ) = nftAdapter.getNFT(contractAddress, tokenId, true)?.let { nft ->
         ResponseEntity.ok(nft)
-    } ?: ResponseEntity.badRequest().build()
-
+    }
 }

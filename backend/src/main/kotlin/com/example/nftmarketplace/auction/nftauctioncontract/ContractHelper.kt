@@ -1,10 +1,9 @@
 package com.example.nftmarketplace.auction.nftauctioncontract
 
-import com.example.nftmarketplace.auction.NFTToken
+import com.example.nftmarketplace.auction.Auction
+import com.example.nftmarketplace.auction.toBigInteger
 import com.example.nftmarketplace.core.auction.AuctionEvents
-import com.example.nftmarketplace.core.data.AuctionDomainModel
 import com.example.nftmarketplace.nftauction.NFTAuction
-import com.example.nftmarketplace.toLocalDateTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -33,11 +32,9 @@ import java.math.BigInteger
 import java.util.concurrent.CompletableFuture
 import kotlin.math.min
 
-
-typealias NFTAuctionTuple = Tuple13<BigInteger, String, String, String, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, String, NFTAuction.Bid?>
-
-@Component
+// TODO this needs refactor
 @Suppress("UNCHECKED_CAST")
+@Component
 class ContractHelper(
     @Autowired private val contract: NFTAuction,
     @Autowired private val web3j: Web3j,
@@ -49,8 +46,8 @@ class ContractHelper(
     suspend fun getAllAuctions(
         page: Int,
         count: Int,
-        status: AuctionDomainModel.Status?,
-    ): Flow<AuctionDomainModel> = with(scope) {
+        status: Auction.Status?,
+    ): Flow<Auction> = with(scope) {
         require(page > 0)
         val startIndex = (page - 1) * count
         val totalCount = getTotalAuctions()
@@ -64,32 +61,33 @@ class ContractHelper(
         return flow {
             indexes.map {
                 emit(
-                    async { contract.auctions(BigInteger.valueOf(it.toLong())).sendAsync().get() }.await()
-                        .toNFTAuctionObject()
+                    async {
+                        contract.auctions(BigInteger.valueOf(it.toLong())).sendAsync().get()
+                    }.await().toAuction()
                 )
             }
         }
     }
 
-    suspend fun getAuctionById(auctionId: Long): AuctionDomainModel = with(scope) {
+    suspend fun getAuctionById(auctionId: Long): Auction = with(scope) {
         val maxId = getTotalAuctions() - 1
         require(auctionId in 0..maxId)
         val auction = contract.auctions(BigInteger.valueOf(auctionId)).sendAsync().waitAndGet()
         val bids = contract.getBidByAuctionId(BigInteger.valueOf(auctionId)).sendAsync().waitAndGet()
-        auction.toNFTAuctionObject(bids as? List<NFTAuction.Bid>)
+        auction.toAuction(bids as? List<NFTAuction.Bid>)
     }
 
-    suspend fun getAuctionsByContract(contractAddress: String): List<AuctionDomainModel> =
+    suspend fun getAuctionsByContract(contractAddress: String): List<Auction> =
         with(scope) {
             (contract.getAuctionsByNFT(contractAddress).sendAsync().waitAndGet() as? List<BigInteger>)?.map {
                 val auction = contract.auctions(it).sendAsync().waitAndGet()
-                auction.toNFTAuctionObject()
+                auction.toAuction()
             }.orEmpty()
         }
 
-    suspend fun getAuctionByOwner(ownerAddress: String): List<AuctionDomainModel> = with(scope) {
+    suspend fun getAuctionByOwner(ownerAddress: String): List<Auction> = with(scope) {
         (contract.getAuctionsByUser(ownerAddress).sendAsync().waitAndGet() as? List<BigInteger>)?.map {
-            contract.auctions(it).sendAsync().waitAndGet().toNFTAuctionObject()
+            contract.auctions(it).sendAsync().waitAndGet().toAuction()
         }.orEmpty()
     }
 
@@ -97,20 +95,21 @@ class ContractHelper(
         return contract.auctionCount().sendAsync().waitAndGet().toLong()
     }
 
-    suspend fun getAuctionByNFT(contractAddress: String, tokenId: Long): AuctionDomainModel = with(scope) {
+    suspend fun getAuctionByNFT(contractAddress: String, tokenId: Long): Auction = with(scope) {
         val auctionId = contract.nftToAuction(contractAddress, BigInteger.valueOf(tokenId)).sendAsync().waitAndGet()
         val auction = contract.auctions(auctionId).sendAsync().waitAndGet()
         val bids = contract.getBidByAuctionId(auctionId).sendAsync().waitAndGet()
-        auction.toNFTAuctionObject(bids as? List<NFTAuction.Bid>)
+        auction.toAuction(bids as? List<NFTAuction.Bid>)
     }
 
     fun getAuctionsEvents(): Flow<AuctionEvents> {
-        val filter = EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, contract.contractAddress)
+        val filter =
+            EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, contract.contractAddress)
         return web3j.ethLogFlowable(filter).asFlow().map {
             val timestamp = web3j.ethGetBlockByHash(it.blockHash, false)
-                    .flowable()
-                    .awaitSingle()
-                    .block.timestamp.toLocalDateTime()
+                .flowable()
+                .awaitSingle()
+                .block.timestamp.toLocalDateTime()
 
 
             when (val event = it.tryConvertToEvent()) {
@@ -146,85 +145,89 @@ class ContractHelper(
         }.retry()
     }
 
+    companion object {
+        private fun Log?.tryConvertToEvent(): BaseEventResponse? {
+            this?.let {
+                listOf(
+                    NFTAuction.AUCTIONCREATED_EVENT to NFTAuction::getAuctionCreatedEventFromLog,
+                    NFTAuction.AUCTIONCANCELLED_EVENT to NFTAuction::getAuctionCancelledEventFromLog,
+                    NFTAuction.BIDPLACED_EVENT to NFTAuction::getBidPlacedEventFromLog,
+                    NFTAuction.AUCTIONENDEDWITHWINNER_EVENT to NFTAuction::getAuctionEndedWithWinnerEventFromLog,
+                    NFTAuction.AUCTIONENDEDWITHOUTWINNER_EVENT to NFTAuction::getAuctionEndedWithoutWinnerEventFromLog,
+                    NFTAuction.AUCTIONEXTENDED_EVENT to NFTAuction::getAuctionExtendedEventFromLog,
+                ).forEach { (event, function) ->
+                    NFTAuction.staticExtractEventParameters(event, this@tryConvertToEvent)?.let {
+                        return function(this)
+                    }
+                }
+            }
+            return null
+        }
+    }
+
     context(CoroutineScope)
     private suspend fun <T> CompletableFuture<T>.waitAndGet(): T {
         return async { this@waitAndGet.get() }.await()
     }
 }
 
-private fun Log?.tryConvertToEvent(): BaseEventResponse? {
-    this?.let {
-        listOf(
-            NFTAuction.AUCTIONCREATED_EVENT to NFTAuction::getAuctionCreatedEventFromLog,
-            NFTAuction.AUCTIONCANCELLED_EVENT to NFTAuction::getAuctionCancelledEventFromLog,
-            NFTAuction.BIDPLACED_EVENT to NFTAuction::getBidPlacedEventFromLog,
-            NFTAuction.AUCTIONENDEDWITHWINNER_EVENT to NFTAuction::getAuctionEndedWithWinnerEventFromLog,
-            NFTAuction.AUCTIONENDEDWITHOUTWINNER_EVENT to NFTAuction::getAuctionEndedWithoutWinnerEventFromLog,
-            NFTAuction.AUCTIONEXTENDED_EVENT to NFTAuction::getAuctionExtendedEventFromLog,
-        ).forEach { (event, function) ->
-            NFTAuction.staticExtractEventParameters(event, this@tryConvertToEvent)?.let {
-                return function(this)
-            }
-        }
-    }
-    return null
-}
 
+typealias NFTAuctionTuple = Tuple13<BigInteger, String, String, String, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, String, NFTAuction.Bid?>
 
-private fun BigInteger.toStatus(expiryDate: Long): AuctionDomainModel.Status? = when (this.toInt()) {
-    0 -> AuctionDomainModel.Status.Pending
-    1 -> if (expiryDate >= Clock.System.now().epochSeconds) AuctionDomainModel.Status.Active else AuctionDomainModel.Status.Expired
-    2 -> AuctionDomainModel.Status.Cancelled
+private fun BigInteger.toStatus(expiryDate: Long): Auction.Status? = when (this.toInt()) {
+    0 -> Auction.Status.Pending
+    1 -> if (expiryDate >= Clock.System.now().epochSeconds) Auction.Status.Active else Auction.Status.Expired
+    2 -> Auction.Status.Cancelled
     else -> null
 }
 
-private fun NFTAuctionTuple.toNFTAuctionObject(bids: List<NFTAuction.Bid>? = null): AuctionDomainModel {
-    return AuctionDomainModel(
-        auctionID = component1().toLong(),
+
+private fun NFTAuctionTuple.toAuction(bids: List<NFTAuction.Bid>? = null): Auction {
+    return Auction(
+        auctionId = component1().toLong(),
         title = component2(),
         description = component3(),
-        nft = NFTToken(
-            address = component4(),
-            tokenID = component5().toLong(),
-            null,
-            null,
-            "",
-            "",
-            ""
+        nft = Auction.NFT(
+            contractAddress = component4(),
+            tokenId = component5().toLong(),
         ),
-        startingPrice = Convert.fromWei(component6().toBigDecimal(), Convert.Unit.ETHER),
+        startingPrice = Convert.fromWei(
+            component6().toBigDecimal(),
+            Convert.Unit.ETHER
+        ),
         reservePrice = Convert.fromWei(component7().toBigDecimal(), Convert.Unit.ETHER),
-        minimumIncrement = Convert.fromWei(component8().toBigDecimal(), Convert.Unit.ETHER),
+        minimumIncrement = Convert.fromWei(
+            component8().toBigDecimal(),
+            Convert.Unit.ETHER
+        ),
         expiryTime = component10().toLong().let {
-            Instant.fromEpochSeconds(it).toLocalDateTime(timeZone = TimeZone.UTC)
+            kotlinx.datetime.Instant.fromEpochSeconds(it).toLocalDateTime(timeZone = kotlinx.datetime.TimeZone.UTC)
         },
-        status = component11().toStatus(component10().toLong()) ?: AuctionDomainModel.Status.Cancelled,
+        status = component11().toStatus(component10().toLong())
+            ?: Auction.Status.Cancelled,
         highestBid = component13()?.let {
-            if (it.amount != BigInteger.ZERO) {
-                AuctionDomainModel.Bid(
+            if (it.amount != java.math.BigInteger.ZERO) {
+                Auction.Bid(
                     bidder = it.bidder,
-                    amount = Convert.fromWei(it.amount.toBigDecimal(), Convert.Unit.ETHER),
+                    amount = Convert.fromWei(
+                        it.amount.toBigDecimal(),
+                        org.web3j.utils.Convert.Unit.ETHER
+                    ),
                     timestamp = it.timestamp.toLocalDateTime(),
                 )
             } else null
         },
         bids = bids?.map { bid ->
-            AuctionDomainModel.Bid(
+            Auction.Bid(
                 bidder = bid.bidder,
-                amount = Convert.fromWei(bid.amount.toBigDecimal(), Convert.Unit.ETHER),
+                amount = Convert.fromWei(bid.amount.toBigDecimal(), org.web3j.utils.Convert.Unit.ETHER),
                 timestamp = bid.timestamp.toLocalDateTime(),
             )
         }?.sortedByDescending { it.timestamp }.orEmpty()
     )
 }
 
+fun BigInteger.toLocalDateTime() = Instant.fromEpochSeconds(this.toLong())
+    .toLocalDateTime(timeZone = TimeZone.UTC)
 
-fun AuctionDomainModel.Status.toBigInteger() = BigInteger.valueOf(
-    when (this) {
-        AuctionDomainModel.Status.Pending -> 0
-        AuctionDomainModel.Status.Expired,
-        AuctionDomainModel.Status.Active -> 1
-        AuctionDomainModel.Status.Won,
-        AuctionDomainModel.Status.Cancelled -> 2
-    }
-)
+

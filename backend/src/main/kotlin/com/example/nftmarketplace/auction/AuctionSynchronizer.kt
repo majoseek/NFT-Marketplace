@@ -3,9 +3,8 @@ package com.example.nftmarketplace.auction
 import com.example.nftmarketplace.auction.nftauctioncontract.ContractHelper
 import com.example.nftmarketplace.auction.storage.db.AuctionEntity
 import com.example.nftmarketplace.auction.storage.db.AuctionRepository
-import com.example.nftmarketplace.core.NFTPort
 import com.example.nftmarketplace.core.auction.AuctionEvents
-import com.example.nftmarketplace.core.data.AuctionDomainModel
+import com.example.nftmarketplace.nft.CreateNFTRequestHandler
 import com.example.nftmarketplace.nft.storage.db.NFTId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,21 +26,25 @@ import org.web3j.utils.Convert
 class AuctionSynchronizer(
     @Autowired private val contractHelper: ContractHelper,
     @Autowired private val auctionRepository: AuctionRepository,
-    @Autowired private val nftPort: NFTPort
+    @Autowired private val createNFTRequestHandler: CreateNFTRequestHandler
 ) {
     private val coroutineScope = CoroutineScope(Dispatchers.IO) + SupervisorJob()
 
     @Scheduled(fixedRate = 3 * 60 * 60 * 1000)
     suspend fun synchronizeWithContract() {
         contractHelper.getAllAuctions(1, Int.MAX_VALUE, null).onEach {
-            if (!auctionRepository.existsById(it.auctionID).awaitSingle()) {
+            if (!auctionRepository.existsById(it.auctionId).awaitSingle()) {
                 onAuctionNotFoundInDatabase(it)
             } else {
-                nftPort.getOrCreateNFT(
-                    contractAddress = it.nft.address,
-                    tokenId = it.nft.tokenID.toString()
-                )
-                println("Auction with id ${it.auctionID} already exists in database")
+                runCatching {
+                    createNFTRequestHandler.handle(
+                        it.nft.contractAddress,
+                        it.nft.tokenId
+                    )
+                }.onFailure {
+                    println(it)
+                }
+                println("Auction with id ${it.auctionId} already exists in database")
             }
         }.launchIn(coroutineScope)
     }
@@ -103,11 +106,15 @@ class AuctionSynchronizer(
     private suspend inline fun getAuctionByIdFromDatabase(auctionId: Long) =
         auctionRepository.findById(auctionId).awaitSingleOrNull()
 
-    private suspend  fun onAuctionNotFoundInDatabase(auction: AuctionDomainModel) {
-        nftPort.getOrCreateNFT(
-            contractAddress = auction.nft.address,
-            tokenId = auction.nft.tokenID.toString()
-        )
+    private suspend  fun onAuctionNotFoundInDatabase(auction: Auction) {
+        runCatching {
+            createNFTRequestHandler.handle(
+                auction.nft.contractAddress,
+                auction.nft.tokenId
+            )
+        }.onFailure {
+            println(it)
+        }
         println("Auction not found in database")
         auctionRepository.save(auction.toAuctionEntity()).awaitSingle()
     }
@@ -122,13 +129,13 @@ class AuctionSynchronizer(
 }
 
 
-fun AuctionDomainModel.toAuctionEntity() = AuctionEntity(
-    id = auctionID,
+fun Auction.toAuctionEntity() = AuctionEntity(
+    id = auctionId,
     title = title,
     description = description,
     nft = NFTId(
-        nft.address,
-        nft.tokenID
+        nft.contractAddress,
+        nft.tokenId
     ),
     currentBid = highestBid?.let { bid ->
         AuctionEntity.CurrentBid(
@@ -139,11 +146,11 @@ fun AuctionDomainModel.toAuctionEntity() = AuctionEntity(
     },
     expiryTime = expiryTime,
     status = when (status) {
-        AuctionDomainModel.Status.Pending -> AuctionEntity.Status.NotStared
-        AuctionDomainModel.Status.Active -> AuctionEntity.Status.Active
-        AuctionDomainModel.Status.Cancelled -> AuctionEntity.Status.Cancelled
-        AuctionDomainModel.Status.Expired -> AuctionEntity.Status.Expired
-        AuctionDomainModel.Status.Won -> AuctionEntity.Status.Won
+        Auction.Status.Pending -> AuctionEntity.Status.NotStared
+        Auction.Status.Active -> AuctionEntity.Status.Active
+        Auction.Status.Cancelled -> AuctionEntity.Status.Cancelled
+        Auction.Status.Expired -> AuctionEntity.Status.Expired
+        Auction.Status.Won -> AuctionEntity.Status.Won
     },
     startingPrice = startingPrice,
     minimalIncrement = minimumIncrement,
