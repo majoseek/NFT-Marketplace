@@ -2,6 +2,7 @@ import styled from 'styled-components';
 
 export const AuctionsContainer = styled.section`
     display: flex;
+    background-color: ${({ theme }) => theme.backgroundColors.primary};
     flex-direction: column;
     justify-content: center;
     align-items: center;

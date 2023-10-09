@@ -8,6 +8,7 @@ export const theme = {
         primary: '#080A0C',
         secondary: '#111318',
         tertiary: '#191D24',
+        light: '#242932',
     },
     colors: {
         primary: '#3D6EFF',

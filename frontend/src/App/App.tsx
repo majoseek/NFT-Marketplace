@@ -9,6 +9,7 @@ import LandingPage from '../pages/LandingPage';
 import detectEthereumProvider from '@metamask/detect-provider';
 import LoadingPage from '@/pages/LoadingPage';
 import ErrorPage from '@/pages/ErrorPage';
+import TopMenu from '@/components/TopMenu';
 
 const App = () => {
     const hasMetaMaskProvider = useAppSelector(
@@ -57,6 +58,7 @@ const App = () => {
               wallets &&
               wallets.length > 0 ? (
                 <>
+                    <TopMenu />
                     <Auctions />
                     {/* <Auctions />
                     <Divider />
