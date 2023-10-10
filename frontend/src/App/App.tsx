@@ -10,6 +10,7 @@ import detectEthereumProvider from '@metamask/detect-provider';
 import LoadingPage from '@/pages/LoadingPage';
 import ErrorPage from '@/pages/ErrorPage';
 import TopMenu from '@/components/TopMenu';
+import MainContent from '@/pages/MainContent';
 
 const App = () => {
     const hasMetaMaskProvider = useAppSelector(
@@ -59,7 +60,9 @@ const App = () => {
               wallets.length > 0 ? (
                 <>
                     <TopMenu />
-                    <Auctions />
+                    <MainContent>
+                        <Auctions />
+                    </MainContent>
                     {/* <Auctions />
                     <Divider />
                     <Nfts /> */}

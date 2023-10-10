@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom';
 
 export const Wrapper = styled.section`
     width: 100%;
+    height: 90px;
     background-color: ${({ theme }) => theme.backgroundColors.tertiary};
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 32px 16px;
+    padding: 0 16px;
     border-bottom: 2px solid ${({ theme }) => theme.backgroundColors.light};
 `;
 
