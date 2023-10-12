@@ -69,12 +69,12 @@ class ContractHelper(
         }
     }
 
-    suspend fun getAuctionById(auctionId: Long): Auction = with(scope) {
+    suspend fun getAuctionById(auctionId: Long): Auction? = with(scope) {
         val maxId = getTotalAuctions() - 1
         require(auctionId in 0..maxId)
-        val auction = contract.auctions(BigInteger.valueOf(auctionId)).sendAsync().waitAndGet()
+        val auction: NFTAuctionTuple? = contract.auctions(BigInteger.valueOf(auctionId)).sendAsync().waitAndGet()
         val bids = contract.getBidByAuctionId(BigInteger.valueOf(auctionId)).sendAsync().waitAndGet()
-        auction.toAuction(bids as? List<NFTAuction.Bid>)
+        auction?.toAuction(bids as? List<NFTAuction.Bid>)
     }
 
     suspend fun getAuctionsByContract(contractAddress: String): List<Auction> =
@@ -181,7 +181,6 @@ private fun BigInteger.toStatus(expiryDate: Long): Auction.Status? = when (this.
     else -> null
 }
 
-
 private fun NFTAuctionTuple.toAuction(bids: List<NFTAuction.Bid>? = null): Auction {
     return Auction(
         auctionId = component1().toLong(),
@@ -205,25 +204,13 @@ private fun NFTAuctionTuple.toAuction(bids: List<NFTAuction.Bid>? = null): Aucti
         },
         status = component11().toStatus(component10().toLong())
             ?: Auction.Status.Cancelled,
-        highestBid = component13()?.let {
-            if (it.amount != java.math.BigInteger.ZERO) {
-                Auction.Bid(
-                    bidder = it.bidder,
-                    amount = Convert.fromWei(
-                        it.amount.toBigDecimal(),
-                        org.web3j.utils.Convert.Unit.ETHER
-                    ),
-                    timestamp = it.timestamp.toLocalDateTime(),
-                )
-            } else null
-        },
         bids = bids?.map { bid ->
             Auction.Bid(
                 bidder = bid.bidder,
                 amount = Convert.fromWei(bid.amount.toBigDecimal(), org.web3j.utils.Convert.Unit.ETHER),
                 timestamp = bid.timestamp.toLocalDateTime(),
             )
-        }?.sortedByDescending { it.timestamp }.orEmpty()
+        }?.sortedByDescending { it.timestamp }.orEmpty().toMutableList()
     )
 }
 

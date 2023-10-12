@@ -4,7 +4,7 @@ import com.example.nftmarketplace.core.data.DomainEvent
 
 data class BidPlacedEvent(
     val auctionId: Long,
-    val bidder: String,
+    val bidderAddress: String,
     val amount: Long,
     val timestamp: Long,
 ) : DomainEvent(aggregateId = auctionId)

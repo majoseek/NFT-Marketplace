@@ -5,8 +5,8 @@ import com.example.nftmarketplace.core.EventPublisher
 import com.example.nftmarketplace.core.data.DomainEvent
 import com.example.nftmarketplace.events.auctions.AuctionCreatedEvent
 import com.example.nftmarketplace.events.auctions.AuctionExtendedEvent
+import com.example.nftmarketplace.events.auctions.AuctionWonEvent
 import com.example.nftmarketplace.events.auctions.BidPlacedEvent
-import com.example.nftmarketplace.events.auctions.NFTTransfered
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -44,9 +44,9 @@ private fun DomainEvent.getQueueProperties() = when (this) {
         RabbitQueueConfiguration.EXCHANGE,
         RabbitQueueConfiguration.AUCTION_EXTENDED_ROUTING_KEY,
     )
-    is NFTTransfered -> QueueProperties(
+    is AuctionWonEvent -> QueueProperties(
         RabbitQueueConfiguration.EXCHANGE,
-        RabbitQueueConfiguration.NFT_TRANSFERRED_ROUTING_KEY,
+        RabbitQueueConfiguration.AUCTION_WON_ROUTING_KEY,
     )
     else -> throw IllegalArgumentException("No queue properties found for event $this")
 }

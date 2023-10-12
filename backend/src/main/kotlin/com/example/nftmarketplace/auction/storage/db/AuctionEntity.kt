@@ -6,7 +6,6 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.io.Serializable
 import java.math.BigDecimal
-import java.math.BigInteger
 
 @Document(collection = "auctions")
 data class AuctionEntity(
@@ -14,7 +13,7 @@ data class AuctionEntity(
     val title: String,
     val description: String,
     val nft: NFTId,
-    val currentBid: CurrentBid? = null,
+    val bids: List<Bid> = emptyList(),
     val expiryTime: LocalDateTime,
     val status: Status,
     val startingPrice: BigDecimal? = null,
@@ -24,7 +23,7 @@ data class AuctionEntity(
         NotStared, Active, Cancelled, Expired, Won
     }
 
-    data class CurrentBid(
+    data class Bid(
         val bidder: String,
         val amount: BigDecimal,
         val timestamp: LocalDateTime,

@@ -2,6 +2,7 @@ package com.example.nftmarketplace.auction
 
 import com.example.nftmarketplace.core.AggregateRoot
 import com.example.nftmarketplace.events.auctions.AuctionCreatedEvent
+import com.example.nftmarketplace.events.auctions.AuctionWonEvent
 import kotlinx.datetime.LocalDateTime
 import java.math.BigDecimal
 
@@ -13,10 +14,10 @@ data class Auction(
     val startingPrice: BigDecimal? = null,
     val reservePrice: BigDecimal? = null,
     val minimumIncrement: BigDecimal? = null,
-    val expiryTime: LocalDateTime,
-    val bids: List<Bid> = emptyList(),
-    val highestBid: Bid? = null,
-    val status: Status,
+    var expiryTime: LocalDateTime,
+    val bids: MutableList<Bid> = mutableListOf(),
+//    val highestBid: Bid? = null,
+    var status: Status,
 ) : AggregateRoot() {
     data class Bid(
         val bidder: String,
@@ -32,32 +33,69 @@ data class Auction(
         Won,
     }
 
-    data class NFT(val contractAddress: String, val tokenId: Long)
+    data class NFT(
+        val contractAddress: String,
+        val tokenId: Long
+    )
+
+    fun placeBid(
+        bidder: String,
+        amount: BigDecimal,
+        timestamp: LocalDateTime
+    ) {
+        bids.add(
+            Bid(
+                bidder = bidder,
+                amount = amount,
+                timestamp = timestamp
+            )
+        )
+        record(events)
+    }
+
+    fun extend(newTime: LocalDateTime) {
+        expiryTime = newTime
+    }
+
+    fun completeWithWinner(winner: String) {
+        status = Status.Won
+        record(
+            AuctionWonEvent(
+                auctionId = auctionId,
+                winnerAddress = winner,
+                contractAddress = nft.contractAddress,
+                tokenId = nft.tokenId
+            )
+        )
+    }
+
+    fun completeAuctionWithoutWinner() {
+        status = Status.Expired
+    }
 
     companion object {
-        fun new(
+        fun create(
             auctionId: Long,
             title: String,
             description: String,
-            nft: NFT,
+            nftContractAddress: String,
+            nftTokenId: Long,
             startingPrice: BigDecimal?,
             reservePrice: BigDecimal?,
             minimumIncrement: BigDecimal?,
             expiryTime: LocalDateTime,
             bids: List<Bid> = emptyList(),
-            highestBid: Bid? = null,
             status: Status = Status.Pending,
         ) = Auction(
             auctionId = auctionId,
             title = title,
             description = description,
-            nft = nft,
+            nft = NFT(nftContractAddress, nftTokenId),
             startingPrice = startingPrice,
             reservePrice = reservePrice,
             minimumIncrement = minimumIncrement,
             expiryTime = expiryTime,
-            bids = bids,
-            highestBid = highestBid,
+            bids = bids.toMutableList(),
             status = status,
         ).apply {
             record(

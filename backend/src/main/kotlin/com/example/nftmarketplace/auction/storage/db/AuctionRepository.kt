@@ -6,6 +6,7 @@ import com.example.nftmarketplace.core.EventPublisher
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
+import org.springframework.stereotype.Component
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -21,7 +22,7 @@ interface DbAuctionRepository {
     suspend fun save(auction: Auction)
 }
 
-
+@Component
 class MongoAuctionRepository(
     @Autowired private val auctionRepository: AuctionRepository,
     @Autowired private val createAuctionEventPublisher: EventPublisher
@@ -37,8 +38,10 @@ class MongoAuctionRepository(
     override suspend fun get(id: Long) = auctionRepository.findById(id).awaitSingleOrNull()?.toAuction()
 
     override suspend fun save(auction: Auction) {
-        auctionRepository.save(auction.toAuctionEntity()).awaitSingleOrNull()
-        auction.events.forEach { createAuctionEventPublisher.publish(it) }
+        auctionRepository.save(auction.toAuctionEntity()).awaitSingleOrNull()?.let {
+            auction.events.forEach(createAuctionEventPublisher::publish)
+        }
+
     }
 }
 
@@ -51,7 +54,6 @@ fun AuctionEntity.toAuction() = Auction(
     reservePrice = null,
     minimumIncrement = minimalIncrement,
     expiryTime = expiryTime,
-    bids = emptyList(),
-    highestBid = null,
+    bids = mutableListOf(),
     status = Auction.Status.Pending,
 )

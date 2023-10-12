@@ -1,7 +1,5 @@
 package com.example.nftmarketplace.nft.storage.db
 
-import com.example.nftmarketplace.nft.alchemy.data.AlchemyNFT
-import com.example.nftmarketplace.nft.data.FileExtension
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.CompoundIndex
 import org.springframework.data.mongodb.core.mapping.Document
@@ -31,15 +29,3 @@ data class NFTId(
     val contractAddress: String,
     val tokenId: Long,
 ) : Serializable
-
-
-fun AlchemyNFT.toNFTEntity(ownerAddress: String) = this.media.firstOrNull()?.raw.let { url ->
-    NFTEntity(
-        name = title,
-        id = NFTId(contract.address, id.tokenId.toLong()),
-        description = description,
-        ownerAddress = ownerAddress,
-        type = FileExtension.getNFTEntityTypeFromExtension(url?.substringAfterLast('.')),
-        url = url.orEmpty(),
-    )
-}

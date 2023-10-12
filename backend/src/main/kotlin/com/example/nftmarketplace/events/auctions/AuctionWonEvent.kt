@@ -2,10 +2,9 @@ package com.example.nftmarketplace.events.auctions
 
 import com.example.nftmarketplace.core.data.DomainEvent
 
-class NFTTransfered(
-    val from: String,
-    val to: String,
+class AuctionWonEvent(
+    val auctionId: Long,
+    val winnerAddress: String,
     val contractAddress: String,
     val tokenId: Long,
-    val auctionId: Long,
 ) : DomainEvent(aggregateId = auctionId)

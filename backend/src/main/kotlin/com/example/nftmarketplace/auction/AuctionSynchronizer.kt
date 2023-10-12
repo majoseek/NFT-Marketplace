@@ -4,7 +4,7 @@ import com.example.nftmarketplace.auction.nftauctioncontract.ContractHelper
 import com.example.nftmarketplace.auction.storage.db.AuctionEntity
 import com.example.nftmarketplace.auction.storage.db.AuctionRepository
 import com.example.nftmarketplace.core.auction.AuctionEvents
-import com.example.nftmarketplace.nft.CreateNFTRequestHandler
+import com.example.nftmarketplace.nft.requests.CreateNFTRequestHandler
 import com.example.nftmarketplace.nft.storage.db.NFTId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -62,7 +62,7 @@ class AuctionSynchronizer(
                     getAuctionByIdFromDatabase(event.id)?.let {
                         auctionRepository.save(
                             it.copy(
-                                currentBid = AuctionEntity.CurrentBid(
+                                currentBid = AuctionEntity.Bid(
                                     bidder = event.bidderAddress,
                                     amount = Convert.fromWei(event.amount.toBigDecimal(), Convert.Unit.ETHER),
                                     timestamp = event.timestamp
@@ -138,7 +138,7 @@ fun Auction.toAuctionEntity() = AuctionEntity(
         nft.tokenId
     ),
     currentBid = highestBid?.let { bid ->
-        AuctionEntity.CurrentBid(
+        AuctionEntity.Bid(
             bidder = bid.bidder,
             amount = bid.amount,
             timestamp = bid.timestamp

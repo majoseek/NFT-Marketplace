@@ -23,8 +23,8 @@ class RabbitQueueConfiguration(
     }
 
     @PostConstruct
-    fun init()  {
-        with (amqpAdmin) {
+    fun init() {
+        with(amqpAdmin) {
             val auctionCreatedQueue = Queue(AUCTION_CREATED_QUEUE, false, false, false, emptyMap())
             val mainExchange = DirectExchange(EXCHANGE)
             declareQueue(auctionCreatedQueue)
@@ -37,7 +37,7 @@ class RabbitQueueConfiguration(
     companion object {
         const val AUCTION_BID_PLACED_ROUTING_KEY = "auctions.bid-placed"
         const val AUCTION_EXTENDED_ROUTING_KEY = "auctions.extended"
-        const val NFT_TRANSFERRED_ROUTING_KEY = "nft.transferred"
+        const val AUCTION_WON_ROUTING_KEY = "nft.transferred"
         const val EXCHANGE = "nft-auctions"
         const val AUCTION_CREATED_QUEUE = "auction-created"
         const val AUCTION_CREATED_ROUTING_KEY = "auctions.new"
