@@ -3,21 +3,21 @@ package com.example.nftmarketplace.core
 import com.example.nftmarketplace.core.data.DomainEvent
 
 abstract class AggregateRoot {
-    val events = mutableListOf<DomainEvent>()
+    private val domainEvents = mutableListOf<DomainEvent>()
 
     fun record(event: DomainEvent) {
-        events.add(event)
+        domainEvents.add(event)
     }
 
     fun record(events: List<DomainEvent>) {
-        this.events.addAll(events)
+        this.domainEvents.addAll(events)
     }
 
     fun clearEvents() {
-        events.clear()
+        domainEvents.clear()
     }
 
     fun getEvents(): List<DomainEvent> {
-        return events.toList()
+        return domainEvents.toList()
     }
 }

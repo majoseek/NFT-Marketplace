@@ -18,6 +18,4 @@ services:
     ports:
       - '5672:5672' # AMQP protocol port
       - '15672:15672' # HTTP management UI
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
-      - rabbitmq-log:/var/log/rabbitmq
+

@@ -52,6 +52,7 @@ extra["testcontainersVersion"] = "1.17.6"
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-amqp")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 //    implementation("org.springframework.boot:spring-boot-starter-mail")
 //    implementation("org.springframework.boot:spring-boot-starter-quartz")
 //    implementation("org.springframework.boot:spring-boot-starter-security")

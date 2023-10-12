@@ -1,7 +1,6 @@
 package com.example.nftmarketplace.auction
 
 import com.example.nftmarketplace.getResponseEntity
-import com.example.nftmarketplace.nft.NFTAdapter
 import com.example.nftmarketplace.restapi.auctions.AuctionResponse
 import com.example.nftmarketplace.restapi.auctions.AuctionStatus
 import com.example.nftmarketplace.restapi.auctions.AuctionsPagedResponse
@@ -22,10 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/auction")
-class AuctionController(
-    @Autowired private val auctionService: AuctionAdapter,
-    @Autowired private val nftAdapter: NFTAdapter,
-) {
+class AuctionController(@Autowired private val auctionService: AuctionAdapter) {
 
     @GetMapping("")
     suspend fun getAllAuctions(
@@ -65,7 +61,7 @@ class AuctionController(
 
     @GetMapping("/{auctionId}/bids", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
     suspend fun getBids(@PathVariable("auctionId") auctionId: Long): Flow<Any> {
-        val initialFlow = flowOf(auctionService.getAuctionById(auctionId).highestBids?.map {
+        val initialFlow = flowOf(auctionService.getAuctionById(auctionId)?.bids?.map {
             BidElement(
                 bidder = it.bidder,
                 amount = it.amount,

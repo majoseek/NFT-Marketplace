@@ -32,7 +32,7 @@ fun Auction.toAuctionResponse(nft: NFTResponse? = null) = AuctionResponse(
     nft = nft,
     expiryTime = expiryTime.toString(),
     status = status.toAuctionResponseStatus(expiryTime),
-    highestBids = bids.map { bid ->
+    bids = bids.map { bid ->
         BidElement(
             bidder = bid.bidder,
             amount = bid.amount,

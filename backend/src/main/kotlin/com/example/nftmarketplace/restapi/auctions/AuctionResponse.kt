@@ -11,6 +11,6 @@ data class AuctionResponse(
     val startingPrice: BigDecimal? = null,
     val minimumIncrement: BigDecimal? = null,
     val expiryTime: String,
-    val highestBids: List<BidElement>? = null,
+    val bids: List<BidElement>? = null,
     val status: AuctionStatus
 )

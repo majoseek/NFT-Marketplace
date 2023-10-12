@@ -4,5 +4,5 @@ import com.example.nftmarketplace.core.data.DomainEvent
 
 data class AuctionExtendedEvent(
     val auctionId: Long,
-    val newExpiryTime: Long,
+    val newExpiryTime: java.time.LocalDateTime,
 ) : DomainEvent(aggregateId = auctionId)

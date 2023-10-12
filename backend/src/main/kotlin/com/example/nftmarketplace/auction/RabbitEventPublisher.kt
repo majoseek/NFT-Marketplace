@@ -8,12 +8,11 @@ import com.example.nftmarketplace.events.auctions.AuctionExtendedEvent
 import com.example.nftmarketplace.events.auctions.AuctionWonEvent
 import com.example.nftmarketplace.events.auctions.BidPlacedEvent
 import org.springframework.amqp.rabbit.core.RabbitTemplate
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
 class RabbitEventPublisher(
-    @Autowired private val rabbitTemplate: RabbitTemplate,
+    private val rabbitTemplate: RabbitTemplate,
 ) : EventPublisher {
 
     override fun publish(event: DomainEvent) {

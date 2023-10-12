@@ -1,8 +1,8 @@
 package com.example.nftmarketplace.auction
 
+import com.example.nftmarketplace.auction.nftauctioncontract.AuctionEvents
 import com.example.nftmarketplace.auction.nftauctioncontract.ContractHelper
-import com.example.nftmarketplace.auction.storage.db.AuctionRepository
-import com.example.nftmarketplace.core.auction.AuctionEvents
+import com.example.nftmarketplace.auction.storage.db.DbAuctionRepository
 import com.example.nftmarketplace.nft.NFTQuery
 import com.example.nftmarketplace.restapi.auctions.AuctionResponse
 import com.example.nftmarketplace.restapi.auctions.AuctionStatus
@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.reactive.asFlow
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.web3j.utils.Convert
@@ -20,30 +19,35 @@ import org.web3j.utils.Convert
 @Component
 class AuctionAdapter(
     @Autowired private val auctionContract: ContractHelper,
-    @Autowired private val auctionRepository: AuctionRepository,
+    @Autowired private val auctionRepository: DbAuctionRepository,
     @Autowired private val nftQuery: NFTQuery,
 ) : AuctionQuery {
+
     override suspend fun getAllAuctions(
         page: Int,
         count: Int,
         status: AuctionStatus?,
     ): Flow<AuctionsPagedResponse.AuctionElement> {
         val startIndex = ((page - 1) * count).toLong()
-        val totalSize = auctionContract.getTotalAuctions()
-        return auctionRepository.findAllById(startIndex until (startIndex + count)).asFlow().map {
-            val nft = nftQuery.getNFT(it.nft.contractAddress, it.nft.tokenId)
-            it.toAuctionItem(nft)
+        return auctionRepository.getAll((startIndex until (startIndex + count)).toList()).map { auction ->
+            val nft = nftQuery.getNFT(auction.nft.contractAddress, auction.nft.tokenId)
+            AuctionsPagedResponse.AuctionElement(
+                auctionID = auction.auctionId,
+                title = auction.title,
+                description = auction.description,
+                nft = nft,
+                expiryTime = auction.expiryTime.toString(),
+                highestBid = auction.bids.lastOrNull()
+                    ?.let { BidElement(it.bidder, it.amount, it.timestamp.toString()) },
+                status = AuctionStatus.valueOf(auction.status.name),
+            )
         }
     }
 
-    override suspend fun getAuctionById(auctionId: Long): AuctionResponse {
-        return auctionContract.getAuctionById(auctionId).toAuctionResponse(
-            nftQuery.getNFT(
-                contractAddress = auctionContract.getAuctionById(auctionId).nft.contractAddress,
-                tokenId = auctionContract.getAuctionById(auctionId).nft.tokenId
-            )
-        )
-    }
+    override suspend fun getAuctionById(auctionId: Long): AuctionResponse? =
+        auctionContract.getAuctionById(auctionId)?.let {
+            return it.toAuctionResponse(nftQuery.getNFT(it.nft.contractAddress, it.nft.tokenId))
+        }
 
     override suspend fun getAuctionByOwner(ownerAddress: String): List<AuctionResponse> {
         return auctionContract.getAuctionByOwner(ownerAddress).map {

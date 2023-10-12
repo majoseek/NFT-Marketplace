@@ -1,9 +1,13 @@
 package com.example.nftmarketplace.auction
 
 import com.example.nftmarketplace.core.AggregateRoot
+import com.example.nftmarketplace.events.auctions.AuctionCancelledEvent
 import com.example.nftmarketplace.events.auctions.AuctionCreatedEvent
+import com.example.nftmarketplace.events.auctions.AuctionExtendedEvent
 import com.example.nftmarketplace.events.auctions.AuctionWonEvent
+import com.example.nftmarketplace.events.auctions.BidPlacedEvent
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.toJavaLocalDateTime
 import java.math.BigDecimal
 
 data class Auction(
@@ -16,7 +20,6 @@ data class Auction(
     val minimumIncrement: BigDecimal? = null,
     var expiryTime: LocalDateTime,
     val bids: MutableList<Bid> = mutableListOf(),
-//    val highestBid: Bid? = null,
     var status: Status,
 ) : AggregateRoot() {
     data class Bid(
@@ -50,11 +53,17 @@ data class Auction(
                 timestamp = timestamp
             )
         )
-        record(events)
+        record(BidPlacedEvent(auctionId, bidder, amount, timestamp.toJavaLocalDateTime()))
     }
 
     fun extend(newTime: LocalDateTime) {
         expiryTime = newTime
+        record(
+            AuctionExtendedEvent(
+                auctionId = auctionId,
+                newExpiryTime = newTime.toJavaLocalDateTime()
+            )
+        )
     }
 
     fun completeWithWinner(winner: String) {
@@ -71,6 +80,11 @@ data class Auction(
 
     fun completeAuctionWithoutWinner() {
         status = Status.Expired
+    }
+
+    fun cancel() {
+        status = Status.Cancelled
+        record(AuctionCancelledEvent(auctionId))
     }
 
     companion object {

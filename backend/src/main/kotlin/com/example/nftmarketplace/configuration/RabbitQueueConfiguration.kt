@@ -1,16 +1,19 @@
 package com.example.nftmarketplace.configuration
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.annotation.PostConstruct
 import org.springframework.amqp.core.AmqpAdmin
 import org.springframework.amqp.core.BindingBuilder
 import org.springframework.amqp.core.DirectExchange
 import org.springframework.amqp.core.Queue
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory
 import org.springframework.amqp.rabbit.connection.ConnectionFactory
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
 
 @Configuration
 class RabbitQueueConfiguration(
@@ -18,8 +21,23 @@ class RabbitQueueConfiguration(
 ) {
 
     @Bean
-    fun rabbitTemplate(connectionFactory: ConnectionFactory) = RabbitTemplate(connectionFactory).apply {
-        messageConverter = Jackson2JsonMessageConverter()
+    fun rabbitListenerContainerFactory(
+        connectionFactory: ConnectionFactory,
+        rabbitTemplate: RabbitTemplate
+    ): SimpleRabbitListenerContainerFactory {
+        val factory = SimpleRabbitListenerContainerFactory()
+        factory.setConnectionFactory(connectionFactory)
+        factory.setMessageConverter(rabbitTemplate.messageConverter)
+        return factory
+    }
+
+    @Bean
+    @Primary
+    fun rabbitTemplate(
+        connectionFactory: ConnectionFactory,
+        objectMapper: ObjectMapper
+    ) = RabbitTemplate(connectionFactory).apply {
+        messageConverter = Jackson2JsonMessageConverter(objectMapper)
     }
 
     @PostConstruct

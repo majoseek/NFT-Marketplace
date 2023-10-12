@@ -1,4 +1,4 @@
-package com.example.nftmarketplace.core.auction
+package com.example.nftmarketplace.auction.nftauctioncontract
 
 import kotlinx.datetime.LocalDateTime
 import java.math.BigInteger

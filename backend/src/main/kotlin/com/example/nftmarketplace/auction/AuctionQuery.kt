@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 interface AuctionQuery {
     suspend fun getAllAuctions(page: Int, count: Int, status: AuctionStatus? = null): Flow<AuctionsPagedResponse.AuctionElement>
 
-    suspend fun getAuctionById(auctionId: Long): AuctionResponse
+    suspend fun getAuctionById(auctionId: Long): AuctionResponse?
 
     suspend fun getAuctionByOwner(ownerAddress: String): List<AuctionResponse>
 

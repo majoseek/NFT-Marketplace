@@ -2,7 +2,6 @@ package com.example.nftmarketplace.auction.nftauctioncontract
 
 import com.example.nftmarketplace.auction.Auction
 import com.example.nftmarketplace.auction.toBigInteger
-import com.example.nftmarketplace.core.auction.AuctionEvents
 import com.example.nftmarketplace.nftauction.NFTAuction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -144,6 +143,9 @@ class ContractHelper(
             }
         }.retry()
     }
+
+    // TODO Think about this
+    suspend fun getAuctionBids(auctionId: Long) = getAuctionById(auctionId)?.bids
 
     companion object {
         private fun Log?.tryConvertToEvent(): BaseEventResponse? {

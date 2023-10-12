@@ -16,14 +16,14 @@ interface DbNFTRepository {
 }
 
 @Component
-class MongoAuctionRepository(
+class MongoNFTRepository(
     @Autowired private val nftRepository: NFTRepository,
     @Autowired private val eventPublisher: EventPublisher
 ) : DbNFTRepository {
     override suspend fun create(nft: NFT) {
         val nftEntity = nft.toNFTEntity()
         nftRepository.save(nftEntity).awaitSingleOrNull()?.let {
-            nft.events.forEach { eventPublisher.publish(it) }
+            nft.getEvents().forEach { eventPublisher.publish(it) }
         } ?: throw RuntimeException()
     }
 
@@ -31,7 +31,7 @@ class MongoAuctionRepository(
 
     override suspend fun save(nft: NFT) {
         nftRepository.save(nft.toNFTEntity()).awaitSingleOrNull()?.let {
-            nft.events.forEach(eventPublisher::publish)
+            nft.getEvents().forEach(eventPublisher::publish)
         }
     }
 }

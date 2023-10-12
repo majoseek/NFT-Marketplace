@@ -3,11 +3,13 @@ package com.example.nftmarketplace.auction.requests
 import com.example.nftmarketplace.auction.nftauctioncontract.ContractHelper
 import com.example.nftmarketplace.auction.requests.commands.PlaceBidCommand
 import com.example.nftmarketplace.auction.storage.db.DbAuctionRepository
+import org.springframework.stereotype.Component
 
 interface PlaceBidRequestHandler {
     suspend fun handle(placeBidCommand: PlaceBidCommand)
 }
 
+@Component
 class PlaceBidRequestHandlerImpl(
     val dbAuctionRepository: DbAuctionRepository,
     val contractHelper: ContractHelper,
