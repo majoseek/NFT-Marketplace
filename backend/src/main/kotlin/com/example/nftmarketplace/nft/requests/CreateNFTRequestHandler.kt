@@ -31,6 +31,3 @@ class CrateNFTRequestHandlerImpl(
         nftRepository.saveAll(nfts)
     }
 }
-
-class NFTAlreadyExistsException(contractAddress: String, tokenId: Long) :
-    RuntimeException("NFT with contract address $contractAddress and tokenId $tokenId already exists")

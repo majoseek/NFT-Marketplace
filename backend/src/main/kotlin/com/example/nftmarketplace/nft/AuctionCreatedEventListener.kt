@@ -3,7 +3,6 @@ package com.example.nftmarketplace.nft
 import com.example.nftmarketplace.configuration.RabbitQueueConfiguration
 import com.example.nftmarketplace.events.auctions.AuctionCreatedEvent
 import com.example.nftmarketplace.getLogger
-import com.example.nftmarketplace.nft.requests.CreateNFTRequestHandler
 import com.example.nftmarketplace.nft.requests.command.CreateNFTCommand
 import kotlinx.coroutines.runBlocking
 import org.springframework.amqp.rabbit.annotation.RabbitHandler
@@ -13,10 +12,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class AuctionCreatedEventListener(
-    @Autowired private val createNFTRequestHandler: CreateNFTRequestHandler,
     @Autowired private val auctionBuffer: AuctionCreatedEventBuffer,
 ) {
-
     init {
         getLogger().info(this::class.simpleName, "init")
     }
