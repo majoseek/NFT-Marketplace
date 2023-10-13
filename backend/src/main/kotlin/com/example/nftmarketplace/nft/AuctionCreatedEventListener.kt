@@ -5,9 +5,7 @@ import com.example.nftmarketplace.events.auctions.AuctionCreatedEvent
 import com.example.nftmarketplace.getLogger
 import com.example.nftmarketplace.nft.requests.CreateNFTRequestHandler
 import com.example.nftmarketplace.nft.requests.command.CreateNFTCommand
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.springframework.amqp.rabbit.annotation.RabbitHandler
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,26 +14,20 @@ import org.springframework.stereotype.Component
 @Component
 class AuctionCreatedEventListener(
     @Autowired private val createNFTRequestHandler: CreateNFTRequestHandler,
+    @Autowired private val auctionBuffer: AuctionCreatedEventBuffer,
 ) {
 
     init {
-        getLogger().info("Setting up AuctionCreated Listener")
+        getLogger().info(this::class.simpleName, "init")
     }
 
-    @RabbitListener(
-        queues = [RabbitQueueConfiguration.AUCTION_CREATED_QUEUE],
-    )
+    @RabbitListener(queues = [RabbitQueueConfiguration.AUCTION_CREATED_QUEUE])
     @RabbitHandler
     fun receive(event: AuctionCreatedEvent) {
-//        println("Received null event: $event")
-        CoroutineScope(Dispatchers.Default).launch {
-            createNFTRequestHandler.handle(
-                command = CreateNFTCommand(
-                    contractAddress = event.nftContractAddress,
-                    tokenId = event.nftTokenId
-                )
-            )
-        }
+        val command = CreateNFTCommand(event.nftContractAddress, event.nftTokenId)
 
+        runBlocking {
+            auctionBuffer.add(command)
+        }
     }
 }

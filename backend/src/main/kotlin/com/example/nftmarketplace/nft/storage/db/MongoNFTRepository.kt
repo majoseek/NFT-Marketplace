@@ -13,6 +13,8 @@ interface DbNFTRepository {
     suspend fun get(contractAddress: String, tokenId: Long): NFT?
 
     suspend fun save(nft: NFT)
+
+    suspend fun saveAll(nfts: List<NFT>)
 }
 
 @Component
@@ -33,6 +35,12 @@ class MongoNFTRepository(
         nftRepository.save(nft.toNFTEntity()).awaitSingleOrNull()?.let {
             nft.getEvents().forEach(eventPublisher::publish)
         }
+    }
+
+    override suspend fun saveAll(nfts: List<NFT>) {
+        nftRepository.saveAll(nfts.map { it.toNFTEntity() }).collectList().awaitSingleOrNull()?.let {
+            nfts.forEach { nft -> nft.getEvents().forEach(eventPublisher::publish) }
+        } ?: throw RuntimeException()
     }
 }
 

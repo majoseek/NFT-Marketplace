@@ -1,6 +1,6 @@
 package com.example.nftmarketplace.nft.alchemy
 
-import com.example.nftmarketplace.nft.alchemy.data.AlchemyNFT
+import com.example.nftmarketplace.nft.alchemy.data.response.AlchemyNFT
 import com.example.nftmarketplace.nft.data.FileExtension
 import com.example.nftmarketplace.nft.data.NFT
 import com.example.nftmarketplace.nft.storage.db.NFTEntity

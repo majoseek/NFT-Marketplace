@@ -24,7 +24,7 @@ class NFTAdapter(
     }
 
     override suspend fun getNFTs(contractAddress: String, ownerAddress: String?): List<NFTResponse> {
-        return alchemyAPIAdapter.getNFTs(contractAddress, ownerAddress).map { it.toNFTResponse() }
+        return alchemyAPIAdapter.getNFTsByOwner(contractAddress, ownerAddress).map { it.toNFTResponse() }
     }
 //
 //    override suspend fun getOrCreateNFT(contractAddress: String, tokenId: String): NFTDomainModel =
