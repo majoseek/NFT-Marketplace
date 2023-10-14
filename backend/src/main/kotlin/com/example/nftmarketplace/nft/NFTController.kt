@@ -9,20 +9,19 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/nft")
-class NFTController(@Autowired private val nftService: NFTService) {
+class NFTController(@Autowired private val nftAdapter: NFTAdapter) {
     @GetMapping("/owner/{ownerAddress}")
     suspend fun getOwnedNFTs(
         @PathVariable("ownerAddress") ownerAddress: String
-    ) = nftService.getOwnedNFTs(ownerAddress)?.let { nfts ->
+    ) = nftAdapter.getOwnedNFTs(ownerAddress)?.let { nfts ->
         ResponseEntity.ok(nfts)
-    } ?: ResponseEntity.badRequest().build()
+    }
 
     @GetMapping("/contract/{contractAddress}/token/{tokenId}")
     suspend fun getNFTs(
         @PathVariable("contractAddress") contractAddress: String,
-        @PathVariable("tokenId") tokenId: String
-    ) = nftService.getNFT(contractAddress, tokenId)?.let { nft ->
+        @PathVariable("tokenId") tokenId: Long
+    ) = nftAdapter.getNFT(contractAddress, tokenId, true)?.let { nft ->
         ResponseEntity.ok(nft)
-    } ?: ResponseEntity.badRequest().build()
-
+    }
 }

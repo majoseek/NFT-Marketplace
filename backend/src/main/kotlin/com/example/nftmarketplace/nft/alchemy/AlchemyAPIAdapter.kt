@@ -1,11 +1,11 @@
 package com.example.nftmarketplace.nft.alchemy
 
-import com.example.nftmarketplace.nft.NFT
-import com.example.nftmarketplace.nft.NFTPort
-import com.example.nftmarketplace.nft.alchemy.data.AlchemyNFT
-import com.example.nftmarketplace.nft.alchemy.data.AlchemyNFTs
-import com.example.nftmarketplace.nft.alchemy.data.OwnersResponse
-import com.example.nftmarketplace.nft.alchemy.data.toNFT
+import com.example.nftmarketplace.nft.alchemy.data.bodyparams.BatchNFTs
+import com.example.nftmarketplace.nft.alchemy.data.bodyparams.TokenInfo
+import com.example.nftmarketplace.nft.alchemy.data.response.AlchemyNFT
+import com.example.nftmarketplace.nft.alchemy.data.response.AlchemyNFTs
+import com.example.nftmarketplace.nft.alchemy.data.response.OwnersResponse
+import com.example.nftmarketplace.nft.data.NFT
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,10 +16,10 @@ import kotlin.coroutines.coroutineContext
 
 @Component("AlchemyAPIAdapter")
 class AlchemyAPIAdapter(
-    @Autowired private val webClient: WebClient
-) : NFTPort {
-    override suspend fun getNFT(contractAddress: String, tokenId: String): NFT {
-        with (CoroutineScope(coroutineContext)) {
+    @Autowired private val webClient: WebClient,
+) {
+    suspend fun getNFT(contractAddress: String, tokenId: String, withOwner: Boolean): NFT {
+        with(CoroutineScope(coroutineContext)) {
             val nft = async {
                 webClient.get()
                     .uri {
@@ -30,12 +30,14 @@ class AlchemyAPIAdapter(
                             .build()
                     }.retrieve().awaitBody<AlchemyNFT>()
             }
+            if (!withOwner) return nft.await().toNFT()
+
             val owner = async { getNFTOwner(contractAddress, tokenId) }
             return nft.await().toNFT(owner.await())
         }
     }
 
-    override suspend fun getOwnedNFTs(ownerAddress: String): List<NFT> {
+    suspend fun getOwnedNFTs(ownerAddress: String): List<NFT> {
         val nfts = webClient.get()
             .uri {
                 it.path("getNFTs")
@@ -43,10 +45,12 @@ class AlchemyAPIAdapter(
                     .build()
             }.retrieve()
             .awaitBody<AlchemyNFTs>()
-        return nfts.ownedNfts.map { it.toNFT(ownerAddress) }
+        return nfts.ownedNfts.map {
+            it.toNFT(ownerAddress)
+        }
     }
 
-    override suspend fun getNFTs(contractAddress: String, ownerAddress: String?): List<NFT> {
+    suspend fun getNFTsByOwner(contractAddress: String, ownerAddress: String?): List<NFT> {
         val nfts = webClient.get()
             .uri {
                 it.path("getNFTs")
@@ -56,7 +60,7 @@ class AlchemyAPIAdapter(
                     .build()
             }.retrieve()
             .awaitBody<AlchemyNFTs>()
-        return nfts.ownedNfts.map { it.toNFT(ownerAddress) }
+        return nfts.ownedNfts.map { it.toNFT() }
     }
 
     suspend fun getNFTOwner(contractAddress: String, tokenId: String): String {
@@ -69,4 +73,25 @@ class AlchemyAPIAdapter(
             }.retrieve().awaitBody<OwnersResponse>()
         return nft.owners.firstOrNull().orEmpty()
     }
+
+    suspend fun getNFTsInBatch(contractAddress: List<String>, tokenIds: List<Long>): List<NFT> {
+        require(contractAddress.size == tokenIds.size)
+        val nfts = webClient.post()
+            .uri { it.path("getNFTMetadataBatch").build() }.bodyValue(
+                BatchNFTs(
+                    tokens = contractAddress.zip(tokenIds).map { (contractAddress, tokenId) ->
+                        TokenInfo(
+                            contractAddress = contractAddress,
+                            tokenId = tokenId,
+//                            tokenType = "ERC721"
+                        )
+                    }
+                )
+            ).retrieve().awaitBody<List<AlchemyNFT>>()
+        return nfts.map {
+            val owner = getNFTOwner(it.contract.address, it.id.tokenId)
+            it.toNFT(owner)
+        }
+    }
 }
+
