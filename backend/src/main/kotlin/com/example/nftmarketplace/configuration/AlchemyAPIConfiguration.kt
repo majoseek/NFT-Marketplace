@@ -23,10 +23,10 @@ class AlchemyAPIConfiguration {
             it.defaultCodecs().jackson2JsonDecoder(Jackson2JsonDecoder())
         }
         .filter { request, next ->
-            getLogger().info(this::class.simpleName, "Request: ${request.method()} ${request.url()}")
+            getLogger().info("Request: ${request.method()} ${request.url()}")
             next.exchange(request)
                 .doOnNext { response ->
-                    getLogger().info(this::class.simpleName, "Response: ${response.statusCode()}")
+                    getLogger().info("Response: ${response.statusCode()}")
                 }
         }
         .defaultHeader("Content-Type", "application/json")

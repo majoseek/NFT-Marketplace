@@ -15,7 +15,7 @@ class AuctionCreatedEventListener(
     @Autowired private val auctionBuffer: AuctionCreatedEventBuffer,
 ) {
     init {
-        getLogger().info(this::class.simpleName, "init")
+        getLogger().info("${this::class.simpleName} init")
     }
 
     @RabbitListener(queues = [RabbitQueueConfiguration.AUCTION_CREATED_QUEUE])
@@ -24,6 +24,7 @@ class AuctionCreatedEventListener(
         val command = CreateNFTCommand(event.nftContractAddress, event.nftTokenId)
 
         runBlocking {
+            getLogger().info("Adding Command ${this::class.simpleName}")
             auctionBuffer.add(command)
         }
     }

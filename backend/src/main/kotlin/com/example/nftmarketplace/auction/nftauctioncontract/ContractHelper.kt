@@ -59,11 +59,11 @@ class ContractHelper(
 
         return flow {
             indexes.map {
-                emit(
-                    async {
-                        contract.auctions(BigInteger.valueOf(it.toLong())).sendAsync().get()
-                    }.await().toAuction()
-                )
+                val auction = async {
+                    contract.auctions(BigInteger.valueOf(it.toLong())).sendAsync().get()
+                }.await()
+                val bids = contract.getBidByAuctionId(it.toBigInteger()).sendAsync().waitAndGet() as List<NFTAuction.Bid>
+                emit(auction.toAuction(bids))
             }
         }
     }
@@ -145,7 +145,19 @@ class ContractHelper(
     }
 
     // TODO Think about this
-    suspend fun getAuctionBids(auctionId: Long) = getAuctionById(auctionId)?.bids
+    suspend fun getAuctionBids(auctionId: Long) = with(scope) {
+        val bids = contract.getBidByAuctionId(auctionId.toBigInteger()).sendAsync().waitAndGet() as? List<NFTAuction.Bid>
+        bids?.map {
+            Auction.Bid(
+                bidder = it.bidder,
+                amount = Convert.fromWei(
+                    it.amount.toBigDecimal(),
+                    Convert.Unit.ETHER
+                ),
+                timestamp = it.timestamp.toLocalDateTime()
+            )
+        }.orEmpty()
+    }
 
     companion object {
         private fun Log?.tryConvertToEvent(): BaseEventResponse? {
@@ -176,9 +188,13 @@ class ContractHelper(
 
 typealias NFTAuctionTuple = Tuple13<BigInteger, String, String, String, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, String, NFTAuction.Bid?>
 
-private fun BigInteger.toStatus(expiryDate: Long): Auction.Status? = when (this.toInt()) {
+private fun BigInteger.toStatus(expiryDate: Long, bidder: String?): Auction.Status? = when (this.toInt()) {
     0 -> Auction.Status.Pending
-    1 -> if (expiryDate >= Clock.System.now().epochSeconds) Auction.Status.Active else Auction.Status.Expired
+    1 -> when {
+        expiryDate >= Clock.System.now().epochSeconds -> Auction.Status.Active
+        bidder != null -> Auction.Status.Won
+        else -> Auction.Status.Expired
+    }
     2 -> Auction.Status.Cancelled
     else -> null
 }
@@ -204,7 +220,7 @@ private fun NFTAuctionTuple.toAuction(bids: List<NFTAuction.Bid>? = null): Aucti
         expiryTime = component10().toLong().let {
             kotlinx.datetime.Instant.fromEpochSeconds(it).toLocalDateTime(timeZone = kotlinx.datetime.TimeZone.UTC)
         },
-        status = component11().toStatus(component10().toLong())
+        status = component11().toStatus(component10().toLong(), bids?.lastOrNull()?.bidder)
             ?: Auction.Status.Cancelled,
         bids = bids?.map { bid ->
             Auction.Bid(
@@ -212,7 +228,7 @@ private fun NFTAuctionTuple.toAuction(bids: List<NFTAuction.Bid>? = null): Aucti
                 amount = Convert.fromWei(bid.amount.toBigDecimal(), org.web3j.utils.Convert.Unit.ETHER),
                 timestamp = bid.timestamp.toLocalDateTime(),
             )
-        }?.sortedByDescending { it.timestamp }.orEmpty().toMutableList()
+        }?.sortedByDescending { it.timestamp }.orEmpty().toMutableList(),
     )
 }
 

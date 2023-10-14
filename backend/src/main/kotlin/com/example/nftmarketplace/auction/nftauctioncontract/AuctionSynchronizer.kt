@@ -62,7 +62,11 @@ class AuctionSynchronizer(
                     }
                 }
                 is AuctionEvents.BidPlaced -> {
-                    placeBidRequestHandler.handle(PlaceBidCommand(event.id, event.bidderAddress, event.amount.toBigDecimal(), event.timestamp))
+                    try {
+                        placeBidRequestHandler.handle(PlaceBidCommand(event.id, event.bidderAddress, event.amount.toBigDecimal(), event.timestamp))
+                    } catch(e: Exception) {
+                        getLogger().error("Error while placing bid: ${e.message}")
+                    }
                 }
                 is AuctionEvents.Ended -> {
                     completeAuctionRequestHandler.handle(

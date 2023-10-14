@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "46ad7bea-0b16-4a0a-b98a-f7f72f9bc97b",
+		"_postman_id": "5624dcc8-47b7-4d01-acd1-93aca7f52af4",
 		"name": "nft",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "17478370"
+		"_exporter_id": "29970570"
 	},
 	"item": [
 		{
@@ -12,7 +12,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/auction?page=1&count=20&status=Pending",
+					"raw": "localhost:8080/auction?page=1&count=20",
 					"host": [
 						"localhost"
 					],
@@ -22,17 +22,18 @@
 					],
 					"query": [
 						{
+							"key": "status [NOT YET IMPLEMENTED]",
+							"value": "Pending",
+							"description": "[Active, Pending, Cancelled]",
+							"disabled": true
+						},
+						{
 							"key": "page",
 							"value": "1"
 						},
 						{
 							"key": "count",
 							"value": "20"
-						},
-						{
-							"key": "status",
-							"value": "Pending",
-							"description": "[Active, Pending, Cancelled]"
 						}
 					]
 				}
@@ -54,6 +55,27 @@
 					"path": [
 						"auction",
 						"{{auctionID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SSE Auction bids",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/auction/16/bids",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auction",
+						"16",
+						"bids"
 					]
 				}
 			},
@@ -149,6 +171,26 @@
 			"response": []
 		}
 	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
 	"variable": [
 		{
 			"key": "auctionID",
@@ -156,15 +198,15 @@
 		},
 		{
 			"key": "contractAddress",
-			"value": "0xB5E7041cA1B7024C77cEdCcB3da205a660643697"
+			"value": "0xb5e7041ca1b7024c77cedccb3da205a660643697"
 		},
 		{
 			"key": "tokenId",
-			"value": "1500250"
+			"value": "1557616"
 		},
 		{
 			"key": "ownerAddress",
-			"value": "0x397FCa941083a7c18D199B99C16aef7E93F7C32e"
+			"value": "0x647e1f5a936e0b30751af18078e20413865f9a91"
 		}
 	]
 }

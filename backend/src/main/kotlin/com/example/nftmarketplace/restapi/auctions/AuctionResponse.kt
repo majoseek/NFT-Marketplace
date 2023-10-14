@@ -12,5 +12,6 @@ data class AuctionResponse(
     val minimumIncrement: BigDecimal? = null,
     val expiryTime: String,
     val bids: List<BidElement>? = null,
-    val status: AuctionStatus
+    val status: AuctionStatus? = null,
+    val winner: String? = null,
 )

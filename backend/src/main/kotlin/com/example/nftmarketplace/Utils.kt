@@ -11,3 +11,6 @@ suspend fun <T>getOrPrintError(block: suspend () -> T) = runCatching {
 }
 fun <T>T.getResponseEntity(statusIfNull: HttpStatus = HttpStatus.NOT_FOUND) =
     this?.let { ResponseEntity.ok(it) } ?: ResponseEntity.status(statusIfNull).build()
+
+
+inline fun <reified T : Enum<T>> enumValueOrNull(name: String): T? = enumValues<T>().find { it.name == name }

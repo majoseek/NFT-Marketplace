@@ -7,5 +7,5 @@ data class Media(
     @JsonProperty("gateway")
     val gateway: String,
     @JsonProperty("raw")
-    val raw: String
+    val raw: String,
 )

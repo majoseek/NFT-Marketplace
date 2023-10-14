@@ -2,9 +2,9 @@ package com.example.nftmarketplace.auction
 
 import com.example.nftmarketplace.core.AggregateRoot
 import com.example.nftmarketplace.events.auctions.AuctionCancelledEvent
+import com.example.nftmarketplace.events.auctions.AuctionCompletedEvent
 import com.example.nftmarketplace.events.auctions.AuctionCreatedEvent
 import com.example.nftmarketplace.events.auctions.AuctionExtendedEvent
-import com.example.nftmarketplace.events.auctions.AuctionWonEvent
 import com.example.nftmarketplace.events.auctions.BidPlacedEvent
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDateTime
@@ -69,7 +69,7 @@ data class Auction(
     fun completeWithWinner(winner: String) {
         status = Status.Won
         record(
-            AuctionWonEvent(
+            AuctionCompletedEvent(
                 auctionId = auctionId,
                 winnerAddress = winner,
                 contractAddress = nft.contractAddress,
@@ -80,6 +80,14 @@ data class Auction(
 
     fun completeAuctionWithoutWinner() {
         status = Status.Expired
+        record(
+            AuctionCompletedEvent(
+                auctionId = auctionId,
+                winnerAddress = null,
+                contractAddress = nft.contractAddress,
+                tokenId = nft.tokenId
+            )
+        )
     }
 
     fun cancel() {
@@ -116,7 +124,21 @@ data class Auction(
                 AuctionCreatedEvent(
                     auctionId = auctionId,
                     nftContractAddress = nft.contractAddress,
-                    nftTokenId = nft.tokenId
+                    nftTokenId = nft.tokenId,
+                    title = title,
+                    description = description,
+                    expiryTime = expiryTime.toString(),
+                    startingPrice = startingPrice.toString(),
+                    minimalIncrement = minimumIncrement.toString(),
+                    status = status.name,
+                    bids = bids.map {
+                        AuctionCreatedEvent.Bid(
+                            bidder = it.bidder,
+                            amount = it.amount.toString(),
+                            timestamp = it.timestamp.toString()
+                        )
+                    },
+
                 )
             )
         }

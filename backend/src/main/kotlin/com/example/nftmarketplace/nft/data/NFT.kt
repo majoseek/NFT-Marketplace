@@ -43,7 +43,17 @@ data class NFT(
             type = type,
             ownerAddress = ownerAddress
         ).apply {
-            record(NFTCreatedEvent(contractAddress, tokenId))
+            record(
+                NFTCreatedEvent(
+                    contractAddress = contractAddress,
+                    tokenId = tokenId,
+                    name = name,
+                    description = description,
+                    url = url,
+                    type = type.name,
+                    ownerAddress = ownerAddress
+                )
+            )
         }
     }
 }

@@ -20,12 +20,12 @@ fun NFTEntity.toNFTResponse(): NFTResponse {
 }
 
 fun AlchemyNFT.toNFT(ownerAddress: String? = null) = NFT(
-    contractAddress = this.contract.address,
-    tokenId = id.tokenId.toLong(),
+    contractAddress = contract.address,
+    tokenId = if (id.tokenId.startsWith("0x")) id.tokenId.substring(2).toLong(16) else id.tokenId.toLong(10),
     name = title,
     description = description,
-    url = tokenUri.raw,
-    type = FileExtension.getTypeFromExtension(tokenUri.raw.substringAfterLast(".")),
+    url = media.firstOrNull()?.raw ?: tokenUri.raw,
+    type = FileExtension.getTypeFromExtension(media.firstOrNull()?.raw?.substringAfterLast(".")),
     ownerAddress = ownerAddress,
 )
 

@@ -39,7 +39,9 @@ class MongoNFTRepository(
 
     override suspend fun saveAll(nfts: List<NFT>) {
         nftRepository.saveAll(nfts.map { it.toNFTEntity() }).collectList().awaitSingleOrNull()?.let {
-            nfts.forEach { nft -> nft.getEvents().forEach(eventPublisher::publish) }
+            nfts.forEach {
+                nft -> nft.getEvents().forEach(eventPublisher::publish)
+            }
         } ?: throw RuntimeException()
     }
 }

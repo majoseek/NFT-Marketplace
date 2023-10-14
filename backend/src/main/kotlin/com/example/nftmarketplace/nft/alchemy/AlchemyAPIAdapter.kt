@@ -45,7 +45,9 @@ class AlchemyAPIAdapter(
                     .build()
             }.retrieve()
             .awaitBody<AlchemyNFTs>()
-        return nfts.ownedNfts.map { it.toNFT() }
+        return nfts.ownedNfts.map {
+            it.toNFT(ownerAddress)
+        }
     }
 
     suspend fun getNFTsByOwner(contractAddress: String, ownerAddress: String?): List<NFT> {
@@ -86,7 +88,10 @@ class AlchemyAPIAdapter(
                     }
                 )
             ).retrieve().awaitBody<List<AlchemyNFT>>()
-        return nfts.map { it.toNFT() }
+        return nfts.map {
+            val owner = getNFTOwner(it.contract.address, it.id.tokenId)
+            it.toNFT(owner)
+        }
     }
 }
 
