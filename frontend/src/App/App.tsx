@@ -1,81 +1,52 @@
-import { useEffect, useState } from 'react';
-import Web3 from 'web3';
-import Auctions from '../pages/Auctions/Auctions';
-import Nfts from '../pages/Nfts/Nfts';
-import { useAppSelector } from '../hooks/useAppSelector';
-import { useAppDispatch } from '../hooks/useAppDispatch';
-import { setHasMetaMaskProvider, setWallets } from '../store/appSlice';
-import LandingPage from '../pages/LandingPage';
-import detectEthereumProvider from '@metamask/detect-provider';
-import LoadingPage from '@/pages/LoadingPage';
-import ErrorPage from '@/pages/ErrorPage';
-import TopMenu from '@/components/TopMenu';
-import MainContent from '@/pages/MainContent';
+import { Route, Routes } from "react-router-dom";
+import Footer from "../components/Footer";
+import Header from "../components/Header";
+import {
+  AuthProtectedRoutes,
+  BrowseRoute,
+  SchoolProtectedRoutes,
+} from "../components/Routes";
+import SchoolChoicePage from "../pages/SchoolChoicePage/SchoolChoicePage";
+import CreateNftPage from "../pages/CreateNftPage";
+import LandingPage from "../pages/LandingPage";
+import LoginPage from "../pages/LoginPage";
+import NftsPage from "../pages/NftsPage";
+import OwnedNftsPage from "../pages/OwnedNftsPage";
+import RegisterPage from "../pages/RegisterPage";
+import AuctionPage from "../pages/AuctionPage";
+import CreateAuctionPage from "../pages/CreateAuctionPage";
 
 const App = () => {
-    const hasMetaMaskProvider = useAppSelector(
-        (state) => state.app.hasMetaMaskProvider
-    );
-    const wallets = useAppSelector((state) => state.app.wallets);
-    const dispatch = useAppDispatch();
-    const [isLoadingExtensions, setIsLoadingExtensions] = useState(true);
+  return (
+    <div className="pb-44 relative min-h-screen">
+      <Header />
+      <Routes>
+        <Route element={<LandingPage />} path="/" />
+        <Route element={<LoginPage />} path="/login" />
+        <Route element={<RegisterPage />} path="/register" />
 
-    useEffect(() => {
-        const refreshAccounts = (accounts: unknown[]) => {
-            if (accounts.length > 0) dispatch(setWallets(accounts));
-            else dispatch(setWallets([]));
-        };
+        <Route element={<AuthProtectedRoutes />}>
+          <Route element={<SchoolChoicePage />} path="/school" />
 
-        const getProvider = async () => {
-            const provider = await detectEthereumProvider({ silent: true });
+          <Route element={<SchoolProtectedRoutes />}>
+            <Route element={<BrowseRoute />} path="/browse" />
+            <Route element={<OwnedNftsPage />} path="/ownedNfts" />
+            <Route element={<CreateNftPage />} path="/createNft" />
+          </Route>
 
-            if (provider) {
-                const accounts = await window.ethereum.request({
-                    method: 'eth_accounts',
-                });
-                refreshAccounts(accounts);
-                dispatch(setHasMetaMaskProvider(true));
-                window.ethereum.on('accountsChanged', refreshAccounts);
-            } else dispatch(setHasMetaMaskProvider(false));
-        };
-
-        const extensionTimeout = setTimeout(() => {
-            setIsLoadingExtensions(false);
-        }, 1000);
-
-        !isLoadingExtensions && getProvider();
-
-        return () => {
-            clearTimeout(extensionTimeout);
-            window.ethereum?.removeListener('accountsChanged', refreshAccounts);
-        };
-    }, [isLoadingExtensions]);
-
-    return (
-        <>
-            {isLoadingExtensions || hasMetaMaskProvider === undefined ? (
-                <LoadingPage title="Loading marketplace ..." />
-            ) : hasMetaMaskProvider === true &&
-              wallets &&
-              wallets.length > 0 ? (
-                <>
-                    <TopMenu />
-                    <MainContent>
-                        <Auctions />
-                    </MainContent>
-                    {/* <Auctions />
-                    <Divider />
-                    <Nfts /> */}
-                </>
-            ) : hasMetaMaskProvider === true &&
-              wallets &&
-              wallets.length === 0 ? (
-                <LandingPage />
-            ) : (
-                <ErrorPage title="Non-ethereum browser detected!" />
-            )}
-        </>
-    );
+          {/* these aren't school protected - 
+           if user visits a link, schoolId will be automatically set */}
+          <Route element={<NftsPage />} path="/browse/:schoolId" />
+          <Route
+            element={<AuctionPage />}
+            path="/browse/:schoolId/:auctionId"
+          />
+          <Route element={<CreateAuctionPage />} path="/sellNft/:nftId" />
+        </Route>
+      </Routes>
+      <Footer />
+    </div>
+  );
 };
 
 export default App;

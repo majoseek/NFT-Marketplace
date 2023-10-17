@@ -25,11 +25,7 @@ solidity {
         OutputComponent.BIN,
         OutputComponent.ABI,
     )
-    executable = if (System.getProperties()["os.name"].toString().contains("windows")) {
-        "./solc/solc-windows.exe"
-    } else {
-        "./solc/solc-static-linux"
-    }
+    executable = "./solc/solc-windows.exe"
     version = "0.8.18"
     optimizeRuns = 200
 }
