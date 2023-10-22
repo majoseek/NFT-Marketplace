@@ -1,1 +1,1 @@
-export { default } from "./OwnedNftsPage";
+export { default } from './OwnedNftsPage';

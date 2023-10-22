@@ -1,36 +1,40 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 type MarketplaceStoreState = {
-  schoolId: number | null;
+    schoolId: number | null;
 };
 
 type MarketplaceStoreActions = {
-  isSchoolChosen: () => boolean;
-  setChosenSchool: (schoolId: number) => void;
-  clearChosenSchool: () => void;
+    isSchoolChosen: () => boolean;
+    setChosenSchool: (schoolId: number) => void;
+    clearChosenSchool: () => void;
 };
 
 const initialMarketplaceState: MarketplaceStoreState = {
-  schoolId: null,
+    schoolId: null,
 };
 
-export const useMarketplaceStore = create(persist<MarketplaceStoreActions & MarketplaceStoreState>(((set, get) => ({
-  ...initialMarketplaceState,
-  
-  setChosenSchool: (schoolId: number) => {
-    set({ schoolId: schoolId });
-  },
+export const useMarketplaceStore = create(
+    persist<MarketplaceStoreActions & MarketplaceStoreState>(
+        (set, get) => ({
+            ...initialMarketplaceState,
 
-  clearChosenSchool: () => {
-    set({ schoolId: null });
-  },
+            setChosenSchool: (schoolId: number) => {
+                set({ schoolId: schoolId });
+            },
 
-  isSchoolChosen: () => {
-    return get().schoolId !== null;
-  }
-})
-), {
-  name: "marketplace-store",
-  getStorage: () => localStorage,
-}));
+            clearChosenSchool: () => {
+                set({ schoolId: null });
+            },
+
+            isSchoolChosen: () => {
+                return get().schoolId !== null;
+            },
+        }),
+        {
+            name: 'marketplace-store',
+            getStorage: () => localStorage,
+        }
+    )
+);

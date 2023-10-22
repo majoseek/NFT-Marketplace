@@ -1,1 +1,1 @@
-export { default } from "./CreateAuctionPage";
+export { default } from './CreateAuctionPage';

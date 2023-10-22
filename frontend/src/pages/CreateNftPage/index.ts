@@ -1,1 +1,1 @@
-export { default } from "./CreateNftPage";
+export { default } from './CreateNftPage';

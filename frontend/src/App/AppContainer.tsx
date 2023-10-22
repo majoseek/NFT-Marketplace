@@ -1,10 +1,10 @@
-import App from "./App";
-import AppProviders from "./AppProviders";
+import App from './App';
+import AppProviders from './AppProviders';
 
 const AppContainer = () => (
-  <AppProviders>
-    <App />
-  </AppProviders>
+    <AppProviders>
+        <App />
+    </AppProviders>
 );
 
 export default AppContainer;
