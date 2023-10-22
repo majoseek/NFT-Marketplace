@@ -7,6 +7,8 @@ import {
 import axios from 'axios';
 import { BrowserRouter } from 'react-router-dom';
 import { useAuthStore } from '../stores/AuthStore';
+import { Provider as ReduxProvider } from 'react-redux';
+import { store } from '@/store/store';
 
 type Props = {
     children: JSX.Element;
@@ -30,8 +32,10 @@ const queryClient = new QueryClient({
 });
 
 const AppProviders = ({ children }: Props) => (
-    <QueryClientProvider client={queryClient}>
-        <BrowserRouter>{children}</BrowserRouter>
-    </QueryClientProvider>
+    <ReduxProvider store={store}>
+        <QueryClientProvider client={queryClient}>
+            <BrowserRouter>{children}</BrowserRouter>
+        </QueryClientProvider>
+    </ReduxProvider>
 );
 export default AppProviders;
