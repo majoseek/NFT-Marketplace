@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import authorImg from "../../assets/images/userAvatar.png";
-import { ReactComponent as SearchIcon } from "../../assets/icons/searchIcon.svg";
+import SearchIcon from "../../assets/icons/searchIcon.svg";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { API_KEYS } from "../../api/API_KEYS";
@@ -43,7 +43,8 @@ const NftsPage = () => {
       }))
       .filter(
         (auction: any) =>
-          auction.status.toLowerCase() === statusFilter || statusFilter === "all"
+          auction.status.toLowerCase() === statusFilter ||
+          statusFilter === "all"
       )
       .filter((auction: any) => {
         if (nameFilter.length === 0) return true;
@@ -112,14 +113,25 @@ const NftsPage = () => {
               onChange={handleSearchInput}
               disabled={schoolResponse?.data.auctions.length === 0}
             />
-            <SearchIcon className="absolute top-3 right-3 cursor-pointer" />
+            <img
+              src={SearchIcon}
+              className="absolute top-3 right-3 cursor-pointer"
+            />
           </span>
         </div>
       </div>
       <section className="flex gap-10 mt-32 flex-wrap justify-center w-full">
         {!isLoading && auctions.length > 0 ? (
           auctions.map(
-            ({ auctionId, name, fileUri, nftId, author, currentBidPrice, status }) => (
+            ({
+              auctionId,
+              name,
+              fileUri,
+              nftId,
+              author,
+              currentBidPrice,
+              status,
+            }) => (
               <div
                 className="cursor-pointer"
                 key={auctionId}

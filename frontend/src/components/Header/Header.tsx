@@ -2,10 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_KEYS } from "../../api/API_KEYS";
-import { ReactComponent as MarketIcon } from "../../assets/icons/marketIcon.svg";
-import { ReactComponent as UserIcon } from "../../assets/icons/userIcon.svg";
-import { ReactComponent as WalletIcon } from "../../assets/icons/wallet.svg";
-import { ReactComponent as ArrowUpIcon } from "../../assets/icons/arrowUp.svg";
+import MarketIcon from "../../assets/icons/marketIcon.svg";
+import UserIcon from "../../assets/icons/userIcon.svg";
+import WalletIcon from "../../assets/icons/wallet.svg";
+import ArrowUpIcon from "../../assets/icons/arrowUp.svg";
 import { useWallet } from "../../hooks/useWallet";
 import { useAuthStore } from "../../stores/AuthStore";
 import { useMarketplaceStore } from "../../stores/MarketplaceStore";
@@ -55,7 +55,11 @@ const Header = () => {
     }
   );
 
-  const { data: walletResponse, refetch: refetchWallet, isLoading: walletLoading } = useWallet();
+  const {
+    data: walletResponse,
+    refetch: refetchWallet,
+    isLoading: walletLoading,
+  } = useWallet();
 
   const { data: accountResponse, refetch } = useAccountUpdates();
 
@@ -105,7 +109,7 @@ const Header = () => {
               className="font-bold flex gap-2 items-center text-xl font-mono cursor-pointer"
               onClick={handleLogoClick}
             >
-              <MarketIcon />
+              <img src={MarketIcon} />
               NFT Marketplace
             </div>
             {schoolId && (
@@ -133,15 +137,17 @@ const Header = () => {
             {isUserLoggedIn() ? (
               <>
                 <span className="flex flex-row items-center text-white font-semibold text-lg p-3 px-4 h-12 bg-black/20 rounded-lg">
-                  <UserIcon className="mr-3 w-4" />
+                  <img src={UserIcon} className="mr-3 w-4" />
                   {name}
                 </span>
                 <label
                   htmlFor="wallet-modal"
                   className="flex flex-row items-center text-white font-semibold text-lg p-3 px-4 h-12 bg-black/20 rounded-lg cursor-pointer hover:bg-black/10"
                 >
-                  <WalletIcon className="mr-3 w-4" />
-                  {(walletResponse && !walletLoading ? walletResponse.data.balance + "$" : "Wallet")}
+                  <img src={WalletIcon} className="mr-3 w-4" />
+                  {walletResponse && !walletLoading
+                    ? walletResponse.data.balance + "$"
+                    : "Wallet"}
                 </label>
                 <button
                   className="btn btn-secondary"
@@ -210,7 +216,7 @@ const Header = () => {
                     className="btn btn-primary w-fit"
                     disabled={!canAddFunds}
                   >
-                    <ArrowUpIcon className="mr-3 w-6 h-6" />
+                    <img src={ArrowUpIcon} className="mr-3 w-6 h-6" />
                     Add funds
                   </button>
                 </div>

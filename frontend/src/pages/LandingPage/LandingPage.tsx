@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { ReactComponent as RocketIcon } from "../../assets/icons/rocketIcon.svg";
-import { ReactComponent as LandingImage } from "../../assets/images/landingImage.svg";
+import RocketIcon from "../../assets/icons/rocketIcon.svg";
+import LandingImage from "../../assets/images/landingImage.svg";
 import userAvatar from "../../assets/images/userAvatar.png";
 import { useAuthStore } from "../../stores/AuthStore";
 import { useMarketplaceStore } from "../../stores/MarketplaceStore";
@@ -42,7 +42,7 @@ const LandingPage = () => {
             onClick={handleGetStarted}
             className="btn btn-primary mt-24 w-fit"
           >
-            <RocketIcon className="mr-3" />
+            <img src={RocketIcon} className="mr-3" />
             Get started
           </button>
           <div className="flex justify-between mt-8 max-w-sm">
@@ -61,7 +61,7 @@ const LandingPage = () => {
           </div>
         </section>
         <section className="hidden md:block">
-          <LandingImage />
+          <img src={LandingImage} />
           <div className="bg-primary p-5 rounded-b-xl">
             <span className="font-medium text-2xl">Space Walking</span>
             <span className="flex mt-3 gap-3 leading-xs items-center">

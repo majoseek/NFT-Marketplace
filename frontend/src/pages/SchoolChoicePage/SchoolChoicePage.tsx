@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import SchoolImage from "../../assets/images/schoolImage.jpg";
-import { ReactComponent as SearchIcon } from "../../assets/icons/searchIcon.svg";
+import SearchIcon from "../../assets/icons/searchIcon.svg";
 import { API_KEYS } from "../../api/API_KEYS";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
@@ -53,7 +52,7 @@ const BrowsePage = () => {
             className="input input-bordered w-full max-w-xs bg-transparent border-primary pr-12"
             onChange={handleChangeInput}
           />
-          <SearchIcon className="absolute top-3 right-3" />
+          <img src={SearchIcon} className="absolute top-3 right-3" />
         </span>
       </div>
       <section className="flex gap-10 mt-24 flex-wrap justify-center w-full">
@@ -66,7 +65,11 @@ const BrowsePage = () => {
               key={schoolId}
               onClick={() => handleSchoolClick(schoolId)}
             >
-              <img src={photoUrl} alt="school" className="rounded-t-xl object-cover min-h-[240px]" />
+              <img
+                src={photoUrl}
+                alt="school"
+                className="rounded-t-xl object-cover min-h-[240px]"
+              />
               <div className="bg-primary p-5 rounded-b-xl text-center hover:bg-primaryHoverFocus/30 flex flex-col gap-2 min-h-xl">
                 <span className="font-medium text-xl">{name}</span>
                 <span className="">{address}</span>
