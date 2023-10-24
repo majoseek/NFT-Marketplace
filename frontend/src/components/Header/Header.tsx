@@ -1,92 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { API_KEYS } from '../../api/API_KEYS';
 import MarketIcon from '../../assets/icons/marketIcon.svg';
 import UserIcon from '../../assets/icons/userIcon.svg';
 import WalletIcon from '../../assets/icons/wallet.svg';
-import ArrowUpIcon from '../../assets/icons/arrowUp.svg';
-import { useWallet } from '../../hooks/useWallet';
-import { useAuthStore } from '../../stores/AuthStore';
-import { useMarketplaceStore } from '../../stores/MarketplaceStore';
-import { useState } from 'react';
-import { useAccountUpdates } from '../../hooks/useAccountUpdates';
 
 const Header = () => {
-    const navigate = useNavigate();
-    const { isUserLoggedIn, name, logoutUser } = useAuthStore();
-    const { schoolId } = useMarketplaceStore();
-    const [fundsToAdd, setFundsToAdd] = useState('');
-    const { data: schoolsResponse } = useQuery(
-        [API_KEYS.GET_SCHOOL_INFO],
-        () => axios.get(`/api/school/${schoolId}`).then((response) => response),
-        { enabled: !!schoolId }
-    );
-    const { mutateAsync: mutateAddBalance } = useMutation(
-        [API_KEYS.ADD_BALANCE],
-        () =>
-            axios.put('/api/account/funds', {
-                balanceToAdd: Number(fundsToAdd),
-            }),
-        {
-            onSuccess: () => {
-                refetchWallet();
-                setFundsToAdd('');
-            },
-        }
-    );
-    const { mutateAsync: mutateAcceptAuction } = useMutation(
-        [API_KEYS.ACCEPT_AUCTION],
-        (auctionId: number) => axios.put(`/api/auction/${auctionId}/confirm`),
-        {
-            onSuccess: () => {
-                const queryClient = useQueryClient();
-                refetch();
-                queryClient.invalidateQueries({
-                    queryKey: [API_KEYS.GET_OWNED_NFTS],
-                });
-            },
-        }
-    );
-    const { mutateAsync: mutateRejectAuction } = useMutation(
-        [API_KEYS.REJECT_AUCTION],
-        (auctionId: number) => axios.put(`/api/auction/${auctionId}/reject`),
-        {
-            onSuccess: () => {
-                const queryClient = useQueryClient();
-                refetch();
-                queryClient.invalidateQueries({
-                    queryKey: [API_KEYS.GET_OWNED_NFTS],
-                });
-            },
-        }
-    );
-
-    const {
-        data: walletResponse,
-        refetch: refetchWallet,
-        isLoading: walletLoading,
-    } = useWallet();
-
-    const { data: accountResponse, refetch } = useAccountUpdates();
-
-    const canAddFunds = /^\d+$/.test(fundsToAdd) && fundsToAdd !== '';
-
-    const handleAddFunds = () => {
-        fundsToAdd !== '' && mutateAddBalance();
-    };
-
-    const handleLogoClick = () => navigate('/');
-
-    const handleSchoolChangeClick = () => navigate('/school');
-
-    const handleNftsClick = () => navigate('/ownedNfts');
-
-    const handleLogoutClick = () => logoutUser();
-
-    const showAuctionFinished =
-        accountResponse && accountResponse?.ownedAuctionsUpdates.length > 0;
-
+    const showAuctionFinished = true;
     return (
         <>
             <label
@@ -105,30 +22,17 @@ const Header = () => {
                     <div className="flex flex-col items-center">
                         <div
                             className="font-bold flex gap-2 items-center text-xl font-mono cursor-pointer"
-                            onClick={handleLogoClick}
+                            onClick={() => {}}
                         >
                             <img src={MarketIcon} alt="nft-marketplace" />
                             NFT Marketplace
                         </div>
-                        {schoolId && (
-                            <div className="flex flex-row items-center gap-2">
-                                <span>{schoolsResponse?.data.name}</span>
-                            </div>
-                        )}
                     </div>
-                    {schoolId && (
-                        <button
-                            className="btn btn-outline text-base-content/75 ml-2"
-                            onClick={handleSchoolChangeClick}
-                        >
-                            Change school
-                        </button>
-                    )}
                 </div>
 
                 <div className="flex gap-14 items-center">
                     <div className="flex flex-row items-center gap-2">
-                        {isUserLoggedIn() ? (
+                        {true() ? (
                             <>
                                 <span className="flex flex-row items-center text-white font-semibold text-lg p-3 px-4 h-12 bg-black/20 rounded-lg">
                                     <img
@@ -136,7 +40,7 @@ const Header = () => {
                                         className="mr-3 w-4"
                                         alt="user-icon"
                                     />
-                                    {name}
+                                    SomeUserName
                                 </span>
                                 <label
                                     htmlFor="wallet-modal"
@@ -147,19 +51,16 @@ const Header = () => {
                                         className="mr-3 w-4"
                                         alt="wallet-icon"
                                     />
-                                    {walletResponse && !walletLoading
-                                        ? walletResponse.data.balance + '$'
-                                        : 'Wallet'}
                                 </label>
                                 <button
                                     className="btn btn-secondary"
-                                    onClick={() => handleNftsClick()}
+                                    onClick={() => {}}
                                 >
                                     MY ITEMS
                                 </button>
                                 <button
                                     className="btn btn-primary"
-                                    onClick={() => handleLogoutClick()}
+                                    onClick={() => {}}
                                 >
                                     Logout
                                 </button>
@@ -167,60 +68,6 @@ const Header = () => {
                         ) : null}
                     </div>
                 </div>
-                {walletResponse && (
-                    <>
-                        <input
-                            type="checkbox"
-                            id="wallet-modal"
-                            className="modal-toggle"
-                        />
-                        <div className="modal">
-                            <div className="modal-box relative">
-                                <label
-                                    htmlFor="wallet-modal"
-                                    className="btn btn-sm btn-circle absolute right-2 top-2"
-                                >
-                                    ✕
-                                </label>
-                                <h3 className="font-bold text-lg text-center">
-                                    Your wallet
-                                </h3>
-                                <p className="py-4 text-center">
-                                    Current balance:{' '}
-                                    <b>{walletResponse.data.balance}</b> $
-                                </p>
-                                <div className="flex gap-4 items-center justify-around mt-3">
-                                    <div className="flex">
-                                        <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border rounded-l-md border-secondary">
-                                            $
-                                        </span>
-                                        <input
-                                            type="text"
-                                            className="input rounded-none rounded-r-lg bg-gray-50 border border-primary border-solid text-gray-900 block flex-1 min-w-0 w-full text-sm p-2.5"
-                                            placeholder="Type amount of funds"
-                                            onChange={(e) => {
-                                                setFundsToAdd(e.target.value);
-                                            }}
-                                            value={fundsToAdd}
-                                        />
-                                    </div>
-                                    <button
-                                        onClick={handleAddFunds}
-                                        className="btn btn-primary w-fit"
-                                        disabled={!canAddFunds}
-                                    >
-                                        <img
-                                            src={ArrowUpIcon}
-                                            className="mr-3 w-6 h-6"
-                                            alt="arrow-up"
-                                        />
-                                        Add funds
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </>
-                )}
             </header>
             <input
                 type="checkbox"
@@ -232,42 +79,31 @@ const Header = () => {
                 className="modal cursor-pointer"
             >
                 <label className="modal-box relative" htmlFor="">
-                    {accountResponse &&
-                    accountResponse?.ownedAuctionsUpdates.length > 0 ? (
+                    {true ? (
                         <>
                             <h3 className="text-lg font-bold">
                                 Your auctions which needs to be confirmed:
                             </h3>
-                            {accountResponse.ownedAuctionsUpdates.map(
-                                (auction) => (
-                                    <div
-                                        className="mt-14 flex justify-between items-center"
-                                        key={auction.auctionId}
+                            {[].map((auction) => (
+                                <div
+                                    className="mt-14 flex justify-between items-center"
+                                    key={1}
+                                >
+                                    <p>NftName has been won!</p>
+                                    <button
+                                        className="btn btn-success"
+                                        onClick={() => {}}
                                     >
-                                        <p>{auction.nftName} has been won!</p>
-                                        <button
-                                            className="btn btn-success"
-                                            onClick={() =>
-                                                mutateAcceptAuction(
-                                                    auction.auctionId
-                                                )
-                                            }
-                                        >
-                                            Accept
-                                        </button>
-                                        <button
-                                            className="btn btn-error"
-                                            onClick={() =>
-                                                mutateRejectAuction(
-                                                    auction.auctionId
-                                                )
-                                            }
-                                        >
-                                            Reject
-                                        </button>
-                                    </div>
-                                )
-                            )}
+                                        Accept
+                                    </button>
+                                    <button
+                                        className="btn btn-error"
+                                        onClick={() => {}}
+                                    >
+                                        Reject
+                                    </button>
+                                </div>
+                            ))}
                         </>
                     ) : (
                         <h3>Nothing to confirm!</h3>

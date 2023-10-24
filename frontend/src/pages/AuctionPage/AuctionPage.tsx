@@ -5,9 +5,7 @@ import { API_KEYS } from '../../api/API_KEYS';
 import axios from 'axios';
 import { MinimalNft } from '../OwnedNftsPage/OwnedNftsPage';
 import { getIpfsImage } from '../../utils/ipfsImageGetter';
-import { useMarketplaceStore } from '../../stores/MarketplaceStore';
 import moment from 'moment';
-import { useWallet } from '../../hooks/useWallet';
 
 type Bid = {
     auctionId: number;
@@ -53,119 +51,10 @@ type Nft = {
 };
 
 const AuctionPage = () => {
-    const marketplaceStore = useMarketplaceStore();
-    const queryClient = useQueryClient();
     const [bid, setBid] = useState(0);
-    const [secondsLeft, setSecondsLeft] = useState(60);
     const [auction, setAuction] = useState<Auction>();
     const [nft, setNft] = useState<Nft>();
-    const { schoolId, auctionId } = useParams<{
-        schoolId: string;
-        auctionId: string;
-    }>();
-    const { data: auctionResponse, isLoading: loadingAuction } = useQuery({
-        queryKey: [API_KEYS.GET_AUCTION],
-        queryFn: () =>
-            axios.get<Auction>(`/api/auction/${auctionId}`).then((res) => res),
-        onSuccess: (response) => handleAuctionFetchSuccess(response.data),
-    });
-    const { data: walletResponse } = useWallet();
-    const nftId = auctionResponse?.data.nft.nftId;
-
-    const { isLoading: loadingNft } = useQuery({
-        queryKey: [API_KEYS.GET_NFT, nftId],
-        queryFn: () => axios.get<Nft>(`/api/nft/${nftId}`).then((res) => res),
-        onSuccess: (response) => handleNftFetchSuccess(response.data),
-        enabled: !!nftId,
-    });
-
-    const { mutateAsync: mutateBid } = useMutation(
-        [API_KEYS.BID_NFT],
-        () =>
-            axios
-                .post(`/api/auction/${auctionId}/bid`, {
-                    bidAmount: bid,
-                })
-                .then((res) => res),
-        {
-            onSuccess: () => {
-                queryClient.invalidateQueries({
-                    queryKey: [API_KEYS.GET_AUCTION],
-                });
-            },
-            onError: (error: any) => {
-                if (error.response.data.message)
-                    alert(error.response.data.message);
-                else alert('Something went wrong!');
-            },
-        }
-    );
-
-    useEffect(() => {
-        const auctionTimer = setInterval(() => {
-            setSecondsLeft(secondsLeft - 1);
-            if (secondsLeft <= 0) clearInterval(auctionTimer);
-        }, 1000);
-
-        return () => clearInterval(auctionTimer);
-    }, [nftId, secondsLeft]);
-
-    useEffect(() => {
-        const parsedSchoolId = parseInt(schoolId!);
-        if (parsedSchoolId !== marketplaceStore.schoolId) {
-            marketplaceStore.setChosenSchool(parsedSchoolId);
-        }
-    }, [schoolId]);
-
-    const handleAuctionFetchSuccess = (auction: Auction) => {
-        setAuction(auction);
-    };
-
-    const handleNftFetchSuccess = (nft: Nft) => {
-        setNft(nft);
-    };
-
-    const handleBidChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-        setBid(Number(e.target.value));
-
-    const handlePlaceBid = () => {
-        if (!walletResponse) return;
-        if (walletResponse.data.balance < bid)
-            alert("You don't have enough funds to bid this price!");
-        else bid && mutateBid();
-    };
-
-    if (!auction || loadingAuction || loadingNft)
-        return <h3>Loading data...</h3>;
-
-    const padZero = (num: number) => {
-        return num < 10 ? `0${num}` : num;
-    };
-
-    const getTimeLeft = () => {
-        if (!auction)
-            return {
-                hours: 0,
-                minutes: 0,
-                seconds: 0,
-            };
-        const auctionEndDate = new Date(auction.endDate);
-        const now = new Date();
-        const diff = auctionEndDate.getTime() - now.getTime();
-        const seconds = Math.floor(diff / 1000);
-        const minutes = Math.floor(seconds / 60);
-        const hours = Math.floor(minutes / 60);
-
-        return {
-            hours: padZero(hours),
-            minutes: padZero(minutes % 60),
-            seconds: padZero(seconds % 60),
-        };
-    };
-
-    const auctionEnded = new Date(auction.endDate) < new Date();
-
-    const { hours, minutes, seconds } = getTimeLeft();
+    const auctionEnded = false;
 
     return nft ? (
         <main className="py-32 px-20 flex justify-center gap-10">
@@ -188,7 +77,7 @@ const AuctionPage = () => {
                     Description
                 </span>
                 <span className="max-w-lg leading-7">
-                    {auction.nft.description}
+                    {auction && auction.nft.description}
                 </span>
                 <span className="text-gray font-mono font-semibold text-lg">
                     Tags
@@ -211,11 +100,11 @@ const AuctionPage = () => {
                 )}
                 {!auctionEnded && (
                     <span className="text-3xl font-mono -mt-2">
-                        {hours}:{minutes}:{seconds}
+                        {2}:{32}:{59}
                     </span>
                 )}
                 <span className="mt-3 text-lg font-mono">
-                    {auction.currentPrice > 0 ? (
+                    {auction && auction.currentPrice > 0 ? (
                         <>
                             {auctionEnded ? 'Winning bid' : 'Current price'}
                             {': '}
@@ -235,16 +124,16 @@ const AuctionPage = () => {
                         type="text"
                         className="input rounded-none rounded-r-lg bg-gray-50 border border-solid border-white text-gray-900 block flex-1 min-w-0 w-full text-sm border-gray-300 p-2.5"
                         placeholder="Type your bid"
-                        onChange={handleBidChange}
+                        onChange={() => {}}
                         disabled={auctionEnded}
                     />
                 </div>
                 <button
-                    onClick={handlePlaceBid}
+                    onClick={() => {}}
                     className="btn btn-primary w-fit font-mono mt-3"
                     disabled={
-                        auction?.currentPrice !== null
-                            ? bid <= auction?.currentPrice
+                        auction && auction.currentPrice !== null
+                            ? bid <= auction.currentPrice
                             : true
                     }
                 >
@@ -254,7 +143,7 @@ const AuctionPage = () => {
                 <div className="flex flex-col gap-2 mt-3 w-full">
                     <span className="font-bold">Bids history</span>
                     <div className="flex flex-col gap-2">
-                        {auction?.bids.length > 0 ? (
+                        {auction && auction?.bids.length > 0 ? (
                             auction?.bids
                                 .sort((a, b) => b.price - a.price)
                                 .map((bid) => (
