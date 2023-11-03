@@ -1,10 +1,8 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import moment from 'moment';
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { API_KEYS } from '../../api/API_KEYS';
-import { useMarketplaceStore } from '../../stores/MarketplaceStore';
 import { getIpfsImage } from '../../utils/ipfsImageGetter';
 
 type Nft = {
@@ -28,31 +26,14 @@ type Nft = {
 };
 
 const CreateAuctionPage = () => {
-    const { schoolId } = useMarketplaceStore();
     const { nftId } = useParams<{ nftId: string }>();
-    const navigate = useNavigate();
     const [selectedDuration, setSelectedDuration] = useState(0);
     const durations = [1, 5, 15, 30, 45, 60];
     const { data: nftResponse } = useQuery<Nft>([API_KEYS.GET_NFT], () =>
         axios.get(`/api/nft/${nftId}`).then((response) => response.data)
     );
-    const { mutateAsync: mutateCreateAuction } = useMutation(
-        [API_KEYS.CREATE_AUCTION],
-        () =>
-            axios.post('/api/auction', {
-                nftId: nftId,
-                startTime: new Date(),
-                endTime: moment(new Date()).add(selectedDuration, 'm').toDate(),
-                minimalPrice: 0,
-                schoolId: schoolId,
-            }),
-        {
-            onSuccess: (res) =>
-                navigate(`/browse/${schoolId}/${res.data.auctionId}`),
-        }
-    );
 
-    const handleCreateAuctionClick = () => mutateCreateAuction();
+    const handleCreateAuctionClick = () => {};
 
     return nftResponse ? (
         <main className="py-32 px-20 flex items-start flex-col justify-center">

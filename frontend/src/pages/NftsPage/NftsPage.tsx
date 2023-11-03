@@ -6,14 +6,12 @@ import axios from 'axios';
 import { API_KEYS } from '../../api/API_KEYS';
 import { useQuery } from '@tanstack/react-query';
 import { getIpfsImage } from '../../utils/ipfsImageGetter';
-import { useMarketplaceStore } from '../../stores/MarketplaceStore';
 import { capitalize } from 'lodash';
 
 type AuctionFilter = 'all' | 'active' | 'won' | 'expired';
 
 const NftsPage = () => {
     const navigate = useNavigate();
-    const marketplaceStore = useMarketplaceStore();
     const { schoolId } = useParams<{ schoolId: string }>();
     const [auctions, setAuctions] = useState([]);
     const [nameFilter, setNameFilter] = useState('');
@@ -29,47 +27,15 @@ const NftsPage = () => {
 
     const handleOwnedNftsClick = () => navigate(`/ownedNfts`);
 
-    const getMappedAndFilteredNfts = () => {
-        if (isLoading || !schoolResponse?.data.auctions) return [];
-        return schoolResponse!.data.auctions
-            .map((auction: any) => ({
-                name: auction.nftName,
-                fileUri: auction.nftUri,
-                nftId: auction.nftId,
-                status: auction.status,
-                author: auction.nftIssuer,
-                auctionId: auction.auctionId,
-                currentBidPrice: auction.lastBid?.price ?? 0,
-            }))
-            .filter(
-                (auction: any) =>
-                    auction.status.toLowerCase() === statusFilter ||
-                    statusFilter === 'all'
-            )
-            .filter((auction: any) => {
-                if (nameFilter.length === 0) return true;
-                return auction.name
-                    .toLowerCase()
-                    .includes(nameFilter.toLowerCase());
-            });
-    };
+    const getMappedAndFilteredNfts = () => {};
 
-    const handleFetchSuccess = (nftsData: any) => {
-        setAuctions(getMappedAndFilteredNfts());
-    };
+    const handleFetchSuccess = (nftsData: any) => {};
 
     const handleSearchInput = (e: any) => {
         setNameFilter(e.target.value);
     };
 
-    const handleStatusFilterChange = (e: any) => {
-        setStatusFilter(e.target.value);
-    };
-
-    useEffect(() => {
-        if (isLoading) return;
-        setAuctions(getMappedAndFilteredNfts());
-    }, [nameFilter, statusFilter, schoolResponse]);
+    const handleStatusFilterChange = (e: any) => {};
 
     const getStatusClassName = (status: string) => {
         if (status === 'WON') return 'text-green-400';

@@ -4,6 +4,7 @@ import WalletIcon from '../../assets/icons/wallet.svg';
 
 const Header = () => {
     const showAuctionFinished = true;
+
     return (
         <>
             <label
@@ -32,7 +33,7 @@ const Header = () => {
 
                 <div className="flex gap-14 items-center">
                     <div className="flex flex-row items-center gap-2">
-                        {true() ? (
+                        {true ? (
                             <>
                                 <span className="flex flex-row items-center text-white font-semibold text-lg p-3 px-4 h-12 bg-black/20 rounded-lg">
                                     <img

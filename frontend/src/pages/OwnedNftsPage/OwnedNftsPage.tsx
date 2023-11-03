@@ -1,10 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { API_KEYS } from '../../api/API_KEYS';
-import { useQuery } from '@tanstack/react-query';
-import { useAuthStore } from '../../stores/AuthStore';
 import { getIpfsImage } from '../../utils/ipfsImageGetter';
-import { useMarketplaceStore } from '../../stores/MarketplaceStore';
 
 export type MinimalNft = {
     nftId: number;
@@ -17,30 +12,14 @@ export type MinimalNft = {
 
 const OwnedNftsPage = () => {
     const navigate = useNavigate();
-    const { accountId } = useAuthStore();
-    const { schoolId } = useMarketplaceStore();
 
     const handleCreateNft = () => {
         navigate('/createNft');
     };
 
-    const handleSellNft = (nftId: number, activeAuctionId: number | null) => {
-        activeAuctionId
-            ? navigate(`/browse/${schoolId}/${activeAuctionId}`)
-            : navigate(`/sellNft/${nftId}`);
-    };
+    const handleSellNft = (nftId: number, activeAuctionId: number | null) => {};
 
-    const getOwnedNftsData = async () => {
-        const response = await axios.get(`/api/account/${accountId}`);
-        return response.data.ownedNfts;
-    };
-
-    const { data } = useQuery<MinimalNft[]>(
-        [API_KEYS.GET_OWNED_NFTS],
-        getOwnedNftsData
-    );
-
-    return data ? (
+    return true ? (
         <main className="py-32 px-20 flex items-start flex-col justify-center">
             <div className="flex justify-around w-full">
                 <span>
@@ -54,8 +33,8 @@ const OwnedNftsPage = () => {
                 </button>
             </div>
             <section className="flex gap-10 mt-16 flex-wrap justify-center w-full">
-                {data.length > 0 ? (
-                    data.map(
+                {[].length > 0 ? (
+                    [].map(
                         ({
                             nftId,
                             name,
