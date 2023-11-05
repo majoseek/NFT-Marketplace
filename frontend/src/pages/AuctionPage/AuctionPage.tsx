@@ -1,10 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { API_KEYS } from '../../api/API_KEYS';
-import axios from 'axios';
+import { useState } from 'react';
 import { MinimalNft } from '../OwnedNftsPage/OwnedNftsPage';
-import { getIpfsImage } from '../../utils/ipfsImageGetter';
 import moment from 'moment';
 
 type Bid = {
@@ -56,18 +51,14 @@ const AuctionPage = () => {
     const [nft, setNft] = useState<Nft>();
     const auctionEnded = false;
 
-    return nft ? (
+    return true ? (
         <main className="py-32 px-20 flex justify-center gap-10">
             <section className="flex flex-col gap-3">
-                <img
-                    src={getIpfsImage(nft.uri)}
-                    alt="nft"
-                    className="rounded-xl w-96"
-                />
+                <img src="cos" alt="nft" className="rounded-xl w-96" />
                 <h2 className="font-bold text-4xl">{nft?.name}</h2>
                 <span className="text-gray">
                     {' '}
-                    Minted on {moment(nft.mintedDate).format('lll')}
+                    Minted on {moment('').format('lll')}
                 </span>
                 <span className="text-gray font-mono font-semibold text-lg">
                     Created by
@@ -83,11 +74,12 @@ const AuctionPage = () => {
                     Tags
                 </span>
                 <div className="flex gap-3">
-                    {nft.tags.map((tag) => (
-                        <button key={tag.tagId} className="btn">
-                            {tag.name}
-                        </button>
-                    ))}
+                    {nft &&
+                        nft.tags.map((tag) => (
+                            <button key={tag.tagId} className="btn">
+                                {tag.name}
+                            </button>
+                        ))}
                 </div>
             </section>
             <section className="p-6 flex flex-col bg-primary h-fit rounded-xl gap-2 items-center w-96">

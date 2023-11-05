@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { API_KEYS } from '../../api/API_KEYS';
-import { getIpfsImage } from '../../utils/ipfsImageGetter';
 
 type Nft = {
     nftId: number;
@@ -51,7 +50,7 @@ const CreateAuctionPage = () => {
                 <div className="flex flex-col gap-6 justify-center items-center">
                     <div className="max-w-xs min-w-[15rem] bg-gray/5 rounded-xl">
                         <img
-                            src={getIpfsImage(nftResponse.uri)}
+                            src=""
                             alt="nft"
                             className="rounded-t-xl h-80 w-80"
                         />

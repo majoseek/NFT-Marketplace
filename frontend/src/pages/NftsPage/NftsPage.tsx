@@ -5,7 +5,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { API_KEYS } from '../../api/API_KEYS';
 import { useQuery } from '@tanstack/react-query';
-import { getIpfsImage } from '../../utils/ipfsImageGetter';
 import { capitalize } from 'lodash';
 
 type AuctionFilter = 'all' | 'active' | 'won' | 'expired';
@@ -16,20 +15,11 @@ const NftsPage = () => {
     const [auctions, setAuctions] = useState([]);
     const [nameFilter, setNameFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<AuctionFilter>('active');
-    const { data: schoolResponse, isLoading } = useQuery(
-        [API_KEYS.GET_SCHOOL_INFO],
-        () => axios.get(`/api/school/${schoolId}`).then((response) => response),
-        { onSuccess: (response) => handleFetchSuccess(response.data.auctions) }
-    );
 
     const handleAuctionClick = (auctionId: number) =>
         navigate(`/browse/${schoolId}/${auctionId}`);
 
     const handleOwnedNftsClick = () => navigate(`/ownedNfts`);
-
-    const getMappedAndFilteredNfts = () => {};
-
-    const handleFetchSuccess = (nftsData: any) => {};
 
     const handleSearchInput = (e: any) => {
         setNameFilter(e.target.value);
@@ -44,14 +34,6 @@ const NftsPage = () => {
         return '';
     };
 
-    // when user visits a link from a different school, change it in our store too
-    useEffect(() => {
-        const parsedSchoolId = parseInt(schoolId!);
-        if (parsedSchoolId !== marketplaceStore.schoolId) {
-            marketplaceStore.setChosenSchool(parsedSchoolId);
-        }
-    }, [schoolId]);
-
     return (
         <main className="py-32 px-20 flex items-start flex-col justify-center">
             <div className="flex justify-around w-full">
@@ -59,16 +41,13 @@ const NftsPage = () => {
                     <h3 className="text-3xl font-bold">Available auctions</h3>
                     <h4 className="text-xl mt-3">
                         Explore and buy items from students of{' '}
-                        <span className="font-bold">
-                            {schoolResponse?.data.name}
-                        </span>
+                        <span className="font-bold">{'cos tam'}</span>
                     </h4>
                 </span>
                 <div className="flex flex-row gap-5">
                     <select
                         className="select select-bordered w-32"
                         onChange={handleStatusFilterChange}
-                        disabled={schoolResponse?.data.auctions.length === 0}
                         defaultValue="active"
                     >
                         <option value="all">All</option>
@@ -82,9 +61,6 @@ const NftsPage = () => {
                             placeholder="Search..."
                             className="input input-bordered w-full max-w-xs bg-transparent pr-12"
                             onChange={handleSearchInput}
-                            disabled={
-                                schoolResponse?.data.auctions.length === 0
-                            }
                         />
                         <img
                             src={SearchIcon}
@@ -95,7 +71,7 @@ const NftsPage = () => {
                 </div>
             </div>
             <section className="flex gap-10 mt-32 flex-wrap justify-center w-full">
-                {!isLoading && auctions.length > 0 ? (
+                {auctions.length > 0 ? (
                     auctions.map(
                         ({
                             auctionId,
@@ -111,7 +87,7 @@ const NftsPage = () => {
                                 onClick={() => handleAuctionClick(auctionId)}
                             >
                                 <img
-                                    src={getIpfsImage(fileUri)}
+                                    src=""
                                     alt="nft"
                                     className="rounded-t-xl h-80 w-80 max-w-xs"
                                 />
@@ -155,7 +131,7 @@ const NftsPage = () => {
                     )
                 ) : (
                     <div className="flex flex-col justify-center items-center bg-black/20 p-10 rounded-xl">
-                        {isLoading ? (
+                        {true ? (
                             <progress className="progress w-56" />
                         ) : (
                             <>
@@ -168,7 +144,6 @@ const NftsPage = () => {
                                         className="link link-primary link-hover"
                                         onClick={() => handleOwnedNftsClick()}
                                     >
-                                        {' '}
                                         owned items.
                                     </span>
                                     .

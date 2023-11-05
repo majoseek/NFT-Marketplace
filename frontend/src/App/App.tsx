@@ -15,9 +15,6 @@ const App = () => {
                 <Route element={<LandingPage />} path="/" />
                 <Route element={<OwnedNftsPage />} path="/ownedNfts" />
                 <Route element={<CreateNftPage />} path="/createNft" />
-
-                {/* these aren't school protected - 
-           if user visits a link, schoolId will be automatically set */}
                 <Route element={<NftsPage />} path="/browse/:schoolId" />
                 <Route
                     element={<AuctionPage />}

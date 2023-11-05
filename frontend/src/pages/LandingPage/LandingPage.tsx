@@ -19,35 +19,35 @@ const LandingPage = () => {
                         Collect Items
                     </span>
                     <span className="text-base max-w-md">
-                        {`NFT Marketplace is designed for students' school works.
-                        Collect, buy and sell works from students of your chosen
-                        school!`}
+                        {`Experience the future of ownership with our NFT Marketplace! Dive into a world of digital art, collectibles, and endless possibilities.`}
                     </span>
                     <button
                         onClick={handleGetStarted}
                         className="btn btn-primary mt-24 w-fit"
                     >
                         <img src={RocketIcon} className="mr-3" alt="rocket" />
-                        Get started
+                        Connect wallet
                     </button>
                     <div className="flex justify-between mt-8 max-w-sm">
                         <div className="flex flex-col ">
                             <span className="font-semibold text-2xl text-center">
-                                15+
+                                672189+
                             </span>
-                            <span className="text-lg">Total auctions</span>
+                            <span className="text-lg text-center">Users</span>
                         </div>
                         <div className="flex flex-col ">
                             <span className="font-semibold text-2xl text-center">
-                                3+
+                                52176521+
                             </span>
-                            <span className="text-lg">Schools</span>
+                            <span className="text-lg text-center">NFTs</span>
                         </div>
                         <div className="flex flex-col ">
                             <span className="font-semibold text-2xl text-center">
-                                10+
+                                15120+
                             </span>
-                            <span className="text-lg">Artists</span>
+                            <span className="text-lg text-center">
+                                Auctions
+                            </span>
                         </div>
                     </div>
                 </section>

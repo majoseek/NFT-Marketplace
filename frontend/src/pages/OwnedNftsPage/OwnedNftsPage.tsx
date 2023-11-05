@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { getIpfsImage } from '../../utils/ipfsImageGetter';
 
 export type MinimalNft = {
     nftId: number;
@@ -47,7 +46,7 @@ const OwnedNftsPage = () => {
                                 className="max-w-xs min-w-[15rem] bg-gray/5 rounded-xl"
                             >
                                 <img
-                                    src={getIpfsImage(uri)}
+                                    src=""
                                     alt="nft"
                                     className="rounded-t-xl h-80 w-80"
                                 />
