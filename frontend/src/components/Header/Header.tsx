@@ -48,12 +48,6 @@ const Header = () => {
                                 >
                                     MY ITEMS
                                 </button>
-                                <button
-                                    className="btn btn-primary"
-                                    onClick={() => {}}
-                                >
-                                    Logout
-                                </button>
                             </>
                         ) : null}
                     </div>

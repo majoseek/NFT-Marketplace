@@ -1,3 +1,5 @@
+import daisyui from 'daisyui';
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
@@ -26,9 +28,9 @@ module.exports = {
         themes: [
             {
                 dark: {
-                    ...import('daisyui/src/colors/themes.js')[
-                        '[data-theme=dark]'
-                    ],
+                    // ...import('daisyui/src/colors/themes.js')[
+                    //     '[data-theme=dark]'
+                    // ],
                     primary: '#A259FF',
                     'primary-focus': '#7b14ff',
                     'base-100': '#2B2B2B',
@@ -38,5 +40,5 @@ module.exports = {
             },
         ],
     },
-    plugins: [require('daisyui')],
+    plugins: [daisyui],
 };
