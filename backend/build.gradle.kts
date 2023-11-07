@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id("java")
@@ -54,7 +55,9 @@ subprojects {
     }
 }
 
-
+tasks.withType<BootJar>() {
+    mainClass.set("com.example.nftmarketplace.NftMarketplaceApplicationKt")
+}
 
 group = "com.example"
 version = "0.0.1-SNAPSHOT"
