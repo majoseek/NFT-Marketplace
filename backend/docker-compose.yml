@@ -1,4 +1,7 @@
 version: '3.8'
+networks:
+  local-network:
+    driver: bridge
 
 services:
   mongo:
@@ -9,6 +12,8 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: password
     ports:
       - '27017:27017'
+    networks:
+      - local-network
   rabbitmq:
     container_name: rabbitmq
     image: rabbitmq:3.11.2-management
@@ -18,4 +23,25 @@ services:
     ports:
       - '5672:5672' # AMQP protocol port
       - '15672:15672' # HTTP management UI
+    networks:
+      - local-network
 
+  backend:
+    container_name: backend
+    build:
+      dockerfile: Dockerfile
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://admin:password@mongo:27017/admin
+      SPRING_DATA_MONGODB_DATABASE: admin
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: admin
+      SPRING_RABBITMQ_PASSWORD: password
+      GRADLE_OPTS: "-Dorg.gradle.vfs.watch=false"# Assuming your Dockerfile is named Dockerfile and located at the specified context
+    depends_on:
+      - mongo
+      - rabbitmq
+    ports:
+      - '8080:8080'
+    networks:
+      - local-network
