@@ -1,7 +1,7 @@
 import LoadingElement from '@/components/LoadingElement';
-import RocketIcon from '../../assets/icons/rocketIcon.svg';
-import LandingImage from '../../assets/images/landingImage.svg';
-import userAvatar from '../../assets/images/userAvatar.png';
+import RocketIcon from '@/assets/icons/rocketIcon.svg';
+import LandingImage from '@/assets/images/landingImage.svg';
+import userAvatar from '@/assets/images/userAvatar.png';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setWallets } from '@/store/appSlice';
 import { useState } from 'react';

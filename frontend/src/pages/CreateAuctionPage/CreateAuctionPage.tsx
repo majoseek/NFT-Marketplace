@@ -1,45 +1,19 @@
-import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { API_KEYS } from '../../api/API_KEYS';
-
-type Nft = {
-    nftId: number;
-    name: string;
-    description: string;
-    uri: string;
-    isImage: boolean;
-    issuer: {
-        accountId: number;
-        name: string;
-    };
-    owner: {
-        accountId: number;
-        name: string;
-    };
-    tags: {
-        tagId: number;
-        name: string;
-    }[];
-};
 
 const CreateAuctionPage = () => {
     const { nftId } = useParams<{ nftId: string }>();
     const [selectedDuration, setSelectedDuration] = useState(0);
     const durations = [1, 5, 15, 30, 45, 60];
-    const { data: nftResponse } = useQuery<Nft>([API_KEYS.GET_NFT], () =>
-        axios.get(`/api/nft/${nftId}`).then((response) => response.data)
-    );
 
     const handleCreateAuctionClick = () => {};
 
-    return nftResponse ? (
+    return true ? (
         <main className="py-32 px-20 flex items-start flex-col justify-center">
             <div className="flex justify-around w-full">
                 <span>
                     <h3 className="text-4xl font-bold">
-                        {`Create auction for "${nftResponse.name}" NFT`}
+                        {`Create auction for "MOCK NAME" NFT`}
                     </h3>
                     <h4 className="text-xl mt-3">
                         Just type in auction duration
@@ -55,12 +29,8 @@ const CreateAuctionPage = () => {
                             className="rounded-t-xl h-80 w-80"
                         />
                         <div className="p-5 rounded-b-xl text-center">
-                            <p className="font-bold text-2xl">
-                                {nftResponse.name}
-                            </p>
-                            <p className="font-light mt-2">
-                                {nftResponse.description}
-                            </p>
+                            <p className="font-bold text-2xl">{'NFT NAME'}</p>
+                            <p className="font-light mt-2">{'NFT DESC'}</p>
                         </div>
                     </div>
                     <div className="flex gap-3 justify-center items-center">

@@ -1,10 +1,7 @@
-import { useEffect, useState } from 'react';
-import authorImg from '../../assets/images/userAvatar.png';
-import SearchIcon from '../../assets/icons/searchIcon.svg';
+import { useState } from 'react';
+import authorImg from '@/assets/images/userAvatar.png';
+import SearchIcon from '@/assets/icons/searchIcon.svg';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
-import { API_KEYS } from '../../api/API_KEYS';
-import { useQuery } from '@tanstack/react-query';
 import { capitalize } from 'lodash';
 
 type AuctionFilter = 'all' | 'active' | 'won' | 'expired';
