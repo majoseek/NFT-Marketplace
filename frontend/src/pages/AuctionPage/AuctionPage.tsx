@@ -12,18 +12,6 @@ type Bid = {
     price: number;
 };
 
-type Auction = {
-    auctionId: number;
-    bids: Bid[];
-    currentPrice: number;
-    endDate: string;
-    status: string;
-    nft: MinimalNft;
-    startDate: string;
-    startingPrice: number;
-    winningBid: Bid;
-};
-
 type Nft = {
     nftId: number;
     name: string;
@@ -47,7 +35,7 @@ type Nft = {
 
 const AuctionPage = () => {
     const [bid, setBid] = useState(0);
-    const [auction, setAuction] = useState<Auction>();
+    const [auction, setAuction] = useState();
     const [nft, setNft] = useState<Nft>();
     const auctionEnded = false;
 

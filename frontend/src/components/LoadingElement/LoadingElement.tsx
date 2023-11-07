@@ -5,7 +5,7 @@ type Props = {
 const LoadingElement = ({ title }: Props) => {
     return (
         <div className="flex flex-col justify-center items-center gap-6">
-            {title && <span className="font-semibold text-lg">{title}</span>}
+            {title && <span className="font-semibold text-2xl">{title}</span>}
             <span className="loading loading-bars loading-lg"></span>
         </div>
     );

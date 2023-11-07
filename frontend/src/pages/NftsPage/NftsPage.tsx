@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import authorImg from '@/assets/images/userAvatar.png';
 import SearchIcon from '@/assets/icons/searchIcon.svg';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { capitalize } from 'lodash';
+import { Auction } from '@/types/api/auctions';
 
 type AuctionFilter = 'all' | 'active' | 'won' | 'expired';
 
 const NftsPage = () => {
     const navigate = useNavigate();
-    const [auctions, setAuctions] = useState([]);
+    const [auctions, setAuctions] = useState<Auction[]>();
     const [nameFilter, setNameFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<AuctionFilter>('active');
 
@@ -22,9 +23,9 @@ const NftsPage = () => {
 
     const handleStatusFilterChange = (e: any) => {};
 
-    const getStatusClassName = (status: string) => {
-        if (status === 'WON') return 'text-green-400';
-        else if (status === 'ENDED' || status === 'EXPIRED')
+    const getStatusClassName = (status: Auction['status']) => {
+        if (status === 'active') return 'text-green-400';
+        else if (status === 'completed' || status === 'expired')
             return 'text-red-500';
         return '';
     };
@@ -35,8 +36,7 @@ const NftsPage = () => {
                 <span>
                     <h3 className="text-3xl font-bold">Available auctions</h3>
                     <h4 className="text-xl mt-3">
-                        Explore and buy items from students of{' '}
-                        <span className="font-bold">{'cos tam'}</span>
+                        Explore and buy items from other users
                     </h4>
                 </span>
                 <div className="flex flex-row gap-5">
@@ -66,33 +66,37 @@ const NftsPage = () => {
                 </div>
             </div>
             <section className="flex gap-10 mt-32 flex-wrap justify-center w-full">
-                {auctions.length > 0 ? (
+                {auctions && auctions.length > 0 ? (
                     auctions.map(
                         ({
-                            auctionId,
-                            name,
-                            fileUri,
-                            author,
-                            currentBidPrice,
+                            auctionID,
+                            description,
+                            expiryTime,
+                            highestBid,
+                            nft,
                             status,
+                            title,
                         }) => (
                             <div
                                 className="cursor-pointer"
-                                key={auctionId}
-                                onClick={() => handleAuctionClick(auctionId)}
+                                key={auctionID}
+                                onClick={() => handleAuctionClick(auctionID)}
                             >
                                 <img
-                                    src=""
+                                    src={nft.url}
                                     alt="nft"
                                     className="rounded-t-xl h-80 w-80 max-w-xs"
                                 />
                                 <div className="bg-primary p-5 rounded-b-xl text-center hover:bg-gray">
                                     <span className="font-medium text-lg">
-                                        {name}
+                                        {title}
                                     </span>
                                     <span className="flex mt-3 gap-3 leading-xs items-center font-light font-mono">
-                                        <img src={authorImg} alt="author" />
-                                        {author}
+                                        <img
+                                            src={authorImg}
+                                            alt="description"
+                                        />
+                                        {description}
                                     </span>
                                     <div className="flex justify-between mt-5 font-mono">
                                         <span className="flex gap-1 flex-col">
@@ -111,8 +115,8 @@ const NftsPage = () => {
                                             <span className="text-gray">
                                                 Highest bid
                                             </span>
-                                            {currentBidPrice > 0 ? (
-                                                <span>{`${currentBidPrice}$`}</span>
+                                            {highestBid.amount > 0 ? (
+                                                <span>{`${highestBid.amount}$`}</span>
                                             ) : (
                                                 <span className="text-gray">
                                                     none!
@@ -126,7 +130,7 @@ const NftsPage = () => {
                     )
                 ) : (
                     <div className="flex flex-col justify-center items-center bg-black/20 p-10 rounded-xl">
-                        {true ? (
+                        {auctions === undefined ? (
                             <progress className="progress w-56" />
                         ) : (
                             <>
@@ -137,7 +141,7 @@ const NftsPage = () => {
                                     Want to sell an item? Take a look at your
                                     <span
                                         className="link link-primary link-hover"
-                                        onClick={() => handleOwnedNftsClick()}
+                                        onClick={handleOwnedNftsClick}
                                     >
                                         owned items.
                                     </span>

@@ -16,7 +16,10 @@ const ProtectedRoute = ({ children }: Props) => {
     return (
         <>
             {hasMetaMaskProvider === undefined ? (
-                <LoadingPage title="Loading MetaMask..." />
+                <LoadingPage
+                    title="Loading MetaMask..."
+                    description="Stay patient! If it takes too long, refresh the page."
+                />
             ) : hasMetaMaskProvider === false ? (
                 <ErrorPage title="No MetaMask detected" />
             ) : wallets && wallets.length === 0 ? (
