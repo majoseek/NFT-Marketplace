@@ -8,13 +8,11 @@ type AuctionFilter = 'all' | 'active' | 'won' | 'expired';
 
 const NftsPage = () => {
     const navigate = useNavigate();
-    const { schoolId } = useParams<{ schoolId: string }>();
     const [auctions, setAuctions] = useState([]);
     const [nameFilter, setNameFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<AuctionFilter>('active');
 
-    const handleAuctionClick = (auctionId: number) =>
-        navigate(`/browse/${schoolId}/${auctionId}`);
+    const handleAuctionClick = (auctionId: number) => {};
 
     const handleOwnedNftsClick = () => navigate(`/ownedNfts`);
 

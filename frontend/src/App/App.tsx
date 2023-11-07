@@ -16,8 +16,7 @@ const App = () => {
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        const refreshAccounts = (accounts: unknown[]) => {
-            console.log('acc[]', accounts);
+        const refreshAccounts = (accounts: string[]) => {
             if (accounts.length > 0) dispatch(setWallets(accounts));
             else dispatch(setWallets([]));
         };
@@ -47,10 +46,9 @@ const App = () => {
             <Header />
             <ProtectedRoute>
                 <Routes>
-                    <Route element={<LandingPage />} path="/" />
+                    <Route element={<NftsPage />} path="/" />
                     <Route element={<OwnedNftsPage />} path="/ownedNfts" />
                     <Route element={<CreateNftPage />} path="/createNft" />
-                    <Route element={<NftsPage />} path="/browse/:schoolId" />
                     <Route
                         element={<AuctionPage />}
                         path="/browse/:schoolId/:auctionId"

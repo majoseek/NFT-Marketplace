@@ -2,14 +2,11 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
 export interface AppState {
-    hasMetaMaskProvider: boolean | undefined;
-    wallets: unknown[] | undefined;
+    hasMetaMaskProvider?: boolean;
+    wallets?: string[];
 }
 
-const initialState: AppState = {
-    hasMetaMaskProvider: undefined,
-    wallets: undefined,
-};
+const initialState: AppState = {};
 
 export const appSlice = createSlice({
     name: 'counter',
