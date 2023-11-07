@@ -31,6 +31,7 @@ module.exports = {
                     // ...import('daisyui/src/colors/themes.js')[
                     //     '[data-theme=dark]'
                     // ],
+                    info: '#A259FF',
                     primary: '#A259FF',
                     'primary-focus': '#7b14ff',
                     'base-100': '#2B2B2B',

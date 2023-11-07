@@ -2,14 +2,57 @@ import LoadingElement from '@/components/LoadingElement';
 import RocketIcon from '../../assets/icons/rocketIcon.svg';
 import LandingImage from '../../assets/images/landingImage.svg';
 import userAvatar from '../../assets/images/userAvatar.png';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { setWallets } from '@/store/appSlice';
+import { useState } from 'react';
 
 const LandingPage = () => {
-    const handleGetStarted = () => {
-        console.log('TODO');
+    const dispatch = useAppDispatch();
+    const [connectWalletMessage, setConnectWalletMesage] = useState<{
+        type: 'INFO' | 'ERROR';
+        content: string;
+    }>();
+
+    const handleConnectWallet = async () => {
+        if (!window.ethereum && !window.web3) {
+            setConnectWalletMesage({
+                type: 'ERROR',
+                content:
+                    'Non-Ethereum browser detected. You should add MetaMask to your extensions!',
+            });
+            return;
+        }
+
+        try {
+            const accounts = await window.ethereum.request({
+                method: 'eth_requestAccounts',
+            });
+            dispatch(setWallets(accounts));
+        } catch {
+            setConnectWalletMesage({
+                type: 'INFO',
+                content: 'Connecting wallet, please check MetaMask extension!',
+            });
+        }
     };
 
     return (
         <>
+            {connectWalletMessage && (
+                <div className="toast toast-top toast-center">
+                    <div
+                        className={`alert ${
+                            connectWalletMessage.type === 'ERROR'
+                                ? 'alert-error'
+                                : 'alert-info'
+                        }`}
+                    >
+                        <span className="text-white">
+                            {connectWalletMessage.content}
+                        </span>
+                    </div>
+                </div>
+            )}
             <main className="p-20 flex gap-7 justify-center items-center">
                 {true ? (
                     <>
@@ -25,7 +68,7 @@ const LandingPage = () => {
                                 {`Experience the future of ownership with our NFT Marketplace! Dive into a world of digital art, collectibles, and endless possibilities.`}
                             </span>
                             <button
-                                onClick={handleGetStarted}
+                                onClick={handleConnectWallet}
                                 className="btn btn-primary mt-24 w-fit text-white"
                             >
                                 <img
