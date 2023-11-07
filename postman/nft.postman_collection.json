@@ -12,7 +12,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/auction?page=1&count=20",
+					"raw": "localhost:8080/auction?status=active&page=1&count=20",
 					"host": [
 						"localhost"
 					],
@@ -22,10 +22,9 @@
 					],
 					"query": [
 						{
-							"key": "status [NOT YET IMPLEMENTED]",
-							"value": "Pending",
-							"description": "[Active, Pending, Cancelled]",
-							"disabled": true
+							"key": "status",
+							"value": "active",
+							"description": "[active, completed, expired, canceled]"
 						},
 						{
 							"key": "page",
@@ -66,7 +65,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/auction/16/bids",
+					"raw": "http://localhost:8080/auction/{{auctionID}}/bids",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -74,7 +73,7 @@
 					"port": "8080",
 					"path": [
 						"auction",
-						"16",
+						"{{auctionID}}",
 						"bids"
 					]
 				}
@@ -87,7 +86,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/auction/contract/{{contractAddress}}?tokenId={{tokenId}}",
+					"raw": "http://localhost:8080/auction/contract/{{contractAddress}}",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -101,7 +100,8 @@
 					"query": [
 						{
 							"key": "tokenId",
-							"value": "{{tokenId}}"
+							"value": "{{tokenId}}",
+							"disabled": true
 						}
 					]
 				}
@@ -154,7 +154,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/nft/contract/{{contractAddress}}/token/1393943",
+					"raw": "localhost:8080/nft/contract/{{contractAddress}}/token/1393943123",
 					"host": [
 						"localhost"
 					],
@@ -164,7 +164,7 @@
 						"contract",
 						"{{contractAddress}}",
 						"token",
-						"1393943"
+						"1393943123"
 					]
 				}
 			},
@@ -194,7 +194,7 @@
 	"variable": [
 		{
 			"key": "auctionID",
-			"value": "0"
+			"value": "1"
 		},
 		{
 			"key": "contractAddress",
