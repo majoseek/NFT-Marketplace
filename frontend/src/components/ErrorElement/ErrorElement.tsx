@@ -1,13 +1,15 @@
+import { WarnIcon } from '@/assets/icons/WarnIcon';
+
 type Props = {
     title?: string | React.ReactNode;
 };
 
-const LoadingElement = ({ title }: Props) => {
+const ErrorElement = ({ title }: Props) => {
     return (
         <div className="flex flex-col justify-center items-center gap-6">
+            <WarnIcon />
             {title && <span className="font-semibold text-lg">{title}</span>}
-            <span className="loading loading-bars loading-lg"></span>
         </div>
     );
 };
-export default LoadingElement;
+export default ErrorElement;
