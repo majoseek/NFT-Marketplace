@@ -1,7 +1,7 @@
 package com.example.nftmarketplace.auction.storage.db
 
 import com.example.nftmarketplace.auction.Auction
-import com.example.nftmarketplace.auction.nftauctioncontract.toAuctionEntity
+import com.example.nftmarketplace.auction.toAuctionEntity
 import com.example.nftmarketplace.common.EventPublisher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
@@ -57,5 +57,10 @@ fun AuctionEntity.toAuction() = Auction(
     minimumIncrement = minimalIncrement,
     expiryTime = expiryTime,
     bids = mutableListOf(),
-    status = Auction.Status.Pending,
+    status = when (status) {
+        AuctionEntity.Status.Active -> Auction.Status.Active
+        AuctionEntity.Status.Won -> Auction.Status.Won
+        AuctionEntity.Status.Expired -> Auction.Status.Expired
+        AuctionEntity.Status.Canceled -> Auction.Status.Canceled
+    },
 )

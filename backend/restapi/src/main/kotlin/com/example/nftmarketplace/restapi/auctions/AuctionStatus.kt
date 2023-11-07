@@ -8,11 +8,9 @@ enum class AuctionStatus {
     @JsonProperty("expired")
     Expired,
     @JsonProperty("cancelled")
-    Cancelled,
+    Canceled,
     @JsonProperty("ending")
     Ending,
     @JsonProperty("completed")
     Completed,
-    @JsonProperty("not_started")
-    NotStarted,
 }

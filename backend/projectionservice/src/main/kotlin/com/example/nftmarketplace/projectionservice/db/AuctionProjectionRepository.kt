@@ -1,5 +1,6 @@
 package com.example.nftmarketplace.projectionservice.db
 
+import kotlinx.datetime.LocalDateTime
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
@@ -14,4 +15,6 @@ interface AuctionProjectionRepository : ReactiveMongoRepository<AuctionProjectio
     fun findAllByStatus(status: AuctionProjectionEntity.Status): Flux<AuctionProjectionEntity>
 
     fun findAllByNftContractAddress(contractAddress: String): Flux<AuctionProjectionEntity>
+
+    fun findAllByExpiryTimeIsBeforeAndStatusEquals(time: LocalDateTime, status: AuctionProjectionEntity.Status): Flux<AuctionProjectionEntity>
 }

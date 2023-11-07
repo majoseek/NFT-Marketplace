@@ -25,6 +25,9 @@ class AlchemyAPIConfiguration {
         .filter { request, next ->
             getLogger().info("Request: ${request.method()} ${request.url()}")
             next.exchange(request)
+                .doOnError {
+                    getLogger().error("Error: ${it.message}")
+                }
                 .doOnNext { response ->
                     getLogger().info("Response: ${response.statusCode()}")
                 }

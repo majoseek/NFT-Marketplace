@@ -23,7 +23,10 @@ data class AuctionProjectionEntity(
     val winner: String? = null,
 ) : Serializable {
     enum class Status {
-        NotStared, Active, Cancelled, Expired, Won
+        Active,
+        Won,
+        Expired,
+        Canceled
     }
 
     data class Bid(

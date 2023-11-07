@@ -11,7 +11,7 @@ data class AuctionCreatedEvent(
     val expiryTime: String,
     val startingPrice: String,
     val minimalIncrement: String,
-    val status: String,
+    val status: Status,
     val bids: List<Bid> = emptyList(),
 ) : DomainEvent(aggregateId = auctionId) {
     data class Bid(
@@ -19,4 +19,11 @@ data class AuctionCreatedEvent(
         val amount: String,
         val timestamp: String,
     )
+
+    enum class Status {
+        Active,
+        Won,
+        Expired,
+        Canceled
+    }
 }

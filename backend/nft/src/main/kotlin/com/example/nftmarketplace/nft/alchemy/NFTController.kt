@@ -2,6 +2,7 @@ package com.example.nftmarketplace.nft.alchemy
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -23,5 +24,10 @@ class NFTController(@Autowired private val nftAdapter: NFTAdapter) {
         @PathVariable("tokenId") tokenId: Long
     ) = nftAdapter.getNFT(contractAddress, tokenId, true).let { nft ->
         ResponseEntity.ok(nft)
+    }
+
+    @ExceptionHandler(NFTNotFoundException::class)
+    fun handleNFTNotFoundException(e: NFTNotFoundException): ResponseEntity<Any> {
+        return ResponseEntity.notFound().build()
     }
 }

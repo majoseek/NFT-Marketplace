@@ -16,7 +16,10 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toKotlinLocalDateTime
 import java.math.BigDecimal
-import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.days
+
+val endingAuctionDuration = 1.days
+
 
 fun AuctionCreatedEvent.toAuctionProjectionEntity() = AuctionProjectionEntity(
     id = auctionId,
@@ -28,7 +31,12 @@ fun AuctionCreatedEvent.toAuctionProjectionEntity() = AuctionProjectionEntity(
     ),
     bids = bids.map { AuctionProjectionEntity.Bid(it.bidder, BigDecimal(it.amount), LocalDateTime.parse(it.timestamp)) },
     expiryTime = LocalDateTime.parse(expiryTime),
-    status = enumValueOrNull<AuctionProjectionEntity.Status>(status),
+    status = when (status) {
+        AuctionCreatedEvent.Status.Active -> AuctionProjectionEntity.Status.Active
+        AuctionCreatedEvent.Status.Won -> AuctionProjectionEntity.Status.Won
+        AuctionCreatedEvent.Status.Expired -> AuctionProjectionEntity.Status.Expired
+        AuctionCreatedEvent.Status.Canceled -> AuctionProjectionEntity.Status.Canceled
+    },
     startingPrice = BigDecimal(startingPrice),
     minimalIncrement = BigDecimal(minimalIncrement),
 )
@@ -74,18 +82,24 @@ fun List<AuctionProjectionEntity.Bid>.getHighestBidElement() = maxByOrNull { it.
 }
 
 fun AuctionProjectionEntity.Status.toAuctionResponseStatus(expiryTime: LocalDateTime) = when (this) {
-    AuctionProjectionEntity.Status.NotStared -> AuctionStatus.NotStarted
     AuctionProjectionEntity.Status.Active -> {
-        if (expiryTime.toInstant(TimeZone.UTC).minus(30.minutes) < Clock.System.now()) {
+        if (expiryTime.toInstant(TimeZone.UTC).minus(endingAuctionDuration) < Clock.System.now()) {
             AuctionStatus.Ending
         } else {
             AuctionStatus.Active
         }
     }
-
-    AuctionProjectionEntity.Status.Cancelled -> AuctionStatus.Cancelled
+    AuctionProjectionEntity.Status.Canceled -> AuctionStatus.Canceled
     AuctionProjectionEntity.Status.Expired -> AuctionStatus.Expired
     AuctionProjectionEntity.Status.Won -> AuctionStatus.Completed
+}
+
+fun AuctionStatus.toAuctionProjectionStatus() = when (this) {
+    AuctionStatus.Active -> AuctionProjectionEntity.Status.Active
+    AuctionStatus.Expired -> AuctionProjectionEntity.Status.Expired
+    AuctionStatus.Canceled -> AuctionProjectionEntity.Status.Canceled
+    AuctionStatus.Ending -> throw RuntimeException("Auction status Ending is not supported")
+    AuctionStatus.Completed -> AuctionProjectionEntity.Status.Won
 }
 
 fun AuctionProjectionEntity.toAuctionResponse() = AuctionResponse(

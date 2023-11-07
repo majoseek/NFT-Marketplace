@@ -13,7 +13,7 @@ interface AuctionsApi {
     suspend fun getAllAuctions(
         @RequestParam("page") page: Int = 1,
         @RequestParam("count") count: Int = 20,
-        @RequestParam("status") status: AuctionStatus? = null
+        @RequestParam("status") status: String? = null
     ): ResponseEntity<AuctionsPagedResponse>
 
     @GetMapping("/{auctionId}")

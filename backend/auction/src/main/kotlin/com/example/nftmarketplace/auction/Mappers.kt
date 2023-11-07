@@ -1,76 +1,110 @@
 package com.example.nftmarketplace.auction
 
+import com.example.nftmarketplace.auction.requests.commands.CreateAuctionCommand
 import com.example.nftmarketplace.auction.storage.db.AuctionEntity
-import com.example.nftmarketplace.restapi.auctions.AuctionResponse
-import com.example.nftmarketplace.restapi.auctions.AuctionStatus
-import com.example.nftmarketplace.restapi.auctions.BidElement
-import com.example.nftmarketplace.restapi.nfts.NFTResponse
-import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDateTime
+import com.example.nftmarketplace.nftauction.NFTAuction
+import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
+import org.web3j.tuples.generated.Tuple12
+import org.web3j.utils.Convert
 import java.math.BigInteger
-import kotlin.time.Duration.Companion.minutes
+
+typealias NFTAuctionTuple = Tuple12<BigInteger, String, String, String, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, String, NFTAuction.Bid>
+
+fun NFTAuctionTuple.toAuction(bids: List<Auction.Bid>? = null): Auction {
+    return Auction(
+        auctionId = component1().toLong(),
+        title = component2(),
+        description = component3(),
+        nft = Auction.NFT(
+            contractAddress = component4(),
+            tokenId = component5().toLong(),
+        ),
+        startingPrice = Convert.fromWei(
+            component6().toBigDecimal(),
+            Convert.Unit.ETHER
+        ),
+        reservePrice = Convert.fromWei(component7().toBigDecimal(), Convert.Unit.ETHER),
+        minimumIncrement = Convert.fromWei(
+            component8().toBigDecimal(),
+            Convert.Unit.ETHER
+        ),
+        expiryTime = component9().toLong().let {
+            Instant.fromEpochSeconds(it).toLocalDateTime(timeZone = kotlinx.datetime.TimeZone.UTC)
+        },
+        status = component10().toStatus(),
+        bids = bids?.sortedByDescending { it.timestamp }.orEmpty().toMutableList(),
+    )
+}
+
+fun BigInteger.toStatus() =
+    when (this.toInt()) {
+        0 -> Auction.Status.Active
+        1 -> Auction.Status.Won
+        2 -> Auction.Status.Expired
+        else -> Auction.Status.Canceled
+    }
 
 fun Auction.Status.toBigInteger(): BigInteger = BigInteger.valueOf(
     when (this) {
-        Auction.Status.Pending -> 0
-        Auction.Status.Expired,
-        Auction.Status.Active,
-        -> 1
-
-        Auction.Status.Won,
-        Auction.Status.Cancelled,
-        -> 2
+        Auction.Status.Active -> 0
+        Auction.Status.Won -> 1
+        Auction.Status.Expired -> 2
+        Auction.Status.Canceled -> 3
     }
 )
 
-fun Auction.toAuctionResponse(nft: NFTResponse? = null) = AuctionResponse(
+fun BigInteger.toLocalDateTime() = Instant.fromEpochSeconds(this.toLong())
+    .toLocalDateTime(timeZone = TimeZone.UTC)
+
+
+fun CreateAuctionCommand.Status.toAuctionStatus() =
+    when (this) {
+        CreateAuctionCommand.Status.Active -> Auction.Status.Active
+        CreateAuctionCommand.Status.Won -> Auction.Status.Won
+        CreateAuctionCommand.Status.Expired -> Auction.Status.Expired
+        CreateAuctionCommand.Status.Canceled -> Auction.Status.Canceled
+    }
+
+fun Auction.toAuctionEntity() = AuctionEntity(
+    id = auctionId,
+    title = title,
+    description = description,
+    nft = AuctionEntity.NFTId(
+        nft.contractAddress,
+        nft.tokenId
+    ),
+    bids = bids.map { AuctionEntity.Bid(it.bidder, it.amount, it.timestamp) },
+    expiryTime = expiryTime,
+    status = when (status) {
+        Auction.Status.Active -> AuctionEntity.Status.Active
+        Auction.Status.Won -> AuctionEntity.Status.Won
+        Auction.Status.Expired -> AuctionEntity.Status.Expired
+        Auction.Status.Canceled -> AuctionEntity.Status.Canceled
+    },
+    startingPrice = startingPrice,
+    minimalIncrement = minimumIncrement,
+)
+
+fun Auction.toCreateAuctionCommand() = CreateAuctionCommand(
     auctionId = auctionId,
     title = title,
     description = description,
-    nft = nft,
-    expiryTime = expiryTime.toString(),
-    status = status.toAuctionResponseStatus(expiryTime),
-    bids = bids.map { bid ->
-        BidElement(
-            bidder = bid.bidder,
-            amount = bid.amount,
-            timestamp = bid.timestamp.toString()
-        )
-    },
+    nftContractAddress = nft.contractAddress,
+    nftTokenId = nft.tokenId,
     startingPrice = startingPrice,
+    reservePrice = reservePrice,
     minimumIncrement = minimumIncrement,
+    expiryTime = expiryTime,
+    bids = bids.map { CreateAuctionCommand.Bid(it.bidder, it.amount, it.timestamp) },
+    status = when (status) {
+        Auction.Status.Active -> CreateAuctionCommand.Status.Active
+        Auction.Status.Won -> CreateAuctionCommand.Status.Won
+        Auction.Status.Expired -> CreateAuctionCommand.Status.Expired
+        Auction.Status.Canceled -> CreateAuctionCommand.Status.Canceled
+    }
 )
-
-fun Auction.Status.toAuctionResponseStatus(expiryTime: LocalDateTime) = when (this) {
-    Auction.Status.Pending -> AuctionStatus.NotStarted
-    Auction.Status.Active -> {
-        if (expiryTime.toInstant(TimeZone.UTC).plus(30.minutes) < Clock.System.now()) {
-            AuctionStatus.Active
-        } else {
-            AuctionStatus.Ending
-        }
-    }
-    Auction.Status.Cancelled -> AuctionStatus.Cancelled
-    Auction.Status.Expired -> AuctionStatus.Expired
-    Auction.Status.Won -> AuctionStatus.Completed
-}
-
-fun AuctionEntity.Status.toAuctionResponseStatus(expiryTime: LocalDateTime) = when (this) {
-    AuctionEntity.Status.NotStared -> AuctionStatus.NotStarted
-    AuctionEntity.Status.Active -> {
-        if (expiryTime.toInstant(TimeZone.UTC).plus(30.minutes) < Clock.System.now()) {
-            AuctionStatus.Active
-        } else {
-            AuctionStatus.Ending
-        }
-    }
-    AuctionEntity.Status.Cancelled -> AuctionStatus.Cancelled
-    AuctionEntity.Status.Expired -> AuctionStatus.Expired
-    AuctionEntity.Status.Won -> AuctionStatus.Completed
-}
-
 
 
 

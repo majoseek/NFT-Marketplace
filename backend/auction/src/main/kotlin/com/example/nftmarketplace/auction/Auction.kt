@@ -29,11 +29,10 @@ data class Auction(
     )
 
     enum class Status {
-        Pending,
         Active,
-        Cancelled,
-        Expired,
         Won,
+        Expired,
+        Canceled
     }
 
     data class NFT(
@@ -91,7 +90,7 @@ data class Auction(
     }
 
     fun cancel() {
-        status = Status.Cancelled
+        status = Status.Canceled
         record(AuctionCancelledEvent(auctionId))
     }
 
@@ -107,7 +106,7 @@ data class Auction(
             minimumIncrement: BigDecimal?,
             expiryTime: LocalDateTime,
             bids: List<Bid> = emptyList(),
-            status: Status = Status.Pending,
+            status: Status = Status.Active,
         ) = Auction(
             auctionId = auctionId,
             title = title,
@@ -130,7 +129,12 @@ data class Auction(
                     expiryTime = expiryTime.toString(),
                     startingPrice = startingPrice.toString(),
                     minimalIncrement = minimumIncrement.toString(),
-                    status = status.name,
+                    status = when (status) {
+                        Status.Active -> AuctionCreatedEvent.Status.Active
+                        Status.Won -> AuctionCreatedEvent.Status.Won
+                        Status.Expired -> AuctionCreatedEvent.Status.Expired
+                        Status.Canceled -> AuctionCreatedEvent.Status.Canceled
+                    },
                     bids = bids.map {
                         AuctionCreatedEvent.Bid(
                             bidder = it.bidder,

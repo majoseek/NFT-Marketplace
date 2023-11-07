@@ -1,5 +1,6 @@
 package com.example.nftmarketplace.nft.alchemy.alchemy
 
+import com.example.nftmarketplace.nft.alchemy.NFTNotFoundException
 import com.example.nftmarketplace.nft.alchemy.alchemy.data.bodyparams.BatchNFTs
 import com.example.nftmarketplace.nft.alchemy.alchemy.data.bodyparams.TokenInfo
 import com.example.nftmarketplace.nft.alchemy.alchemy.data.response.AlchemyNFT
@@ -28,7 +29,10 @@ class AlchemyAPIAdapter(
                             .queryParam("tokenId", tokenId)
                             .queryParam("tokenType", "ERC721")
                             .build()
-                    }.retrieve().awaitBody<AlchemyNFT>()
+                    }.retrieveBodyOrThrowNotFound<AlchemyNFT>(
+                        contractAddress,
+                        tokenId.toLongOrNull()
+                    )
             }
             if (!withOwner) return nft.await().toNFT()
 
@@ -43,8 +47,10 @@ class AlchemyAPIAdapter(
                 it.path("getNFTs")
                     .queryParam("owner", ownerAddress)
                     .build()
-            }.retrieve()
-            .awaitBody<AlchemyNFTs>()
+            }.retrieveBodyOrThrowNotFound<AlchemyNFTs>(
+                ownerAddress,
+                null
+            )
         return nfts.ownedNfts.map {
             it.toNFT(ownerAddress)
         }
@@ -58,8 +64,10 @@ class AlchemyAPIAdapter(
                     .queryParam("owner", ownerAddress)
                     .queryParam("tokenType", "ERC721")
                     .build()
-            }.retrieve()
-            .awaitBody<AlchemyNFTs>()
+            }.retrieveBodyOrThrowNotFound<AlchemyNFTs>(
+                contractAddress,
+            null
+        )
         return nfts.ownedNfts.map { it.toNFT() }
     }
 
@@ -70,7 +78,10 @@ class AlchemyAPIAdapter(
                     .queryParam("contractAddress", contractAddress)
                     .queryParam("tokenId", tokenId)
                     .build()
-            }.retrieve().awaitBody<OwnersResponse>()
+            }.retrieveBodyOrThrowNotFound<OwnersResponse>(
+                contractAddress,
+                tokenId.toLongOrNull()
+            )
         return nft.owners.firstOrNull().orEmpty()
     }
 
@@ -92,6 +103,18 @@ class AlchemyAPIAdapter(
             val owner = getNFTOwner(it.contract.address, it.id.tokenId)
             it.toNFT(owner)
         }
+    }
+
+    private suspend inline fun <reified T : Any> WebClient.RequestHeadersSpec<*>
+            .retrieveBodyOrThrowNotFound(
+        contractAddress: String, tokenId: Long? = null
+    ) = runCatching {
+        retrieve()
+            .onStatus({ it.is4xxClientError || it.is5xxServerError }) {
+            throw NFTNotFoundException(contractAddress, tokenId)
+        }.awaitBody<T>()
+    }.getOrElse {
+        throw NFTNotFoundException(contractAddress, tokenId)
     }
 }
 

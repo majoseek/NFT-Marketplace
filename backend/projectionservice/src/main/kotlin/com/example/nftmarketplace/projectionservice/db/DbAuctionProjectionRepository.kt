@@ -6,12 +6,18 @@ import com.example.nftmarketplace.common.events.auctions.AuctionCreatedEvent
 import com.example.nftmarketplace.common.events.auctions.AuctionExtendedEvent
 import com.example.nftmarketplace.common.events.auctions.BidPlacedEvent
 import com.example.nftmarketplace.common.events.nft.NFTCreatedEvent
+import com.example.nftmarketplace.projectionservice.endingAuctionDuration
 import com.example.nftmarketplace.projectionservice.toAuctionProjectionEntity
 import com.example.nftmarketplace.projectionservice.toBidProjection
 import com.example.nftmarketplace.projectionservice.toNFTProjection
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toKotlinLocalDateTime
 import org.springframework.stereotype.Component
 
@@ -40,11 +46,13 @@ interface DbAuctionProjectionRepository {
 
     suspend fun getAuctionsByOwner(ownerAddress: String): Flow<AuctionProjectionEntity>
 
-    suspend fun getAuctionsByStatus(status: String): Flow<AuctionProjectionEntity>
+    suspend fun getAuctionsByStatus(status: AuctionProjectionEntity.Status): Flow<AuctionProjectionEntity>
 
     suspend fun getAuctionsByContractAddress(contractAddress: String): Flow<AuctionProjectionEntity>
 
     suspend fun getAuctionByNFT(contractAddress: String, tokenId: Long): AuctionProjectionEntity?
+
+    suspend fun getAuctionsEndingBefore(time: LocalDateTime): Flow<AuctionProjectionEntity>
 }
 
 @Component
@@ -60,7 +68,6 @@ class MongoProjectionAuctionRepository(
         repository.findById(auctionExtendedEvent.auctionId).awaitSingleOrNull()?.let { auction ->
             repository.save(auction.copy(expiryTime = auctionExtendedEvent.newExpiryTime.toKotlinLocalDateTime())).awaitSingleOrNull()
         }
-
     }
 
     override suspend fun placeBid(bidPlacedEvent: BidPlacedEvent) {
@@ -82,7 +89,7 @@ class MongoProjectionAuctionRepository(
 
     override suspend fun cancelAuction(auctionCancelledEvent: AuctionCancelledEvent) {
         repository.findById(auctionCancelledEvent.auctionId).awaitSingleOrNull()?.let { auction ->
-            repository.save(auction.copy(status = AuctionProjectionEntity.Status.Cancelled)).awaitSingleOrNull()
+            repository.save(auction.copy(status = AuctionProjectionEntity.Status.Canceled)).awaitSingleOrNull()
         }
     }
 
@@ -112,12 +119,12 @@ class MongoProjectionAuctionRepository(
         return repository.count().awaitSingleOrNull() ?: 0
     }
 
-    override suspend fun getAuctionsByStatus(status: String): Flow<AuctionProjectionEntity> {
-        runCatching {
-            enumValueOf<AuctionProjectionEntity.Status>(status)
-        }.getOrNull()?.let {
-            return repository.findAllByStatus(it).asFlow()
-        } ?: throw IllegalArgumentException("Invalid status $status")
+    override suspend fun getAuctionsByStatus(
+        status: AuctionProjectionEntity.Status
+    ): Flow<AuctionProjectionEntity> {
+        return repository.findAllByStatus(status).asFlow()
+            .filter { status == AuctionProjectionEntity.Status.Active && Clock.System.now() + endingAuctionDuration < it.expiryTime.toInstant(
+                TimeZone.UTC) }
     }
 
     override suspend fun getAuctionsByContractAddress(contractAddress: String): Flow<AuctionProjectionEntity> {
@@ -126,6 +133,10 @@ class MongoProjectionAuctionRepository(
 
     override suspend fun getAuctionByNFT(contractAddress: String, tokenId: Long): AuctionProjectionEntity? {
         return repository.findByNftContractAddressAndNftTokenId(contractAddress, tokenId).awaitSingleOrNull()
+    }
+
+    override suspend fun getAuctionsEndingBefore(time: LocalDateTime): Flow<AuctionProjectionEntity> {
+        return repository.findAllByExpiryTimeIsBeforeAndStatusEquals(time, AuctionProjectionEntity.Status.Active).asFlow()
     }
 }
 

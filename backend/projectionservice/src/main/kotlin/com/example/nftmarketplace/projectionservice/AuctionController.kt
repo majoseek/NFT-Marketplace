@@ -17,16 +17,27 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/auction")
 class AuctionController(
-    @Autowired private val auctionProjectionQuery: AuctionProjectionQuery
+    @Autowired private val auctionProjectionQuery: AuctionProjectionQuery,
 ) : AuctionsApi {
 
     @GetMapping("")
     override suspend fun getAllAuctions(
         @RequestParam("page") page: Int,
         @RequestParam("count") count: Int,
-        @RequestParam("status") status: AuctionStatus?
+        @RequestParam("status") status: String?,
     ): ResponseEntity<AuctionsPagedResponse>{
-        val auctions = auctionProjectionQuery.getAllAuctions(page, count, status).toList()
+        val auctions = auctionProjectionQuery.getAllAuctions(
+            page,
+            count,
+            when (status) {
+                "active" -> AuctionStatus.Active
+                "completed" -> AuctionStatus.Completed
+                "canceled" -> AuctionStatus.Canceled
+                "expired" -> AuctionStatus.Expired
+                "ending" -> AuctionStatus.Ending
+                else -> null
+            }
+        ).toList()
         return AuctionsPagedResponse(
             auctions = auctions,
             page = page,
@@ -45,7 +56,7 @@ class AuctionController(
     @GetMapping("/contract/{contractAddress}")
     override suspend fun getAuctionsByNFT(
         @PathVariable("contractAddress") contractAddress: String,
-        @RequestParam("tokenId") tokenId: Long?
+        @RequestParam("tokenId") tokenId: Long?,
     ): ResponseEntity<Any> = (tokenId?.let {
         auctionProjectionQuery.getAuctionByNFT(contractAddress, tokenId)
     } ?: run {
@@ -62,5 +73,4 @@ class AuctionController(
             count = auctions.size.toLong()
         ).getResponseEntity()
     }
-
 }

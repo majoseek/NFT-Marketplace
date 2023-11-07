@@ -1,6 +1,8 @@
 package com.example.nftmarketplace.auction.nftauctioncontract
 
 import com.example.nftmarketplace.auction.Auction
+import com.example.nftmarketplace.auction.toAuction
+import com.example.nftmarketplace.auction.toLocalDateTime
 import com.example.nftmarketplace.nftauction.NFTAuction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,10 +17,6 @@ import kotlinx.coroutines.future.await
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitSingle
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.web3j.abi.EventEncoder
@@ -31,6 +29,8 @@ import org.web3j.protocol.core.methods.response.Log
 import org.web3j.tuples.generated.Tuple12
 import org.web3j.utils.Convert
 import java.math.BigInteger
+
+typealias NFTAuctionTuple = Tuple12<BigInteger, String, String, String, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, String, NFTAuction.Bid>
 
 // TODO this needs refactor
 @Component
@@ -76,9 +76,8 @@ class ContractHelper(
                 .awaitSingle()
                 .block.timestamp.toLocalDateTime()
 
-
             when (val event = it.tryConvertToEvent()) {
-                is NFTAuction.AuctionCanceledEventResponse -> AuctionEvents.Cancelled(
+                is NFTAuction.AuctionCanceledEventResponse -> AuctionEvents.Canceled(
                     event.auctionId.toLong(),
                     timestamp
                 )
@@ -92,21 +91,21 @@ class ContractHelper(
                 )
 
                 is NFTAuction.AuctionEndedWithWinnerEventResponse -> AuctionEvents.Ended(
-                    event.auctionId.toLong(),
-                    timestamp,
-                    true
+                    id = event.auctionId.toLong(),
+                    timestamp = timestamp,
+                    winnerAddress = event.winningBidder
                 )
 
                 is NFTAuction.AuctionEndedWithoutWinnerEventResponse -> AuctionEvents.Ended(
-                    event.auctionId.toLong(),
-                    timestamp,
-                    false
+                    id = event.auctionId.toLong(),
+                    timestamp = timestamp,
+                    winnerAddress = null
                 )
 
                 is NFTAuction.AuctionExtendedEventResponse -> AuctionEvents.Extended(
-                    event.auctionId.toLong(),
-                    timestamp,
-                    event.newExpiryTime.toLocalDateTime()
+                    id = event.auctionId.toLong(),
+                    timestamp = timestamp,
+                    newTime = event.newExpiryTime.toLocalDateTime()
                 )
 
                 else -> AuctionEvents.Unknown
@@ -165,50 +164,3 @@ class ContractHelper(
         }
     }
 }
-
-
-typealias NFTAuctionTuple = Tuple12<BigInteger, String, String, String, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, String, NFTAuction.Bid>
-
-private fun BigInteger.toStatus(expiryDate: Long, bidder: String?): Auction.Status? = when (this.toInt()) {
-    0 -> Auction.Status.Pending
-    1 -> when {
-        expiryDate >= Clock.System.now().epochSeconds -> Auction.Status.Active
-        bidder != null -> Auction.Status.Won
-        else -> Auction.Status.Expired
-    }
-
-    2 -> Auction.Status.Cancelled
-    else -> null
-}
-
-private fun NFTAuctionTuple.toAuction(bids: List<Auction.Bid>? = null): Auction {
-    return Auction(
-        auctionId = component1().toLong(),
-        title = component2(),
-        description = component3(),
-        nft = Auction.NFT(
-            contractAddress = component4(),
-            tokenId = component5().toLong(),
-        ),
-        startingPrice = Convert.fromWei(
-            component6().toBigDecimal(),
-            Convert.Unit.ETHER
-        ),
-        reservePrice = Convert.fromWei(component7().toBigDecimal(), Convert.Unit.ETHER),
-        minimumIncrement = Convert.fromWei(
-            component8().toBigDecimal(),
-            Convert.Unit.ETHER
-        ),
-        expiryTime = component9().toLong().let {
-            Instant.fromEpochSeconds(it).toLocalDateTime(timeZone = kotlinx.datetime.TimeZone.UTC)
-        },
-        status = component10().toStatus(component10().toLong(), bids?.lastOrNull()?.bidder)
-            ?: Auction.Status.Cancelled,
-        bids = bids?.sortedByDescending { it.timestamp }.orEmpty().toMutableList(),
-    )
-}
-
-fun BigInteger.toLocalDateTime() = Instant.fromEpochSeconds(this.toLong())
-    .toLocalDateTime(timeZone = TimeZone.UTC)
-
-

@@ -19,7 +19,10 @@ data class AuctionEntity(
     val minimalIncrement: BigDecimal? = null,
 ) : Serializable {
     enum class Status {
-        NotStared, Active, Cancelled, Expired, Won
+        Active,
+        Won,
+        Expired,
+        Canceled
     }
 
     data class Bid(

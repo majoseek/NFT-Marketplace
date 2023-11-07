@@ -12,9 +12,9 @@ sealed class AuctionEvents {
 
     data class BidPlaced(override val id: Long, override val timestamp: LocalDateTime, val amount: BigInteger, val bidderAddress: String) : AuctionEvents()
 
-    data class Ended(override val id: Long, override val timestamp: LocalDateTime, val withWinner: Boolean) : AuctionEvents()
+    data class Ended(override val id: Long, override val timestamp: LocalDateTime, val winnerAddress: String?) : AuctionEvents()
 
-    data class Cancelled(override val id: Long, override val timestamp: LocalDateTime) : AuctionEvents()
+    data class Canceled(override val id: Long, override val timestamp: LocalDateTime) : AuctionEvents()
 
     data class Extended(override val id: Long, override val timestamp: LocalDateTime, val newTime: LocalDateTime) : AuctionEvents()
 

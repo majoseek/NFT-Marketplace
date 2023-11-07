@@ -17,11 +17,10 @@ data class CreateAuctionCommand(
     val status: Status,
 ) {
     enum class Status {
-        Pending,
         Active,
-        Cancelled,
-        Expired,
         Won,
+        Expired,
+        Canceled
     }
 
     data class Bid(

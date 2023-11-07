@@ -27,5 +27,5 @@ class SetNFTAuctionHandlerImpl(
 }
 
 
-class NFTNotFoundException(contractAddress: String, tokenId: Long) :
-    RuntimeException("NFT with contract address $contractAddress and tokenId $tokenId not found")
+class NFTNotFoundException(contractAddress: String, tokenId: Long?) :
+    RuntimeException("NFT with contract address $contractAddress${ tokenId?.let { " and tokenId: $tokenId"}.orEmpty() } not found")
