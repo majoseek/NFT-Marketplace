@@ -7,3 +7,6 @@ pluginManagement {
         }
     }
 }
+
+
+include(":auction", ":common", ":restapi", ":events", ":projectionservice", ":nft", ":application")
