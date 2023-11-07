@@ -1,10 +1,36 @@
-import * as Styled from './Header.styles';
-import LogoImg from '@/assets/nftLogo.png';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import MarketIcon from '../../assets/icons/marketIcon.svg';
 
-const Header = () => (
-    <Styled.Wrapper>
-        <Styled.Logo src={LogoImg} alt="logo" />
-    </Styled.Wrapper>
-);
+const Header = () => {
+    const wallets = useAppSelector((state) => state.app.wallets);
 
+    const handleMyItemsClick = () => {};
+
+    return (
+        <>
+            <header className="flex justify-between px-20 py-9">
+                <div className="flex flex-row gap-1 items-center">
+                    <div className="flex flex-col items-center">
+                        <div className="font-bold flex gap-2 items-center text-xl font-mono cursor-pointer">
+                            <img src={MarketIcon} alt="nft-marketplace" />
+                            NFT Marketplace
+                        </div>
+                    </div>
+                </div>
+                {wallets && wallets.length > 0 && (
+                    <div className="flex gap-14 items-center">
+                        <div className="flex flex-row items-center gap-2">
+                            <button
+                                className="btn btn-secondary"
+                                onClick={handleMyItemsClick}
+                            >
+                                MY ITEMS
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </header>
+        </>
+    );
+};
 export default Header;

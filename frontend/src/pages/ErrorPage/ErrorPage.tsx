@@ -1,14 +1,13 @@
-import * as Styled from './ErrorPage.styles';
+import ErrorElement from '@/components/ErrorElement';
 
 type Props = {
-    title?: React.ReactNode;
+    title?: string | React.ReactNode;
 };
 
 const ErrorPage = ({ title }: Props) => (
-    <Styled.Wrapper>
-        <Styled.ErrorIcon />
-        {title && <Styled.ErrorTitle level={3}>{title}</Styled.ErrorTitle>}
-    </Styled.Wrapper>
+    <main className="p-20 flex gap-7 justify-center items-center">
+        <ErrorElement title={title} />
+    </main>
 );
 
 export default ErrorPage;

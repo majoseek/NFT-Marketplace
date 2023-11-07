@@ -1,15 +1,13 @@
-import { Spin } from 'antd';
-import * as Styled from './LoadingPage.styles';
+import LoadingElement from '@/components/LoadingElement';
 
 type Props = {
-    title?: React.ReactNode;
+    title?: string | React.ReactNode;
 };
 
 const LoadingPage = ({ title }: Props) => (
-    <Styled.Wrapper>
-        <Spin indicator={<Styled.LoadingSpin />} />
-        {title && <Styled.LoadingTitle level={3}>{title}</Styled.LoadingTitle>}
-    </Styled.Wrapper>
+    <main className="p-20 flex gap-7 justify-center items-center">
+        <LoadingElement title={title} />
+    </main>
 );
 
 export default LoadingPage;
