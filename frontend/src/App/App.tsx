@@ -1,14 +1,13 @@
 import { Route, Routes } from 'react-router-dom';
 import Header from '../components/Header';
 import CreateNftPage from '../pages/CreateNftPage';
-import LandingPage from '../pages/LandingPage';
 import NftsPage from '../pages/NftsPage';
 import OwnedNftsPage from '../pages/OwnedNftsPage';
 import AuctionPage from '../pages/AuctionPage';
 import CreateAuctionPage from '../pages/CreateAuctionPage';
 import { setHasMetaMaskProvider, setWallets } from '@/store/appSlice';
 import detectEthereumProvider from '@metamask/detect-provider';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
