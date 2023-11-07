@@ -6,6 +6,7 @@ import { Auction, AuctionsResponse } from '@/types/api/auctions';
 import { useQuery } from 'react-query';
 import { API_KEYS } from '@/api';
 import axios from 'axios';
+import moment from 'moment';
 
 const NftsPage = () => {
     const navigate = useNavigate();
@@ -99,8 +100,8 @@ const NftsPage = () => {
                                         alt="nft"
                                         className="rounded-t-xl h-80 w-80 max-w-xs"
                                     />
-                                    <div className="bg-primary p-5 rounded-b-xl text-center hover:bg-gray group">
-                                        <span className="font-medium text-lg">
+                                    <div className="bg-primary p-5 rounded-b-xl text-center hover:bg-primaryHover group">
+                                        <span className="font-bold text-lg">
                                             {title}
                                         </span>
                                         <span className="flex mt-5 gap-3 leading-xs items-center font-light font-mono">
@@ -108,7 +109,7 @@ const NftsPage = () => {
                                         </span>
                                         <div className="flex justify-between mt-5 font-mono">
                                             <span className="flex gap-1 flex-col">
-                                                <span className="text-gray text-center group-hover:text-white">
+                                                <span className="text-gray text-center group-hover:text-white font-semibold">
                                                     Status
                                                 </span>
                                                 <span
@@ -116,17 +117,40 @@ const NftsPage = () => {
                                                         status
                                                     )}
                                                 >
-                                                    {capitalize(status)}
+                                                    {/* {capitalize(status)} */}
+                                                    TODO
                                                 </span>
                                             </span>
                                             <span className="flex gap-1 flex-col">
-                                                <span className="text-gray group-hover:text-white">
+                                                <span className="text-gray group-hover:text-white font-semibold">
                                                     Highest bid
                                                 </span>
                                                 {highestBid.amount > 0 ? (
                                                     <span>{`${highestBid.amount}$`}</span>
                                                 ) : (
                                                     <span>none!</span>
+                                                )}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col items-center justify-center mt-5 font-mono">
+                                            <span className="flex gap-1 flex-col">
+                                                <span className="text-gray text-center group-hover:text-white font-semibold">
+                                                    Expires on
+                                                </span>
+                                                <span className="">
+                                                    {moment(expiryTime).format(
+                                                        'MMM Do YYYY, h:mm:ss a'
+                                                    )}
+                                                </span>
+                                            </span>
+                                            <span className="flex gap-1 flex-col">
+                                                <span className="text-gray group-hover:text-white font-semibold">
+                                                    Bidded on
+                                                </span>
+                                                {moment(
+                                                    highestBid.timestamp
+                                                ).format(
+                                                    'MMM Do YYYY, h:mm:ss a'
                                                 )}
                                             </span>
                                         </div>
