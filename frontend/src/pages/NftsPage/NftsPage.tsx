@@ -39,9 +39,13 @@ const NftsPage = () => {
 
     const getStatusClassName = (status: Auction['status']) => {
         if (status === 'active') return 'text-green-400';
-        else if (status === 'completed' || status === 'expired')
+        else if (
+            status === 'completed' ||
+            status === 'expired' ||
+            status === 'cancelled'
+        )
             return 'text-red-500';
-        return '';
+        return 'text-orange-500';
     };
 
     return (

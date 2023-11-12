@@ -1,17 +1,26 @@
 import { useAppSelector } from '@/hooks/useAppSelector';
 import MarketIcon from '../../assets/icons/marketIcon.svg';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
     const wallets = useAppSelector((state) => state.app.wallets);
+    const navigate = useNavigate();
 
     const handleMyItemsClick = () => {};
+
+    const handleLogoClick = () => {
+        navigate('/');
+    };
 
     return (
         <>
             <header className="flex justify-between px-20 py-9">
                 <div className="flex flex-row gap-1 items-center">
                     <div className="flex flex-col items-center">
-                        <div className="font-bold flex gap-2 items-center text-xl font-mono cursor-pointer">
+                        <div
+                            className="font-bold flex gap-2 items-center text-xl font-mono cursor-pointer"
+                            onClick={handleLogoClick}
+                        >
                             <img src={MarketIcon} alt="nft-marketplace" />
                             NFT Marketplace
                         </div>
