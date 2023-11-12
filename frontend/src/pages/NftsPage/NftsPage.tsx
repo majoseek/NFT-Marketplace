@@ -6,6 +6,7 @@ import { Auction, AuctionsResponse, STATUSES } from '@/types/api/auctions';
 import { useQuery } from 'react-query';
 import { API_KEYS } from '@/api';
 import axios from 'axios';
+import fileUnknown from '@/assets/images/fileUnknown.svg';
 import moment from 'moment';
 
 const NftsPage = () => {
@@ -20,7 +21,9 @@ const NftsPage = () => {
             .then((res) => res.data.auctions)
     );
 
-    const handleAuctionClick = (auctionId: number) => {};
+    const handleAuctionClick = (auctionId: number) => {
+        console.log(auctionId);
+    };
 
     const handleOwnedNftsClick = () => navigate(`/ownedNfts`);
 
@@ -81,11 +84,18 @@ const NftsPage = () => {
             <section className="flex gap-10 mt-32 flex-wrap justify-center w-full">
                 {auctions && auctions.length > 0 ? (
                     auctions
-                        .filter((auction) =>
-                            nameFilter !== ''
-                                ? auction.title.includes(nameFilter)
-                                : true
-                        )
+                        .filter((auction) => {
+                            if (nameFilter !== '' && statusFilter !== 'all')
+                                return (
+                                    auction.title.includes(nameFilter) &&
+                                    auction.status === statusFilter
+                                );
+                            else if (nameFilter !== '')
+                                return auction.title.includes(nameFilter);
+                            else if (statusFilter !== 'all')
+                                return auction.status === statusFilter;
+                            return true;
+                        })
                         .map(
                             ({
                                 auctionID,
@@ -104,7 +114,7 @@ const NftsPage = () => {
                                     }
                                 >
                                     <img
-                                        src={nft.url}
+                                        src={nft.url ? nft.url : fileUnknown}
                                         alt="nft"
                                         className="rounded-t-xl h-80 w-80 max-w-xs"
                                     />
@@ -144,7 +154,7 @@ const NftsPage = () => {
                                                 <span className="text-gray text-center group-hover:text-white font-semibold">
                                                     Expires on
                                                 </span>
-                                                <span className="">
+                                                <span>
                                                     {moment(expiryTime).format(
                                                         'MMM Do YYYY, h:mm:ss a'
                                                     )}
