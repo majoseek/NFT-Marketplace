@@ -1,3 +1,11 @@
+export const STATUSES = {
+    ACTIVE: 'active',
+    COMPLETED: 'completed',
+    EXPIRED: 'expired',
+    ENDING: 'ending',
+    CANCELLED: 'cancelled',
+} as const;
+
 export type Auction = {
     auctionID: number;
     title: string;
@@ -17,7 +25,7 @@ export type Auction = {
         amount: number;
         timestamp: string;
     };
-    status: 'active' | 'completed' | 'expired' | 'ending' | 'cancelled';
+    status: (typeof STATUSES)[keyof typeof STATUSES];
 };
 
 export type AuctionsResponse = {

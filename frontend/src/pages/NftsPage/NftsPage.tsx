@@ -2,7 +2,7 @@ import { useState } from 'react';
 import SearchIcon from '@/assets/icons/searchIcon.svg';
 import { useNavigate } from 'react-router-dom';
 import { capitalize } from 'lodash';
-import { Auction, AuctionsResponse } from '@/types/api/auctions';
+import { Auction, AuctionsResponse, STATUSES } from '@/types/api/auctions';
 import { useQuery } from 'react-query';
 import { API_KEYS } from '@/api';
 import axios from 'axios';
@@ -11,7 +11,9 @@ import moment from 'moment';
 const NftsPage = () => {
     const navigate = useNavigate();
     const [nameFilter, setNameFilter] = useState('');
-    const [statusFilter, setStatusFilter] = useState<Auction['status']>();
+    const [statusFilter, setStatusFilter] = useState<Auction['status'] | 'all'>(
+        'all'
+    );
     const { data: auctions } = useQuery(API_KEYS.AUCTIONS, () =>
         axios
             .get<AuctionsResponse>('/api/auction?page=1&count=20')
@@ -22,11 +24,15 @@ const NftsPage = () => {
 
     const handleOwnedNftsClick = () => navigate(`/ownedNfts`);
 
-    const handleSearchInput = (e: any) => {
+    const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         setNameFilter(e.target.value);
     };
 
-    const handleStatusFilterChange = (e: any) => {};
+    const handleStatusFilterChange = (
+        e: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+        setStatusFilter(e.target.value as Auction['status'] | 'all');
+    };
 
     const getStatusClassName = (status: Auction['status']) => {
         if (status === 'active') return 'text-green-400';
@@ -48,12 +54,14 @@ const NftsPage = () => {
                     <select
                         className="select select-bordered w-32"
                         onChange={handleStatusFilterChange}
-                        defaultValue="active"
+                        value={statusFilter}
                     >
                         <option value="all">All</option>
-                        <option value="active">Active</option>
-                        <option value="won">Won</option>
-                        <option value="expired">Ended</option>
+                        {Object.values(STATUSES).map((status) => (
+                            <option value={status} key={status}>
+                                {capitalize(status)}
+                            </option>
+                        ))}
                     </select>
                     <span className="relative">
                         <input
@@ -117,8 +125,7 @@ const NftsPage = () => {
                                                         status
                                                     )}
                                                 >
-                                                    {/* {capitalize(status)} */}
-                                                    TODO
+                                                    {capitalize(status)}
                                                 </span>
                                             </span>
                                             <span className="flex gap-1 flex-col">
