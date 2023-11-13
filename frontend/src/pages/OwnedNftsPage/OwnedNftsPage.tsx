@@ -60,7 +60,7 @@ const OwnedNftsPage = () => {
                                 }) => (
                                     <div
                                         key={tokenId}
-                                        className="max-w-sm min-w-[15rem] bg-gray/5 rounded-xl"
+                                        className="max-w-xs min-w-[15rem] bg-gray/5 rounded-xl"
                                     >
                                         <img
                                             src={url}
