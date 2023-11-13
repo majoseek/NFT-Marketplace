@@ -27,7 +27,10 @@ const OwnedNftsPage = () => {
                         Browse items you created or bought
                     </h4>
                 </span>
-                <button className="btn btn-primary" onClick={handleCreateNft}>
+                <button
+                    className="btn btn-primary text-white"
+                    onClick={handleCreateNft}
+                >
                     Create an item
                 </button>
             </div>
