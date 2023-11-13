@@ -6,6 +6,16 @@ export const STATUSES = {
     CANCELLED: 'cancelled',
 } as const;
 
+export type Nft = {
+    contractAddress: string;
+    tokenId: number;
+    name: string;
+    ownerAddress: string;
+    url: string;
+    description: string;
+    type: string;
+};
+
 export type Auction = {
     auctionID: number;
     title: string;

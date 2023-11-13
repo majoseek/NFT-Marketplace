@@ -6,7 +6,9 @@ const Header = () => {
     const wallets = useAppSelector((state) => state.app.wallets);
     const navigate = useNavigate();
 
-    const handleMyItemsClick = () => {};
+    const handleMyItemsClick = () => {
+        navigate('/ownedNfts');
+    };
 
     const handleLogoClick = () => {
         navigate('/');
@@ -30,7 +32,7 @@ const Header = () => {
                     <div className="flex gap-14 items-center">
                         <div className="flex flex-row items-center gap-2">
                             <button
-                                className="btn btn-secondary"
+                                className="btn btn-primary text-white"
                                 onClick={handleMyItemsClick}
                             >
                                 MY ITEMS

@@ -1,16 +1,5 @@
 import { useState } from 'react';
-import { MinimalNft } from '../OwnedNftsPage/OwnedNftsPage';
 import moment from 'moment';
-
-type Bid = {
-    auctionId: number;
-    createdAt: string;
-    bidder: {
-        accountId: number;
-        name: string;
-    };
-    price: number;
-};
 
 type Nft = {
     nftId: number;
@@ -45,7 +34,6 @@ const AuctionPage = () => {
                 <img src="cos" alt="nft" className="rounded-xl w-96" />
                 <h2 className="font-bold text-4xl">{nft?.name}</h2>
                 <span className="text-gray">
-                    {' '}
                     Minted on {moment('').format('lll')}
                 </span>
                 <span className="text-gray font-mono font-semibold text-lg">
