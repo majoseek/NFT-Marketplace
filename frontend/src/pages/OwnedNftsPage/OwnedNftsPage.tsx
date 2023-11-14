@@ -34,7 +34,7 @@ const OwnedNftsPage = () => {
                 <>
                     <div className="flex justify-around w-full">
                         <span>
-                            <h3 className="text-4xl font-bold">Your items</h3>
+                            <h3 className="text-3xl font-bold">Your items</h3>
                             <h4 className="text-xl mt-3">
                                 Browse items you created or bought
                             </h4>

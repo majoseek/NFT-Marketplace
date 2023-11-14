@@ -10,6 +10,10 @@ const Header = () => {
         navigate('/ownedNfts');
     };
 
+    const handleAuctionsClick = () => {
+        navigate('/');
+    };
+
     const handleLogoClick = () => {
         navigate('/');
     };
@@ -31,6 +35,12 @@ const Header = () => {
                 {wallets && wallets.length > 0 && (
                     <div className="flex gap-14 items-center">
                         <div className="flex flex-row items-center gap-2">
+                            <button
+                                className="btn btn-primary text-white"
+                                onClick={handleAuctionsClick}
+                            >
+                                Auctions
+                            </button>
                             <button
                                 className="btn btn-primary text-white"
                                 onClick={handleMyItemsClick}
