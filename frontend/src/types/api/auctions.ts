@@ -45,7 +45,13 @@ export type AuctionsResponse = {
     count: number;
 };
 
-export type AuctionDetailsResponse = Auction & {
+export type AuctionDetailsResponse = Omit<Auction, 'highestBid'> & {
     winner: string;
-    bids: { bidder: string; amount: number; timestamp: string }[];
+    bids: {
+        bidder: string;
+        amount: number;
+        timestamp: string;
+    }[];
+    startingPrice: number;
+    minimumIncrement: number;
 };

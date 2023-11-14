@@ -22,7 +22,7 @@ const NftsPage = () => {
     );
 
     const handleAuctionClick = (auctionId: number) => {
-        console.log(auctionId);
+        navigate(`/browse/${auctionId}`);
     };
 
     const handleOwnedNftsClick = () => navigate(`/ownedNfts`);

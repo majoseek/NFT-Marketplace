@@ -1,24 +1,72 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import moment from 'moment';
 import { AuctionDetailsResponse } from '@/types/api/auctions';
 import LoadingElement from '@/components/LoadingElement';
+import { useQuery } from 'react-query';
+import axios from 'axios';
+import { API_KEYS } from '@/api';
+import { useParams } from 'react-router-dom';
+import fileUnknown from '@/assets/images/fileUnknown.svg';
 
 const AuctionPage = () => {
     const [bid, setBid] = useState(0);
-    const [auction, setAuction] = useState<AuctionDetailsResponse>();
     const auctionEnded = false;
+    const { auctionId } = useParams<{ auctionId: string }>();
+    const [currentTime, setCurrentTime] = useState<moment.Moment>(moment());
+
+    const { data: auction } = useQuery(
+        API_KEYS.AUCTION_DETAILS,
+        () =>
+            axios
+                .get<AuctionDetailsResponse>(`/api/auction/${auctionId}`)
+                .then((res) => res.data),
+        { enabled: auctionId !== undefined }
+    );
+
+    const timeDifference = useMemo(() => {
+        if (!auction) return;
+
+        const expirationTime = moment(auction.expiryTime);
+        return moment.duration(expirationTime.diff(currentTime));
+    }, [auction, currentTime]);
+
+    const formattedTimeDifference = useMemo(
+        () =>
+            timeDifference &&
+            moment.utc(timeDifference.asMilliseconds()).format('HH:mm:ss'),
+        [timeDifference]
+    );
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setCurrentTime(moment());
+        }, 1000);
+
+        return () => clearInterval(intervalId);
+    }, []);
 
     return (
         <main className="py-32 px-20 flex justify-center gap-10">
             {auction ? (
                 <>
                     <section className="flex flex-col gap-3">
-                        <img src="cos" alt="nft" className="rounded-xl w-96" />
-                        <h2 className="font-bold text-4xl">
+                        <img
+                            src={
+                                auction.nft.url ? auction.nft.url : fileUnknown
+                            }
+                            alt="nft"
+                            className="rounded-xl w-96"
+                        />
+                        <h2 className="font-bold text-3xl">
                             {auction.nft.name}
                         </h2>
-                        <span className="text-gray">
-                            Minted on {moment('').format('lll')}
+                        <span className="text-gray font-mono font-semibold text-lg">
+                            Expires on
+                        </span>
+                        <span className="font-mono">
+                            {moment(auction.expiryTime).format(
+                                'MMM Do YYYY, h:mm:ss a'
+                            )}
                         </span>
                         <span className="text-gray font-mono font-semibold text-lg">
                             Created by
@@ -40,23 +88,23 @@ const AuctionPage = () => {
                             </span>
                         ) : (
                             <span className="text-xs font-mono">
-                                Auction ends in:{' '}
+                                Auction ends in:
                             </span>
                         )}
                         {!auctionEnded && (
                             <span className="text-3xl font-mono -mt-2">
-                                {2}:{32}:{59}
+                                {formattedTimeDifference}
                             </span>
                         )}
                         <span className="mt-3 text-lg font-mono">
-                            {auction && auction.highestBid.amount > 0 ? (
+                            {auction.bids.length > 0 ? (
                                 <>
                                     {auctionEnded
                                         ? 'Winning bid'
                                         : 'Current price'}
                                     {': '}
                                     <span className="font-bold">
-                                        {auction.highestBid.amount}$
+                                        {auction.bids[0].amount} ETH
                                     </span>
                                 </>
                             ) : (
@@ -69,7 +117,7 @@ const AuctionPage = () => {
                         </span>
                         <div className="flex mt-2">
                             <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
-                                $
+                                ETH
                             </span>
                             <input
                                 type="text"
@@ -83,42 +131,50 @@ const AuctionPage = () => {
                             onClick={() => {}}
                             className="btn btn-primary w-fit font-mono mt-3"
                             disabled={
-                                auction && auction.highestBid.amount !== null
-                                    ? bid <= auction.highestBid.amount
-                                    : true
+                                auctionEnded ||
+                                (auction.bids.length > 0 &&
+                                    bid < auction.bids[0].amount)
                             }
                         >
                             {auctionEnded ? 'Auction ended' : 'Place bid'}
                         </button>
 
                         <div className="flex flex-col gap-2 mt-3 w-full">
-                            <span className="font-bold">Bids history</span>
+                            <span className="font-bold">
+                                {auction.bids.length > 10
+                                    ? 'Showing 10 last bids'
+                                    : 'Bids history'}
+                            </span>
                             <div className="flex flex-col gap-2">
                                 {auction.bids.length > 0 ? (
                                     auction.bids
-                                        .sort((a, b) => b.amount - a.amount)
+                                        .filter((_, index) => index < 10)
                                         .map((bid) => (
                                             <div
-                                                key={`${bid.timestamp}`}
+                                                key={`${bid.timestamp}-${bid.amount}`}
                                                 className={`flex justify-between p-4 rounded-xl  ${
                                                     bid.amount ===
-                                                    auction.highestBid.amount
-                                                        ? 'bg-green-900/50 text-xl text-green-400/90'
+                                                    auction.bids[0].amount
+                                                        ? 'bg-green-900/50 text-green-400/90'
                                                         : 'bg-gray/10'
                                                 }`}
                                             >
                                                 <span className="font-bold">
-                                                    {bid.bidder}
+                                                    {moment(
+                                                        bid.timestamp
+                                                    ).format(
+                                                        'MMM Do YYYY, h:mm:ss a'
+                                                    )}
                                                 </span>
                                                 <span
                                                     className={`font-mono ${
                                                         bid.amount ===
-                                                            auction.highestBid
+                                                            auction.bids[0]
                                                                 .amount &&
                                                         'font-bold'
                                                     }`}
                                                 >
-                                                    {bid.amount}$
+                                                    {bid.amount} ETH
                                                 </span>
                                             </div>
                                         ))
