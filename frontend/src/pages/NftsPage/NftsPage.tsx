@@ -120,7 +120,10 @@ const NftsPage = () => {
                                     <img
                                         src={nft.url ? nft.url : fileUnknown}
                                         alt="nft"
-                                        className="rounded-t-xl h-80 w-80 max-w-xs"
+                                        className={`rounded-t-xl h-80 w-80 max-w-xs ${
+                                            !nft.url &&
+                                            'border-2 border-primary border-b-0'
+                                        }`}
                                     />
                                     <div className="bg-primary p-5 rounded-b-xl text-center hover:bg-primaryHover group">
                                         <span className="font-bold text-lg">

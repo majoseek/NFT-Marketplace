@@ -49,7 +49,7 @@ const AuctionPage = () => {
         <main className="py-32 px-20 flex justify-center gap-10">
             {auction ? (
                 <>
-                    <section className="flex flex-col gap-3">
+                    <section className="flex flex-col gap-3 h-fit border-2 border-primary rounded-xl p-6">
                         <img
                             src={
                                 auction.nft.url ? auction.nft.url : fileUnknown
