@@ -50,7 +50,7 @@ const App = () => {
                     <Route element={<CreateNftPage />} path="/createNft" />
                     <Route
                         element={<AuctionPage />}
-                        path="/browse/:schoolId/:auctionId"
+                        path="/browse/:auctionId"
                     />
                     <Route
                         element={<CreateAuctionPage />}

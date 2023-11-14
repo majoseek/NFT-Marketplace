@@ -44,3 +44,8 @@ export type AuctionsResponse = {
     size: number;
     count: number;
 };
+
+export type AuctionDetailsResponse = Auction & {
+    winner: string;
+    bids: { bidder: string; amount: number; timestamp: string }[];
+};
