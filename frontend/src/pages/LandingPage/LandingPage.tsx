@@ -23,10 +23,16 @@ const LandingPage = () => {
         }
 
         try {
-            const accounts = await window.ethereum.request({
+            const accounts = await window.ethereum.request<string[]>({
                 method: 'eth_requestAccounts',
             });
-            dispatch(setWallets(accounts));
+
+            accounts
+                ? dispatch(setWallets(accounts as string[]))
+                : setConnectWalletMesage({
+                      type: 'ERROR',
+                      content: 'No wallets detected!',
+                  });
         } catch {
             setConnectWalletMesage({
                 type: 'INFO',

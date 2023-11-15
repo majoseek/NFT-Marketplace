@@ -15,8 +15,8 @@ const App = () => {
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        const refreshAccounts = (accounts: string[]) => {
-            if (accounts.length > 0) dispatch(setWallets(accounts));
+        const refreshAccounts = (...args: unknown[]) => {
+            if (args.length > 0) dispatch(setWallets(args as string[]));
             else dispatch(setWallets([]));
         };
 
@@ -24,10 +24,10 @@ const App = () => {
             const provider = await detectEthereumProvider({ silent: true });
 
             if (provider) {
-                const accounts = await window.ethereum.request({
+                const accounts = await window.ethereum.request<string[]>({
                     method: 'eth_accounts',
                 });
-                refreshAccounts(accounts);
+                refreshAccounts(accounts as string[]);
                 dispatch(setHasMetaMaskProvider(true));
                 window.ethereum.on('accountsChanged', refreshAccounts);
             } else dispatch(setHasMetaMaskProvider(false));

@@ -1,10 +1,10 @@
 /// <reference types="vite/client" />
-import { ExternalProvider } from '@ethersproject/providers';
+import { MetaMaskInpageProvider } from '@metamask/providers';
 import Web3 from 'web3';
 
 declare global {
     interface Window {
-        ethereum?: ExternalProvider;
+        ethereum: MetaMaskInpageProvider;
         web3: Web3;
     }
 }
