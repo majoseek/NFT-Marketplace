@@ -20,13 +20,13 @@ class AuctionAdapter(
     @Autowired private val dbAuctionRepository: DbAuctionRepository,
 ) : AuctionQuery {
     override suspend fun getAuctionsBids(auctionId: Long): Flow<List<BidElement>> {
-        val initialFlow = flowOf(dbAuctionRepository.get(auctionId)?.bids?.map {
+        val initialFlow = dbAuctionRepository.get(auctionId)?.bids?.map {
             BidElement(
                 bidder = it.bidder,
                 amount = it.amount,
                 timestamp = it.timestamp.toString()
             )
-        }.orEmpty())
+        }.orEmpty().let { flowOf(it) }
 
         return merge(initialFlow, auctionContract
             .getAuctionsEvents()

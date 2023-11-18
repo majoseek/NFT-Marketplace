@@ -56,7 +56,7 @@ fun AuctionEntity.toAuction() = Auction(
     reservePrice = null,
     minimumIncrement = minimalIncrement,
     expiryTime = expiryTime,
-    bids = mutableListOf(),
+    bids = bids.map { Auction.Bid(it.bidder, it.amount, it.timestamp) }.toMutableList(),
     status = when (status) {
         AuctionEntity.Status.Active -> Auction.Status.Active
         AuctionEntity.Status.Won -> Auction.Status.Won
