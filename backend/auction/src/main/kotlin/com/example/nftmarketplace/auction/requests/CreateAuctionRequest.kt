@@ -27,6 +27,7 @@ class CreateAuctionRequestHandlerImpl(
             expiryTime = command.expiryTime,
             bids = command.bids.map { Auction.Bid(it.bidder, it.amount, it.timestamp) },
             status = command.status.toAuctionStatus(),
+            ownerAddress = command.ownerAddress,
         )
 
 

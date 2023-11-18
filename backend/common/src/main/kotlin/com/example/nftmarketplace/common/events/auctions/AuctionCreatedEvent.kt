@@ -4,6 +4,7 @@ import com.example.nftmarketplace.common.data.DomainEvent
 
 data class AuctionCreatedEvent(
     val auctionId: Long,
+    val ownerAddress: String,
     val nftContractAddress: String,
     val nftTokenId: Long,
     val title: String,

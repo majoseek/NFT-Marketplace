@@ -112,7 +112,7 @@ class MongoProjectionAuctionRepository(
     }
 
     override suspend fun getAuctionsByOwner(ownerAddress: String): Flow<AuctionProjectionEntity> {
-        return repository.findAllByNftOwnerAddress(ownerAddress).asFlow()
+        return repository.findAllByOwnerAddressIgnoreCase(ownerAddress).asFlow()
     }
 
     override suspend fun getTotalCount(): Long {

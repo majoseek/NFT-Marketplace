@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono
 interface AuctionProjectionRepository : ReactiveMongoRepository<AuctionProjectionEntity, Long> {
     fun findByNftContractAddressAndNftTokenId(contractAddress: String, tokenId: Long): Mono<AuctionProjectionEntity?>
 
-    fun findAllByNftOwnerAddress(ownerAddress: String): Flux<AuctionProjectionEntity>
+    fun findAllByOwnerAddressIgnoreCase(ownerAddress: String): Flux<AuctionProjectionEntity>
 
     fun findAllByStatus(status: AuctionProjectionEntity.Status): Flux<AuctionProjectionEntity>
 

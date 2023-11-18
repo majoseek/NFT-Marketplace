@@ -15,6 +15,7 @@ data class Auction(
     val title: String,
     val description: String,
     val nft: NFT,
+    val ownerAddress: String,
     val startingPrice: BigDecimal? = null,
     val reservePrice: BigDecimal? = null,
     val minimumIncrement: BigDecimal? = null,
@@ -100,6 +101,7 @@ data class Auction(
             title: String,
             description: String,
             nftContractAddress: String,
+            ownerAddress: String,
             nftTokenId: Long,
             startingPrice: BigDecimal?,
             reservePrice: BigDecimal?,
@@ -118,6 +120,7 @@ data class Auction(
             expiryTime = expiryTime,
             bids = bids.toMutableList(),
             status = status,
+            ownerAddress = ownerAddress
         ).apply {
             record(
                 AuctionCreatedEvent(
@@ -142,7 +145,7 @@ data class Auction(
                             timestamp = it.timestamp.toString()
                         )
                     },
-
+                    ownerAddress = ownerAddress,
                 )
             )
         }

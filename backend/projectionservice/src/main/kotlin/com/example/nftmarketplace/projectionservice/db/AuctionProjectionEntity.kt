@@ -15,6 +15,7 @@ data class AuctionProjectionEntity(
     val title: String,
     val description: String,
     val nft: NFT,
+    val ownerAddress: String,
     val bids: List<Bid> = emptyList(),
     val expiryTime: LocalDateTime,
     val status: Status? = null,
@@ -43,7 +44,6 @@ data class AuctionProjectionEntity(
         val description: String? = null,
         val url: String? = null,
         val type: Type? = null,
-        val ownerAddress: String? = null,
     ) {
         enum class Type {
             Image,

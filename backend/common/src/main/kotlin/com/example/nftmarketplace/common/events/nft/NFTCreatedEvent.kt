@@ -9,5 +9,4 @@ data class NFTCreatedEvent(
     val description: String,
     val url: String,
     val type: String,
-    val ownerAddress: String? = null,
 ) : DomainEvent(aggregateId = contractAddress to tokenId)

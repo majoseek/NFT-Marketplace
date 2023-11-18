@@ -63,4 +63,5 @@ fun AuctionEntity.toAuction() = Auction(
         AuctionEntity.Status.Expired -> Auction.Status.Expired
         AuctionEntity.Status.Canceled -> Auction.Status.Canceled
     },
+    ownerAddress = ownerAddress
 )

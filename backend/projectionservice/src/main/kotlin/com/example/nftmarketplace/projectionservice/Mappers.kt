@@ -53,6 +53,7 @@ fun AuctionCreatedEvent.toAuctionProjectionEntity() = AuctionProjectionEntity(
         AuctionCreatedEvent.Status.Canceled -> AuctionProjectionEntity.Status.Canceled
     },
     startingPrice = BigDecimal(startingPrice),
+    ownerAddress = ownerAddress,
     minimalIncrement = BigDecimal(minimalIncrement),
 )
 
@@ -67,7 +68,6 @@ fun NFTCreatedEvent.toNFTProjection() = AuctionProjectionEntity.NFT(
     description = description,
     url = url,
     type = enumValueOrNull<AuctionProjectionEntity.NFT.Type>(type),
-    ownerAddress = ownerAddress,
 )
 
 fun AuctionProjectionEntity.toAuctionElement() = AuctionsPagedResponse.AuctionElement(
@@ -81,11 +81,12 @@ fun AuctionProjectionEntity.toAuctionElement() = AuctionsPagedResponse.AuctionEl
         description = nft.description,
         url = nft.url,
         type = nft.type?.let { enumValueOrNull<NFTResponse.Type>(it.name) } ?: NFTResponse.Type.Other,
-        ownerAddress = nft.ownerAddress,
+        ownerAddress = null,
     ),
     expiryTime = expiryTime.toString(),
     status = status?.toAuctionResponseStatus(expiryTime, bids.isNotEmpty()),
     highestBid = bids.getHighestBidElement(),
+    owner = ownerAddress
 )
 
 fun List<AuctionProjectionEntity.Bid>.getHighestBidElement() = maxByOrNull { it.amount }?.let {
@@ -138,7 +139,7 @@ fun AuctionProjectionEntity.toAuctionResponse(): AuctionResponse {
             description = nft.description,
             url = nft.url,
             type = nft.type?.let { enumValueOrNull<NFTResponse.Type>(it.name) } ?: NFTResponse.Type.Other,
-            ownerAddress = nft.ownerAddress,
+            ownerAddress = null,
         ),
         bids = bids.sortedByDescending { it.amount }.map {
             BidElement(
@@ -152,6 +153,7 @@ fun AuctionProjectionEntity.toAuctionResponse(): AuctionResponse {
         startingPrice = startingPrice,
         minimumIncrement = minimalIncrement,
         winner = if (auctionStatus == AuctionStatus.AwaitingEnd) bids.getHighestBidElement()?.bidder else winner,
+        owner = ownerAddress
     )
 }
 

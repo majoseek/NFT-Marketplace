@@ -47,33 +47,33 @@ async function main(): Promise<void> {
         placeBidWallet
     );
 
-    for (let i = 27; i < 28; i++) {
-        const auctionParams: CreateAuction =  {
-            name: "Test auction #" + i,
-            description: "Test description #" + i,
-            assetContractAddress: tokenAddresses,
-            tokenId: i.toString(),
-            duration: ethers.BigNumber.from(randomInt(10000, 1000000)),
-            reservePrice: ethers.BigNumber.from('0x1'),
-            startPrice: ethers.BigNumber.from('0x1'),
-            minimumBidIncrement: ethers.BigNumber.from('0x1'),
-        }
-        console.log("Create auction...",)
-        const tx = await contractCreate["createAuction"](
-            auctionParams.name,
-            auctionParams.description,
-            auctionParams.assetContractAddress,
-            auctionParams.tokenId,
-            auctionParams.startPrice,
-            auctionParams.reservePrice,
-            auctionParams.minimumBidIncrement,
-            auctionParams.duration,
-            {gasLimit: 5000000} 
-        )
-        await tx.wait()
-        console.log("Transaction hash: ", tx.hash)
-        const auctionId = await contractCreate.auctionCount()
-        console.log("Auction created: ", auctionId)
+    for (let i = 28; i < 32; i++) {
+        // const auctionParams: CreateAuction =  {
+        //     name: "Test auction #" + i,
+        //     description: "Test description #" + i,
+        //     assetContractAddress: tokenAddresses,
+        //     tokenId: i.toString(),
+        //     duration: ethers.BigNumber.from(randomInt(10000, 1000000)),
+        //     reservePrice: ethers.BigNumber.from('0x1'),
+        //     startPrice: ethers.BigNumber.from('0x1'),
+        //     minimumBidIncrement: ethers.BigNumber.from('0x1'),
+        // }
+        // console.log("Create auction...",)
+        // const tx = await contractCreate["createAuction"](
+        //     auctionParams.name,
+        //     auctionParams.description,
+        //     auctionParams.assetContractAddress,
+        //     auctionParams.tokenId,
+        //     auctionParams.startPrice,
+        //     auctionParams.reservePrice,
+        //     auctionParams.minimumBidIncrement,
+        //     auctionParams.duration,
+        //     {gasLimit: 5000000} 
+        // )
+        // await tx.wait()
+        // console.log("Transaction hash: ", tx.hash)
+        // const auctionId = await contractCreate.auctionCount()
+        // console.log("Auction created: ", auctionId)
 
         console.log("Place bid on auction: ", i)
         for (let j = 0; j < 5; j++) {

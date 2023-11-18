@@ -21,7 +21,7 @@ class CrateNFTRequestHandlerImpl(
 ) : CreateNFTRequestHandler {
     override suspend fun handle(command: CreateNFTCommand) {
         val (contractAddress, tokenId) = command
-        val nft = alchemyAPIAdapter.getNFT(contractAddress, tokenId.toString(), true).let {
+        val nft = alchemyAPIAdapter.getNFT(contractAddress, tokenId.toString(), false).let {
             NFT.create(
                 contractAddress = it.contractAddress,
                 tokenId = it.tokenId,
@@ -29,7 +29,6 @@ class CrateNFTRequestHandlerImpl(
                 description = it.description,
                 url = it.url,
                 type = it.type,
-                ownerAddress = it.ownerAddress
             )
         }
         nftRepository.create(nft)
@@ -46,7 +45,6 @@ class CrateNFTRequestHandlerImpl(
                 description = it.description,
                 url = it.url,
                 type = it.type,
-                ownerAddress = it.ownerAddress
             )
         }
         nftRepository.saveAll(nfts)

@@ -35,6 +35,7 @@ fun NFTAuctionTuple.toAuction(bids: List<Auction.Bid>? = null): Auction {
         },
         status = component10().toStatus(),
         bids = bids?.sortedByDescending { it.timestamp }.orEmpty().toMutableList(),
+        ownerAddress = component11(),
     )
 }
 
@@ -85,6 +86,7 @@ fun Auction.toAuctionEntity() = AuctionEntity(
     },
     startingPrice = startingPrice,
     minimalIncrement = minimumIncrement,
+    ownerAddress = ownerAddress
 )
 
 fun Auction.toCreateAuctionCommand() = CreateAuctionCommand(
@@ -103,7 +105,8 @@ fun Auction.toCreateAuctionCommand() = CreateAuctionCommand(
         Auction.Status.Won -> CreateAuctionCommand.Status.Won
         Auction.Status.Expired -> CreateAuctionCommand.Status.Expired
         Auction.Status.Canceled -> CreateAuctionCommand.Status.Canceled
-    }
+    },
+    ownerAddress = ownerAddress
 )
 
 

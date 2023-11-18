@@ -4,8 +4,8 @@ data class NFTResponse(
     val contractAddress: String,
     val tokenId: Long,
     val name: String?,
-    val ownerAddress: String?,
     val url: String?,
+    val ownerAddress: String?,
     val description: String?,
     val type: Type = Type.Other,
 ) {

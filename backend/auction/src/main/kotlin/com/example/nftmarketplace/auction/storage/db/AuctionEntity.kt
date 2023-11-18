@@ -15,6 +15,7 @@ data class AuctionEntity(
     val bids: List<Bid> = emptyList(),
     val expiryTime: LocalDateTime,
     val status: Status,
+    val ownerAddress: String,
     val startingPrice: BigDecimal? = null,
     val minimalIncrement: BigDecimal? = null,
 ) : Serializable {

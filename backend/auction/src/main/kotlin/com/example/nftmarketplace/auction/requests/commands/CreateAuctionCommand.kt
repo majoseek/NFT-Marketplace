@@ -9,6 +9,7 @@ data class CreateAuctionCommand(
     val description: String,
     val nftContractAddress: String,
     val nftTokenId: Long,
+    val ownerAddress: String,
     val startingPrice: BigDecimal? = null,
     val reservePrice: BigDecimal? = null,
     val minimumIncrement: BigDecimal? = null,

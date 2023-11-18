@@ -38,5 +38,4 @@ fun NFT.toNFTEntity() = NFTEntity(
     description = description,
     url = url,
     type = NFTEntity.Type.valueOf(type.name),
-    ownerAddress = ownerAddress,
 )

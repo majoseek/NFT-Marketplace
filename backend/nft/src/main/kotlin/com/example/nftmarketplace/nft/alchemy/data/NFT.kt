@@ -33,7 +33,6 @@ data class NFT(
             description: String,
             url: String,
             type: Type,
-            ownerAddress: String? = null,
         ) = NFT(
             contractAddress = contractAddress,
             tokenId = tokenId,
@@ -41,7 +40,6 @@ data class NFT(
             description = description,
             url = url,
             type = type,
-            ownerAddress = ownerAddress
         ).apply {
             record(
                 NFTCreatedEvent(
@@ -51,7 +49,6 @@ data class NFT(
                     description = description,
                     url = url,
                     type = type.name,
-                    ownerAddress = ownerAddress
                 )
             )
         }
