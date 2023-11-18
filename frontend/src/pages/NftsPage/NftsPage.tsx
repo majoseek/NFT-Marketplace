@@ -149,8 +149,8 @@ const NftsPage = () => {
                                                 <span className="text-gray group-hover:text-white font-semibold">
                                                     Highest bid
                                                 </span>
-                                                {highestBid.amount > 0 ? (
-                                                    <span>{`${highestBid.amount}$`}</span>
+                                                {highestBid ? (
+                                                    <span>{`${highestBid.amount} ETH`}</span>
                                                 ) : (
                                                     <span>none!</span>
                                                 )}
@@ -171,11 +171,13 @@ const NftsPage = () => {
                                                 <span className="text-gray group-hover:text-white font-semibold">
                                                     Bidded on
                                                 </span>
-                                                {moment(
-                                                    highestBid.timestamp
-                                                ).format(
-                                                    'MMM Do YYYY, h:mm:ss a'
-                                                )}
+                                                {highestBid
+                                                    ? moment(
+                                                          highestBid.timestamp
+                                                      ).format(
+                                                          'MMM Do YYYY, h:mm:ss a'
+                                                      )
+                                                    : 'No bids yet'}
                                             </span>
                                         </div>
                                     </div>

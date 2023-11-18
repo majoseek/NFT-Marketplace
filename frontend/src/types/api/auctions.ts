@@ -34,7 +34,7 @@ export type Auction = {
         bidder: string;
         amount: number;
         timestamp: string;
-    };
+    } | null;
     status: (typeof STATUSES)[keyof typeof STATUSES];
 };
 
