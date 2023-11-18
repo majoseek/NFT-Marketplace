@@ -2,6 +2,7 @@ package com.example.nftmarketplace.auction
 
 import com.example.nftmarketplace.auction.nftauctioncontract.AuctionEvents
 import com.example.nftmarketplace.auction.nftauctioncontract.ContractHelper
+import com.example.nftmarketplace.auction.storage.db.DbAuctionRepository
 import com.example.nftmarketplace.restapi.auctions.BidElement
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
@@ -16,15 +17,16 @@ import org.web3j.utils.Convert
 @Component
 class AuctionAdapter(
     @Autowired private val auctionContract: ContractHelper,
+    @Autowired private val dbAuctionRepository: DbAuctionRepository,
 ) : AuctionQuery {
     override suspend fun getAuctionsBids(auctionId: Long): Flow<List<BidElement>> {
-        val initialFlow = flowOf(auctionContract.getAuctionBids(auctionId).map {
+        val initialFlow = flowOf(dbAuctionRepository.get(auctionId)?.bids?.map {
             BidElement(
                 bidder = it.bidder,
                 amount = it.amount,
                 timestamp = it.timestamp.toString()
             )
-        })
+        }.orEmpty())
 
         return merge(initialFlow, auctionContract
             .getAuctionsEvents()

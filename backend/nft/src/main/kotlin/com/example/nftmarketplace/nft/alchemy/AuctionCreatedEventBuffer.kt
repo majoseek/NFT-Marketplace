@@ -30,7 +30,7 @@ class AuctionCreatedEventBuffer(
         coroutineScope.launch {
             launch { processBuffer() }
             channel.consumeAsFlow()
-                .debounce(2.seconds)
+                .debounce(3.seconds)
                 .collect { flushBuffer() }
         }
     }

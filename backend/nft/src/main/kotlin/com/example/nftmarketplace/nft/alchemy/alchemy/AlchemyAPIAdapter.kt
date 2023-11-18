@@ -6,6 +6,7 @@ import com.example.nftmarketplace.nft.alchemy.alchemy.data.bodyparams.TokenInfo
 import com.example.nftmarketplace.nft.alchemy.alchemy.data.response.AlchemyNFT
 import com.example.nftmarketplace.nft.alchemy.alchemy.data.response.AlchemyNFTs
 import com.example.nftmarketplace.nft.alchemy.alchemy.data.response.OwnersResponse
+import com.example.nftmarketplace.nft.alchemy.data.FileExtension
 import com.example.nftmarketplace.nft.alchemy.data.NFT
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -18,6 +19,7 @@ import kotlin.coroutines.coroutineContext
 @Component("AlchemyAPIAdapter")
 class AlchemyAPIAdapter(
     @Autowired private val webClient: WebClient,
+    @Autowired private val nftFileTypeDetector: NFTFileTypeDetector,
 ) {
     suspend fun getNFT(contractAddress: String, tokenId: String, withOwner: Boolean): NFT {
         with(CoroutineScope(coroutineContext)) {
@@ -28,16 +30,21 @@ class AlchemyAPIAdapter(
                             .queryParam("contractAddress", contractAddress)
                             .queryParam("tokenId", tokenId)
                             .queryParam("tokenType", "ERC721")
+                            .queryParam("refreshCache", true)
                             .build()
                     }.retrieveBodyOrThrowNotFound<AlchemyNFT>(
                         contractAddress,
                         tokenId.toLongOrNull()
                     )
             }
-            if (!withOwner) return nft.await().toNFT()
+            if (!withOwner) {
+                val response = nft.await()
+                val type = getFileExtension(response)
 
+                return response.toNFT(type = type)
+            }
             val owner = async { getNFTOwner(contractAddress, tokenId) }
-            return nft.await().toNFT(owner.await())
+            return nft.await().toNFT(owner.await(), getFileExtension(nft.await()))
         }
     }
 
@@ -65,9 +72,9 @@ class AlchemyAPIAdapter(
                     .queryParam("tokenType", "ERC721")
                     .build()
             }.retrieveBodyOrThrowNotFound<AlchemyNFTs>(
-                contractAddress,
-            null
-        )
+                contractAddress = contractAddress,
+                tokenId = null
+            )
         return nfts.ownedNfts.map { it.toNFT() }
     }
 
@@ -94,27 +101,37 @@ class AlchemyAPIAdapter(
                         TokenInfo(
                             contractAddress = contractAddress,
                             tokenId = tokenId,
-//                            tokenType = "ERC721"
                         )
-                    }
+                    },
+                    refreshCache = true
                 )
             ).retrieve().awaitBody<List<AlchemyNFT>>()
         return nfts.map {
             val owner = getNFTOwner(it.contract.address, it.id.tokenId)
-            it.toNFT(owner)
+            val type = getFileExtension(it)
+            it.toNFT(owner, type)
         }
     }
 
-    private suspend inline fun <reified T : Any> WebClient.RequestHeadersSpec<*>
-            .retrieveBodyOrThrowNotFound(
-        contractAddress: String, tokenId: Long? = null
+    private suspend inline fun <reified T : Any> WebClient.RequestHeadersSpec<*>.retrieveBodyOrThrowNotFound(
+        contractAddress: String, tokenId: Long? = null,
     ) = runCatching {
         retrieve()
             .onStatus({ it.is4xxClientError || it.is5xxServerError }) {
-            throw NFTNotFoundException(contractAddress, tokenId)
-        }.awaitBody<T>()
+                throw NFTNotFoundException(contractAddress, tokenId)
+            }.awaitBody<T>()
+
     }.getOrElse {
         throw NFTNotFoundException(contractAddress, tokenId)
+    }
+
+    private suspend fun getFileExtension(alchemyNFT: AlchemyNFT): NFT.Type {
+        val uri = alchemyNFT.media.firstOrNull()?.raw ?: alchemyNFT.tokenUri?.raw ?: return NFT.Type.Other
+        return uri.substringAfterLast(".").takeIf { it.isNotEmpty() }?.let {
+            FileExtension.getTypeFromExtension(extension = it)
+        } ?: runCatching {
+            nftFileTypeDetector.detectFileType(uri)
+        }.getOrElse { NFT.Type.Other }
     }
 }
 

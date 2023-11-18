@@ -5,13 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class ContractMetadata(
     @JsonProperty("name")
-    val name: String,
-    @JsonProperty("openSea")
-    val openSea: OpenSea,
+    val name: String? = null,
     @JsonProperty("symbol")
-    val symbol: String,
+    val symbol: String? = null,
     @JsonProperty("tokenType")
-    val tokenType: String,
+    val tokenType: String? = null,
     @JsonProperty("totalSupply")
-    val totalSupply: String
+    val totalSupply: String? = null
 )

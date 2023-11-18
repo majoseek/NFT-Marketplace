@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class Attribute(
     @JsonProperty("trait_type")
-    val traitType: String,
+    val traitType: String? = null,
     @JsonProperty("value")
-    val value: String
+    val value: String? = null
 )

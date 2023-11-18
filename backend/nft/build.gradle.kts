@@ -5,6 +5,8 @@ dependencies {
     implementation(project(":events"))
     implementation(project(":restapi"))
     implementation(project(":common"))
+    implementation("org.apache.tika:tika-core:2.9.0")
+    implementation("org.apache.tika:tika-parsers-standard-package:2.9.0")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
 }
 

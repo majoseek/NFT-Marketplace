@@ -9,7 +9,7 @@ data class AuctionsPagedResponse(
     val count: Long
 ) {
     data class AuctionElement(
-        val auctionID: Long,
+        val auctionId: Long,
         val title: String,
         val description: String,
         val nft: NFTResponse?,

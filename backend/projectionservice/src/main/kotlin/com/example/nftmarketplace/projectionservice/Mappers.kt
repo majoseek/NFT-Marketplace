@@ -20,6 +20,21 @@ import kotlin.time.Duration.Companion.days
 
 val endingAuctionDuration = 1.days
 
+fun AuctionProjectionEntity.getAdditionalStatus() =
+    if (status == AuctionProjectionEntity.Status.Active) {
+        val expiryInstant = expiryTime.toInstant(TimeZone.UTC)
+        when {
+            expiryInstant < Clock.System.now() -> {
+                if (bids.isNotEmpty()) AuctionStatus.AwaitingEnd else AuctionStatus.Expired
+            }
+            expiryInstant.minus(endingAuctionDuration) < Clock.System.now() ->
+                AuctionStatus.Ending
+            else -> AuctionStatus.Active
+        }
+    } else {
+        status?.toAuctionResponseStatus(expiryTime, bids.isNotEmpty())
+    }
+
 
 fun AuctionCreatedEvent.toAuctionProjectionEntity() = AuctionProjectionEntity(
     id = auctionId,
@@ -56,7 +71,7 @@ fun NFTCreatedEvent.toNFTProjection() = AuctionProjectionEntity.NFT(
 )
 
 fun AuctionProjectionEntity.toAuctionElement() = AuctionsPagedResponse.AuctionElement(
-    auctionID = id,
+    auctionId = id,
     title = title,
     description = description,
     nft = NFTResponse(
@@ -69,8 +84,8 @@ fun AuctionProjectionEntity.toAuctionElement() = AuctionsPagedResponse.AuctionEl
         ownerAddress = nft.ownerAddress,
     ),
     expiryTime = expiryTime.toString(),
-    status = status?.toAuctionResponseStatus(expiryTime),
-    highestBid = bids.getHighestBidElement()
+    status = status?.toAuctionResponseStatus(expiryTime, bids.isNotEmpty()),
+    highestBid = bids.getHighestBidElement(),
 )
 
 fun List<AuctionProjectionEntity.Bid>.getHighestBidElement() = maxByOrNull { it.amount }?.let {
@@ -81,12 +96,19 @@ fun List<AuctionProjectionEntity.Bid>.getHighestBidElement() = maxByOrNull { it.
     )
 }
 
-fun AuctionProjectionEntity.Status.toAuctionResponseStatus(expiryTime: LocalDateTime) = when (this) {
+fun AuctionProjectionEntity.Status.toAuctionResponseStatus(expiryTime: LocalDateTime, hasBids: Boolean) = when (this) {
     AuctionProjectionEntity.Status.Active -> {
-        if (expiryTime.toInstant(TimeZone.UTC).minus(endingAuctionDuration) < Clock.System.now()) {
-            AuctionStatus.Ending
-        } else {
-            AuctionStatus.Active
+        val expiryInstant = expiryTime.toInstant(TimeZone.UTC)
+        when {
+            expiryInstant < Clock.System.now() && hasBids -> {
+                AuctionStatus.AwaitingEnd
+            }
+            expiryInstant < Clock.System.now() -> {
+                AuctionStatus.Expired
+            }
+            expiryInstant.minus(endingAuctionDuration) < Clock.System.now() ->
+                AuctionStatus.Ending
+            else -> AuctionStatus.Active
         }
     }
     AuctionProjectionEntity.Status.Canceled -> AuctionStatus.Canceled
@@ -100,31 +122,45 @@ fun AuctionStatus.toAuctionProjectionStatus() = when (this) {
     AuctionStatus.Canceled -> AuctionProjectionEntity.Status.Canceled
     AuctionStatus.Ending -> throw RuntimeException("Auction status Ending is not supported")
     AuctionStatus.Completed -> AuctionProjectionEntity.Status.Won
+    AuctionStatus.AwaitingEnd -> throw RuntimeException("Auction status AwaitingEnd is not supported")
 }
 
-fun AuctionProjectionEntity.toAuctionResponse() = AuctionResponse(
-    auctionId = id,
-    title = title,
-    description = description,
-    nft = NFTResponse(
-        contractAddress = nft.contractAddress,
-        tokenId = nft.tokenId,
-        name = nft.name,
-        description = nft.description,
-        url = nft.url,
-        type = nft.type?.let { enumValueOrNull<NFTResponse.Type>(it.name) } ?: NFTResponse.Type.Other,
-        ownerAddress = nft.ownerAddress,
-    ),
-    bids = bids.map {
-        BidElement(
-            bidder = it.bidder,
-            amount = it.amount,
-            timestamp = it.timestamp.toString()
-        )
-    },
-    expiryTime = expiryTime.toString(),
-    status = status?.toAuctionResponseStatus(expiryTime),
-    startingPrice = startingPrice,
-    minimumIncrement = minimalIncrement,
-    winner = winner,
-)
+fun AuctionProjectionEntity.toAuctionResponse(): AuctionResponse {
+    val auctionStatus = getAdditionalStatus()
+    return AuctionResponse(
+        auctionId = id,
+        title = title,
+        description = description,
+        nft = NFTResponse(
+            contractAddress = nft.contractAddress,
+            tokenId = nft.tokenId,
+            name = nft.name,
+            description = nft.description,
+            url = nft.url,
+            type = nft.type?.let { enumValueOrNull<NFTResponse.Type>(it.name) } ?: NFTResponse.Type.Other,
+            ownerAddress = nft.ownerAddress,
+        ),
+        bids = bids.sortedByDescending { it.amount }.map {
+            BidElement(
+                bidder = it.bidder,
+                amount = it.amount,
+                timestamp = it.timestamp.toString()
+            )
+        },
+        expiryTime = expiryTime.toString(),
+        status = auctionStatus,
+        startingPrice = startingPrice,
+        minimumIncrement = minimalIncrement,
+        winner = if (auctionStatus == AuctionStatus.AwaitingEnd) bids.getHighestBidElement()?.bidder else winner,
+    )
+}
+
+fun String?.toAuctionStatus() = when (this) {
+    "active" -> AuctionStatus.Active
+    "completed" -> AuctionStatus.Completed
+    "canceled" -> AuctionStatus.Canceled
+    "expired" -> AuctionStatus.Expired
+    "ending" -> AuctionStatus.Ending
+    "awaitingEnd" -> AuctionStatus.AwaitingEnd
+    else -> null
+}

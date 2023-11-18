@@ -1,13 +1,16 @@
 package com.example.nftmarketplace.projectionservice
 
+import com.example.nftmarketplace.projectionservice.db.AuctionProjectionEntity
 import com.example.nftmarketplace.projectionservice.db.DbAuctionProjectionRepository
 import com.example.nftmarketplace.restapi.auctions.AuctionResponse
 import com.example.nftmarketplace.restapi.auctions.AuctionStatus
 import com.example.nftmarketplace.restapi.auctions.AuctionsPagedResponse
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.springframework.stereotype.Component
 
@@ -69,6 +72,9 @@ class AuctionProjectionAdapter(
             AuctionStatus.Ending -> dbAuctionProjectionRepository.getAuctionsEndingBefore(
                 Clock.System.now().plus(endingAuctionDuration).toLocalDateTime(TimeZone.UTC)
             )
+            AuctionStatus.AwaitingEnd -> dbAuctionProjectionRepository.getAuctionsByStatus(AuctionProjectionEntity.Status.Active).filter {
+                it.expiryTime.toInstant(TimeZone.UTC) > Clock.System.now() && it.bids.isNotEmpty()
+            }
         }.map { it.toAuctionElement() }
     }
 

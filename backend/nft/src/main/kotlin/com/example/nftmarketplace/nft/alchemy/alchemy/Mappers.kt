@@ -7,25 +7,17 @@ import com.example.nftmarketplace.nft.alchemy.db.NFTEntity
 import com.example.nftmarketplace.nft.alchemy.db.NFTId
 import com.example.nftmarketplace.restapi.nfts.NFTResponse
 
-fun NFTEntity.toNFTResponse(): NFTResponse {
-    return NFTResponse(
-        contractAddress = id.contractAddress,
-        tokenId = id.tokenId,
-        name = name,
-        description = description,
-        url = url,
-        type = NFTResponse.Type.valueOf(type.name),
-        ownerAddress = ownerAddress,
-    )
-}
 
-fun AlchemyNFT.toNFT(ownerAddress: String? = null) = NFT(
+fun AlchemyNFT.toNFT(
+    ownerAddress: String? = null,
+    type: NFT.Type? = null,
+) = NFT(
     contractAddress = contract.address,
     tokenId = if (id.tokenId.startsWith("0x")) id.tokenId.substring(2).toLong(16) else id.tokenId.toLong(10),
     name = title,
     description = description,
-    url = media.firstOrNull()?.raw ?: tokenUri.raw,
-    type = FileExtension.getTypeFromExtension(media.firstOrNull()?.raw?.substringAfterLast(".")),
+    url = media.firstOrNull()?.raw ?: tokenUri?.raw.orEmpty(),
+    type = type ?: FileExtension.getTypeFromExtension(media.firstOrNull()?.raw?.substringAfterLast(".")) ?: NFT.Type.Other,
     ownerAddress = ownerAddress,
 )
 

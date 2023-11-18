@@ -7,6 +7,9 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.http.codec.json.Jackson2JsonDecoder
 import org.springframework.http.codec.json.Jackson2JsonEncoder
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.util.retry.Retry
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 
 
 @Configuration(value = "alchemyAPIConfiguration")
@@ -30,7 +33,9 @@ class AlchemyAPIConfiguration {
                 }
                 .doOnNext { response ->
                     getLogger().info("Response: ${response.statusCode()}")
-                }
+                }.retryWhen(
+                    Retry.backoff(10, 1.seconds.toJavaDuration())
+                )
         }
         .defaultHeader("Content-Type", "application/json")
         .defaultHeader("Accept", "application/json")

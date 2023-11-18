@@ -114,7 +114,10 @@ contract NFTAuction {
         if (auction.status != Status.Active) {
             revert AuctionIsNotActive(auctionId);
         }
-        require(auction.expiryTime > block.timestamp, "Auction has expired"); // TODO think about error
+        if (auction.expiryTime > block.timestamp) {
+            endAuction(auctionId);
+            revert AuctionIsNotActive(auctionId);
+        }
 
         if (hasBid(auction)) {
             require(msg.value >= auction.highestBid.amount + auction.minimumIncrement, "Must increment bid by the minimum amount");

@@ -9,4 +9,13 @@ pluginManagement {
 }
 
 
-include(":auction", ":common", ":restapi", ":events", ":projectionservice", ":nft", ":application")
+include(
+    ":auction",
+    ":common",
+    ":restapi",
+    ":events",
+    ":projectionservice",
+    ":nft",
+//    ":analytic",
+    ":application"
+)

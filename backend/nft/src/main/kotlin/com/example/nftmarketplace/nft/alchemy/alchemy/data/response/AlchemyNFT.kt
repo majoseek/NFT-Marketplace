@@ -6,20 +6,18 @@ import com.fasterxml.jackson.annotation.JsonProperty
 data class AlchemyNFT(
     @JsonProperty("contract")
     val contract: Contract,
+    @JsonProperty("id")
+    val id: Id,
     @JsonProperty("contractMetadata")
     val contractMetadata: ContractMetadata? = null,
     @JsonProperty("description")
-    val description: String,
-    @JsonProperty("id")
-    val id: Id,
+    val description: String = "",
     @JsonProperty("media")
-    val media: List<Media>,
+    val media: List<Media> = emptyList(),
     @JsonProperty("metadata")
-    val metadata: Metadata,
-    @JsonProperty("timeLastUpdated")
-    val timeLastUpdated: String,
+    val metadata: Metadata? = null,
     @JsonProperty("title")
-    val title: String,
+    val title: String = "",
     @JsonProperty("tokenUri")
-    val tokenUri: TokenUri
+    val tokenUri: TokenUri? = null
 )

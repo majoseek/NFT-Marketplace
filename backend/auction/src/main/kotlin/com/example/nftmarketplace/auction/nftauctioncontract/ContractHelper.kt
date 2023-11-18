@@ -3,6 +3,7 @@ package com.example.nftmarketplace.auction.nftauctioncontract
 import com.example.nftmarketplace.auction.Auction
 import com.example.nftmarketplace.auction.toAuction
 import com.example.nftmarketplace.auction.toLocalDateTime
+import com.example.nftmarketplace.common.events.auctions.BidPlacedEvent
 import com.example.nftmarketplace.nftauction.NFTAuction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +18,7 @@ import kotlinx.coroutines.future.await
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.datetime.toJavaLocalDateTime
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.web3j.abi.EventEncoder
@@ -50,8 +52,7 @@ class ContractHelper(
             }
 
             auctions.awaitAll().forEach { auction ->
-                val bids = getAuctionBids(auction.component1().toLong())
-                emit(auction.toAuction(bids))
+                emit(auction.toAuction())
             }
         }
     }
@@ -60,7 +61,7 @@ class ContractHelper(
         val maxId = getTotalAuctions()
         require(auctionId in 0..maxId)
         val auction: NFTAuctionTuple? = contract.auctions(BigInteger.valueOf(auctionId)).sendAsync().await()
-        return auction?.toAuction(getAuctionBids(auctionId))
+        return auction?.toAuction()
     }
 
     suspend fun getTotalAuctions(): Long {
@@ -113,7 +114,7 @@ class ContractHelper(
         }.retry()
     }
 
-    suspend fun getAuctionBids(auctionId: Long): List<Auction.Bid> {
+    suspend fun getBids(): List<BidPlacedEvent> {
         val ethFilter = EthFilter(
             DefaultBlockParameterName.EARLIEST,
             DefaultBlockParameterName.LATEST,
@@ -123,25 +124,22 @@ class ContractHelper(
         val eventEncoder = EventEncoder.encode(NFTAuction.BIDPLACED_EVENT)
         ethFilter.addSingleTopic(eventEncoder)
 
-
-        return web3j.ethGetLogs(ethFilter).sendAsync().await().logs.map {
+        return web3j.ethGetLogs(ethFilter).sendAsync().await().logs.mapNotNull {
             val log = it.get() as EthLog.LogObject
-
+            val bidPlacedEvent = log.tryConvertToEvent() as? NFTAuction.BidPlacedEventResponse
             val timestamp = web3j.ethGetBlockByHash(log.blockHash, false)
                 .flowable()
                 .awaitSingle()
                 .block.timestamp.toLocalDateTime()
-            (log.tryConvertToEvent() as? NFTAuction.BidPlacedEventResponse)?.let {
-                Auction.Bid(
-                    bidder = it.bidder,
-                    amount = Convert.fromWei(
-                        it.amount.toBigDecimal(),
-                        Convert.Unit.ETHER
-                    ),
-                    timestamp = timestamp
+            bidPlacedEvent?.let {
+                BidPlacedEvent(
+                    auctionId = bidPlacedEvent.auctionId.toLong(),
+                    bidderAddress = bidPlacedEvent.bidder,
+                    amount = Convert.fromWei(bidPlacedEvent.amount.toString(), Convert.Unit.ETHER),
+                    timestamp = timestamp.toJavaLocalDateTime()
                 )
             }
-        }.toList().filterNotNull()
+        }
     }
 
     companion object {

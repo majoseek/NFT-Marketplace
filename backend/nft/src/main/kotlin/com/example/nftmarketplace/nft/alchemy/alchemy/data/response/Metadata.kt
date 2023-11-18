@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class Metadata(
     @JsonProperty("attributes")
-    val attributes: List<Attribute>,
+    val attributes: List<Attribute> = emptyList(),
     @JsonProperty("description")
-    val description: String,
+    val description: String = "",
     @JsonProperty("image")
-    val image: String,
+    val image: String = "",
     @JsonProperty("name")
-    val name: String
+    val name: String = ""
 )

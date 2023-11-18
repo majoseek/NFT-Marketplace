@@ -32,7 +32,7 @@ object FileExtension {
         MP4, AVI, MOV, FLV, WMV -> NFT.Type.Video
         MP3, WAV, FLAC, AAC -> NFT.Type.Audio
         TXT, DOC, DOCX, PDF -> NFT.Type.Text
-        else -> NFT.Type.Other
+        else -> null
     }
 
     fun getNFTEntityTypeFromExtension(extension: String?) = when(extension) {

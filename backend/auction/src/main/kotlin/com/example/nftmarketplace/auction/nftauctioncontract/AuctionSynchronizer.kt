@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.datetime.toKotlinLocalDateTime
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
@@ -45,6 +46,21 @@ class AuctionSynchronizer(
                 createAuctionHandler.handle(auction.toCreateAuctionCommand())
             }
         }.launchIn(coroutineScope)
+    }
+
+    suspend fun initialSynchronize() {
+        val range = 1..contractHelper.getTotalAuctions()
+        range.filter {
+            auctionRepository.get(it) == null
+        }.mapNotNull { id ->
+            getLogger().info("Auction with id: $id not found in the database. Adding...")
+            contractHelper.getAuctionById(id)
+        }.toList().forEach {
+            createAuctionHandler.handle(it.toCreateAuctionCommand())
+        }
+        contractHelper.getBids().map {
+            placeBidRequestHandler.handle(PlaceBidCommand(it.auctionId, it.bidderAddress, it.amount, it.timestamp.toKotlinLocalDateTime()))
+        }
     }
 
     suspend fun startSynchronizing() {
@@ -87,7 +103,7 @@ class AuctionSynchronizer(
     @EventListener(ApplicationReadyEvent::class)
     fun afterInitialization() {
         coroutineScope.launch {
-            synchronizeWithContract()
+            initialSynchronize()
             startSynchronizing()
         }
     }

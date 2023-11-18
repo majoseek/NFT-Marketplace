@@ -2,7 +2,6 @@ package com.example.nftmarketplace.projectionservice
 
 import com.example.nftmarketplace.common.getResponseEntity
 import com.example.nftmarketplace.restapi.auctions.AuctionResponse
-import com.example.nftmarketplace.restapi.auctions.AuctionStatus
 import com.example.nftmarketplace.restapi.auctions.AuctionsApi
 import com.example.nftmarketplace.restapi.auctions.AuctionsPagedResponse
 import kotlinx.coroutines.flow.toList
@@ -29,14 +28,7 @@ class AuctionController(
         val auctions = auctionProjectionQuery.getAllAuctions(
             page,
             count,
-            when (status) {
-                "active" -> AuctionStatus.Active
-                "completed" -> AuctionStatus.Completed
-                "canceled" -> AuctionStatus.Canceled
-                "expired" -> AuctionStatus.Expired
-                "ending" -> AuctionStatus.Ending
-                else -> null
-            }
+            status?.toAuctionStatus()
         ).toList()
         return AuctionsPagedResponse(
             auctions = auctions,
@@ -64,8 +56,13 @@ class AuctionController(
     }).getResponseEntity()
 
     @GetMapping("/owner/{ownerAddress}")
-    override suspend fun getAuctionsByOwner(@PathVariable("ownerAddress") ownerAddress: String): ResponseEntity<AuctionsPagedResponse> {
-        val auctions = auctionProjectionQuery.getAuctionByOwner(ownerAddress).toList()
+    override suspend fun getAuctionsByOwner(
+        @PathVariable(value = "ownerAddress") ownerAddress: String,
+        @RequestParam(value = "status") status: String?
+    ): ResponseEntity<AuctionsPagedResponse> {
+        val auctionStatus = status?.toAuctionStatus()
+        val auctions = auctionProjectionQuery.getAuctionByOwner(ownerAddress)
+            .toList().filter { auctionStatus == null || auctionStatus == it.status }
         return AuctionsPagedResponse(
             auctions = auctions,
             page = 1,

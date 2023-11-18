@@ -1,0 +1,18 @@
+{
+    "title": "LimitedNFT",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "LimitedNFT"
+        },
+        "description": {
+            "type": "string",
+            "description": "Limited collection of NFT"
+        },
+        "image": {
+            "type": "string",
+            "description": "https://ipfs.io"
+        }
+    }
+}

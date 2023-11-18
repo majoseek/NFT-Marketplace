@@ -30,6 +30,7 @@ interface AuctionsApi {
 
     @GetMapping("/owner/{ownerAddress}")
     suspend fun getAuctionsByOwner(
-        @PathVariable("ownerAddress") ownerAddress: String
+        @PathVariable("ownerAddress") ownerAddress: String,
+        @RequestParam("status") status: String? = null,
     ): ResponseEntity<AuctionsPagedResponse>
 }
