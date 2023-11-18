@@ -17,7 +17,7 @@ export type Nft = {
 };
 
 export type Auction = {
-    auctionID: number;
+    auctionId: number;
     title: string;
     description: string;
     nft: {

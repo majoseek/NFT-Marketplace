@@ -102,7 +102,7 @@ const NftsPage = () => {
                         })
                         .map(
                             ({
-                                auctionID,
+                                auctionId,
                                 description,
                                 expiryTime,
                                 highestBid,
@@ -112,9 +112,9 @@ const NftsPage = () => {
                             }) => (
                                 <div
                                     className="cursor-pointer"
-                                    key={auctionID}
+                                    key={auctionId}
                                     onClick={() =>
-                                        handleAuctionClick(auctionID)
+                                        handleAuctionClick(auctionId)
                                     }
                                 >
                                     <img
