@@ -16,6 +16,8 @@ services:
       - mongo
       - rabbitmq
       - backend
+    networks:
+      - local-network
   mongo:
     container_name: mongo
     image: mongo:6.0.2
