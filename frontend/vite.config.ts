@@ -9,9 +9,11 @@ export default defineConfig({
         alias: [{ find: '@', replacement: path.resolve(__dirname, 'src') }],
     },
     server: {
+        port: 5173,
+        host: '0.0.0.0',
         proxy: {
             '/api': {
-                target: 'http://localhost:8080',
+                target: 'http://host.docker.internal:8080',
                 changeOrigin: true,
                 secure: false,
                 rewrite: (path) => path.replace(/^\/api/, ''),

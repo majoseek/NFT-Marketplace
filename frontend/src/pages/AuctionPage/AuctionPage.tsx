@@ -3,10 +3,10 @@ import moment from 'moment';
 import { AuctionDetailsResponse } from '@/types/api/auctions';
 import LoadingElement from '@/components/LoadingElement';
 import { useQuery } from 'react-query';
-import axios from 'axios';
 import { API_KEYS } from '@/api';
 import { useParams } from 'react-router-dom';
 import fileUnknown from '@/assets/images/fileUnknown.svg';
+import axios from 'axios';
 
 const AuctionPage = () => {
     const [bid, setBid] = useState(0);

@@ -5,9 +5,9 @@ import { capitalize } from 'lodash';
 import { Auction, AuctionsResponse, STATUSES } from '@/types/api/auctions';
 import { useQuery } from 'react-query';
 import { API_KEYS } from '@/api';
-import axios from 'axios';
 import fileUnknown from '@/assets/images/fileUnknown.svg';
 import moment from 'moment';
+import axios from 'axios';
 
 const NftsPage = () => {
     const navigate = useNavigate();

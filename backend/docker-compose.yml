@@ -4,6 +4,18 @@ networks:
     driver: bridge
 
 services:
+  frontend:
+    container_name: frontend
+    image: frontend
+    build:
+      dockerfile: ../frontend/Dockerfile
+      context: ../frontend
+    ports:
+      - 5173:5173
+    depends_on:
+      - mongo
+      - rabbitmq
+      - backend
   mongo:
     container_name: mongo
     image: mongo:6.0.2
@@ -37,7 +49,7 @@ services:
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: admin
       SPRING_RABBITMQ_PASSWORD: password
-      GRADLE_OPTS: "-Dorg.gradle.vfs.watch=false"# Assuming your Dockerfile is named Dockerfile and located at the specified context
+      GRADLE_OPTS: "-Dorg.gradle.vfs.watch=false" # Assuming your Dockerfile is named Dockerfile and located at the specified context
     depends_on:
       - mongo
       - rabbitmq
