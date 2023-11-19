@@ -8,8 +8,8 @@ services:
     container_name: frontend
     image: frontend
     build:
-      dockerfile: ../frontend/Dockerfile
-      context: ../frontend
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - 5173:5173
     depends_on:
@@ -43,6 +43,7 @@ services:
   backend:
     container_name: backend
     build:
+      context: ./backend
       dockerfile: Dockerfile
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://admin:password@mongo:27017/admin
