@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.web3j.solidity.gradle.plugin.OutputComponent
 
+
 plugins {
     id("java")
     id("org.web3j") version "4.10.3"
@@ -10,14 +11,13 @@ plugins {
 solidity {
     setOutputComponents(
         OutputComponent.BIN,
-        OutputComponent.ABI,
+        OutputComponent.ABI
     )
-    executable = if (System.getProperties()["os.name"].toString().contains("windows")) {
-        "./solc/solc-windows.exe"
-    } else {
-        "./solc/solc-static-linux"
-    }
-    version = "0.8.20"
+    val osName = System.getProperty("os.name").toLowerCase()
+    val solcBinaryName = if (osName.contains("windows")) "solc-windows.exe" else "solc-static-linux"
+    val executablePath = rootProject.layout.projectDirectory.dir("solc").file(solcBinaryName).asFile
+    executable = executablePath.absolutePath
+    version = rootProject.extra.get("solidityVersion") as String
 }
 
 web3j {
@@ -50,7 +50,6 @@ tasks.named<Jar>("jar") {
     enabled = true
 }
 
-
 val compileKotlin: KotlinCompile by tasks
-
 compileKotlin.dependsOn("generateContractWrappers")
+

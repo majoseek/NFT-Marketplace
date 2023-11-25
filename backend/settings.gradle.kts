@@ -16,6 +16,6 @@ include(
     ":events",
     ":projectionservice",
     ":nft",
-//    ":analytic",
+    ":governance",
     ":application"
 )

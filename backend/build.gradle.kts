@@ -1,8 +1,12 @@
+import org.jetbrains.kotlin.de.undercouch.gradle.tasks.download.Download
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
+val solidityVersion by rootProject.extra { "0.8.20" }
+
 plugins {
     id("java")
+    id ("de.undercouch.download") version "5.5.0" apply false
     id("org.springframework.boot") version "3.0.4" apply false
     id("io.spring.dependency-management") version "1.1.0" apply false
     kotlin("jvm") version "1.8.20" apply false
@@ -61,3 +65,18 @@ tasks.withType<BootJar>() {
 
 group = "com.example"
 version = "0.0.1-SNAPSHOT"
+
+tasks.register<Download>("downloadSolc") {
+    val osName = System.getProperty("os.name").toLowerCase()
+    val solcBinaryName = if (osName.contains("windows")) "solc-windows.exe" else "solc-static-linux"
+    val solcUrl = "https://github.com/ethereum/solidity/releases/download/v$solidityVersion/$solcBinaryName"
+
+    src(solcUrl)
+    println("Downloading solc from $solcUrl")
+    dest("./solc/$solcBinaryName")
+    overwrite(false)
+    project.exec {
+        workingDir("./solc")
+        commandLine("chmod", "+x", solcBinaryName)
+    }
+}

@@ -1,36 +1,66 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { ContractFactory } from "ethers";
+import { Contract, ContractFactory } from "ethers";
 import hre from 'hardhat';  // Import the Hardhat runtime environment
 import { writeFileSync } from "fs";
 
 
-const CONTRACT_NAME = "NFTAuction";
+const AUCTION_CONTRACT_NAME = "NFTAuction";
+const GOVERNANCE_CONTRACT_NAME = "NFTAuctionGovernor";
+const TOKEN_CONTRACT_NAME = "NFTAuctionToken";
+
+interface DeployedContract {
+    name: string;
+    address: string;
+}
 
 async function main(): Promise<void> {
-    // Compile the contract
-    await hre.run("compile",  { network: "sepolia" });
+    await hre.run("compile");
 
-    // Deploy contract
-    const Contract = await hre.ethers.getContractFactory(CONTRACT_NAME);
-    const contract = await Contract.deploy();
-    await contract.deployed();
-    await contract.deployTransaction.wait(5); // waits for 5 confirmations
-    
-    
-    console.log("Contract transaction hash: ", contract.deployTransaction.hash);
-    console.log(`${CONTRACT_NAME} deployed to: ${contract.address}`);
+    console.log(`Deploying contracts to ${hre.network.name}...`);
+    const contractDetails: Array<DeployedContract> = [];
 
-    // Verify contract
+    const contracts = [
+        AUCTION_CONTRACT_NAME,
+        GOVERNANCE_CONTRACT_NAME,
+        TOKEN_CONTRACT_NAME
+    ];
+    for (const contractName of contracts) {
+        const deployed = await deployContract(hre, contractName);
+        if (hre.network.name == "sepolia") {
+            await verifyContract(hre, contractName, deployed.address);
+        }
+        contractDetails.push({ name: contractName, address: deployed.address });
+    };
+
+    writeFileSync("./contract_details.json", JSON.stringify(contractDetails));
+}
+
+
+async function deployContract(
+    hre: HardhatRuntimeEnvironment,
+    contractName: string,
+): Promise<Contract> {
+    console.log(`Deploying ${contractName}...`);
+    const contract = await hre.ethers.getContractFactory(contractName);
+    const deployed = await contract.deploy();
+    await deployed.deployed();
+    await deployed.deployTransaction.wait(5); // waits for 5 confirmations
+    console.log("Contract transaction hash: ", deployed.deployTransaction.hash);
+    console.log(`${contractName} deployed to: ${deployed.address}`);
+    return deployed;
+}
+
+async function verifyContract(
+    hre: HardhatRuntimeEnvironment,
+    contractName: string,
+    contractAddress: string,
+) {
+    console.log(`Verifying ${contractName} at: ${contractAddress}`);
     await hre.run("verify:verify", {
-        address: contract.address,
-        constructorArguments: [],  
+        address: contractAddress,
+        constructorArguments: [],
     });
-
-    // after deploy
-    // set the contract address in the backend
-    // and replace files
-    // write to file contract_address.txt 
-    writeFileSync('contract_address.txt', contract.address);
+    console.log(`${contractName} verified at: ${contractAddress}`);
 }
 
 main()
