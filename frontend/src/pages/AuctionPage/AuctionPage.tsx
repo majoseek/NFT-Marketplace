@@ -7,6 +7,7 @@ import { API_KEYS } from '@/api';
 import { useParams } from 'react-router-dom';
 import fileUnknown from '@/assets/images/fileUnknown.svg';
 import axios from 'axios';
+import { convertEthToWei } from '@/utils/helpers';
 
 const AuctionPage = () => {
     const [bid, setBid] = useState(0);
@@ -104,7 +105,9 @@ const AuctionPage = () => {
                                         : 'Current price'}
                                     {': '}
                                     <span className="font-bold">
-                                        {auction.bids[0].amount} ETH
+                                        {convertEthToWei(
+                                            auction.bids[0].amount
+                                        )}
                                     </span>
                                 </>
                             ) : (
@@ -174,7 +177,9 @@ const AuctionPage = () => {
                                                         'font-bold'
                                                     }`}
                                                 >
-                                                    {bid.amount} ETH
+                                                    {convertEthToWei(
+                                                        bid.amount
+                                                    )}
                                                 </span>
                                             </div>
                                         ))

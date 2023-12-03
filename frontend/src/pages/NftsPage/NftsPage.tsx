@@ -8,6 +8,7 @@ import { API_KEYS } from '@/api';
 import fileUnknown from '@/assets/images/fileUnknown.svg';
 import moment from 'moment';
 import axios from 'axios';
+import { convertEthToWei } from '@/utils/helpers';
 
 const NftsPage = () => {
     const navigate = useNavigate();
@@ -150,9 +151,13 @@ const NftsPage = () => {
                                                     Highest bid
                                                 </span>
                                                 {highestBid ? (
-                                                    <span>{`${highestBid.amount} ETH`}</span>
+                                                    <span>
+                                                        {convertEthToWei(
+                                                            highestBid.amount
+                                                        )}
+                                                    </span>
                                                 ) : (
-                                                    <span>none!</span>
+                                                    <span>-</span>
                                                 )}
                                             </span>
                                         </div>
