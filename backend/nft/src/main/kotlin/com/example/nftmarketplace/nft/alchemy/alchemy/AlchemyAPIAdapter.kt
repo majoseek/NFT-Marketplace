@@ -49,33 +49,37 @@ class AlchemyAPIAdapter(
     }
 
     suspend fun getOwnedNFTs(ownerAddress: String): List<NFT> {
-        val nfts = webClient.get()
-            .uri {
-                it.path("getNFTs")
-                    .queryParam("owner", ownerAddress)
-                    .build()
-            }.retrieveBodyOrThrowNotFound<AlchemyNFTs>(
-                ownerAddress,
-                null
-            )
-        return nfts.ownedNfts.map {
+        val nfts = runCatching {
+            webClient.get()
+                .uri {
+                    it.path("getNFTs")
+                        .queryParam("owner", ownerAddress)
+                        .build()
+                }.retrieveBodyOrThrowNotFound<AlchemyNFTs>(
+                    ownerAddress,
+                    null
+                )
+        }.getOrNull()
+        return nfts?.ownedNfts?.map {
             it.toNFT(ownerAddress)
-        }
+        }.orEmpty()
     }
 
     suspend fun getNFTsByOwner(contractAddress: String, ownerAddress: String?): List<NFT> {
-        val nfts = webClient.get()
-            .uri {
-                it.path("getNFTs")
-                    .queryParam("contractAddress", contractAddress)
-                    .queryParam("owner", ownerAddress)
-                    .queryParam("tokenType", "ERC721")
-                    .build()
-            }.retrieveBodyOrThrowNotFound<AlchemyNFTs>(
-                contractAddress = contractAddress,
-                tokenId = null
-            )
-        return nfts.ownedNfts.map { it.toNFT() }
+        val nfts = runCatching {
+            webClient.get()
+                .uri {
+                    it.path("getNFTs")
+                        .queryParam("contractAddress", contractAddress)
+                        .queryParam("owner", ownerAddress)
+                        .queryParam("tokenType", "ERC721")
+                        .build()
+                }.retrieveBodyOrThrowNotFound<AlchemyNFTs>(
+                    contractAddress = contractAddress,
+                    tokenId = null
+                )
+        }.getOrNull()
+        return nfts?.ownedNfts?.map { it.toNFT() }.orEmpty()
     }
 
     suspend fun getNFTOwner(contractAddress: String, tokenId: String): String {
@@ -120,7 +124,6 @@ class AlchemyAPIAdapter(
             .onStatus({ it.is4xxClientError || it.is5xxServerError }) {
                 throw NFTNotFoundException(contractAddress, tokenId)
             }.awaitBody<T>()
-
     }.getOrElse {
         throw NFTNotFoundException(contractAddress, tokenId)
     }

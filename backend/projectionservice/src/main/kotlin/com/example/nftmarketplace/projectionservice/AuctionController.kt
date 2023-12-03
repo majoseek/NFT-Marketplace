@@ -21,18 +21,18 @@ class AuctionController(
 
     @GetMapping("")
     override suspend fun getAllAuctions(
-        @RequestParam("page") page: Int,
-        @RequestParam("count") count: Int,
+        @RequestParam("page") page: Int?,
+        @RequestParam("count") count: Int?,
         @RequestParam("status") status: String?,
     ): ResponseEntity<AuctionsPagedResponse>{
         val auctions = auctionProjectionQuery.getAllAuctions(
-            page,
-            count,
+            page ?: 1,
+            count ?: 20,
             status?.toAuctionStatus()
         ).toList()
         return AuctionsPagedResponse(
             auctions = auctions,
-            page = page,
+            page = page ?: 1,
             size = auctions.size,
             count = auctionProjectionQuery.getTotalAuctions()
         ).getResponseEntity()
