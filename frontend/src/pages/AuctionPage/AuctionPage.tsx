@@ -10,8 +10,7 @@ import axios from 'axios';
 import { convertEthToWei } from '@/utils/helpers';
 
 const AuctionPage = () => {
-    const [bid, setBid] = useState(0);
-    const auctionEnded = false;
+    const [bid, setBid] = useState<number>();
     const { auctionId } = useParams<{ auctionId: string }>();
     const [currentTime, setCurrentTime] = useState<moment.Moment>(moment());
 
@@ -31,12 +30,22 @@ const AuctionPage = () => {
         return moment.duration(expirationTime.diff(currentTime));
     }, [auction, currentTime]);
 
+    const auctionIsOver = useMemo(() => {
+        if (!timeDifference) return false;
+
+        return timeDifference.asMilliseconds() <= 0;
+    }, [timeDifference]);
+
     const formattedTimeDifference = useMemo(
         () =>
             timeDifference &&
             moment.utc(timeDifference.asMilliseconds()).format('HH:mm:ss'),
         [timeDifference]
     );
+
+    const handleBidChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+        setBid(Number(e.target.value));
+    };
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -83,7 +92,7 @@ const AuctionPage = () => {
                         </span>
                     </section>
                     <section className="p-6 flex flex-col bg-primary h-fit rounded-xl gap-2 items-center w-96">
-                        {auctionEnded ? (
+                        {auctionIsOver ? (
                             <span className="text-md font-mono font-bold text-error">
                                 Auction ended!
                             </span>
@@ -92,7 +101,7 @@ const AuctionPage = () => {
                                 Auction ends in:
                             </span>
                         )}
-                        {!auctionEnded && (
+                        {!auctionIsOver && (
                             <span className="text-3xl font-mono -mt-2">
                                 {formattedTimeDifference}
                             </span>
@@ -100,7 +109,7 @@ const AuctionPage = () => {
                         <span className="mt-3 text-lg font-mono">
                             {auction.bids.length > 0 ? (
                                 <>
-                                    {auctionEnded
+                                    {auctionIsOver
                                         ? 'Winning bid'
                                         : 'Current price'}
                                     {': '}
@@ -112,7 +121,7 @@ const AuctionPage = () => {
                                 </>
                             ) : (
                                 <>
-                                    {auctionEnded
+                                    {auctionIsOver
                                         ? 'No one bidded :('
                                         : 'No bids yet'}
                                 </>
@@ -126,20 +135,22 @@ const AuctionPage = () => {
                                 type="text"
                                 className="input rounded-none rounded-r-lg bg-gray-50 border border-solid border-white text-gray-900 block flex-1 min-w-0 w-full text-sm border-gray-300 p-2.5"
                                 placeholder="Type your bid"
-                                onChange={() => {}}
-                                disabled={auctionEnded}
+                                onChange={handleBidChange}
+                                disabled={auctionIsOver}
                             />
                         </div>
                         <button
                             onClick={() => {}}
                             className="btn btn-primary w-fit font-mono mt-3"
                             disabled={
-                                auctionEnded ||
+                                auctionIsOver ||
+                                bid == undefined ||
                                 (auction.bids.length > 0 &&
+                                    bid !== undefined &&
                                     bid < auction.bids[0].amount)
                             }
                         >
-                            {auctionEnded ? 'Auction ended' : 'Place bid'}
+                            {auctionIsOver ? 'Auction ended' : 'Place bid'}
                         </button>
 
                         <div className="flex flex-col gap-2 mt-3 w-full">
