@@ -79,11 +79,9 @@ const AuctionPage = () => {
                             )}
                         </span>
                         <span className="text-gray font-mono font-semibold text-lg">
-                            Created by
+                            Owned by
                         </span>
-                        <span className="font-mono">
-                            {auction.nft.ownerAddress}
-                        </span>
+                        <span className="font-mono">{auction.owner}</span>
                         <span className="text-gray font-mono font-semibold text-lg">
                             Description
                         </span>

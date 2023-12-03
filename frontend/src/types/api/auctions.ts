@@ -29,6 +29,7 @@ export type Auction = {
         description: string;
         type: string;
     };
+    owner: string;
     expiryTime: string;
     highestBid: {
         bidder: string;
