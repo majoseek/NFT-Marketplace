@@ -54,6 +54,7 @@ class AlchemyAPIAdapter(
                 .uri {
                     it.path("getNFTs")
                         .queryParam("owner", ownerAddress)
+                        .queryParam("withMetadata", true)
                         .build()
                 }.retrieveBodyOrThrowNotFound<AlchemyNFTs>(
                     ownerAddress,
@@ -61,7 +62,9 @@ class AlchemyAPIAdapter(
                 )
         }.getOrNull()
         return nfts?.ownedNfts?.map {
-            it.toNFT(ownerAddress)
+            it.toNFT(ownerAddress).copy(
+                url = "https://altlayer-image-store.alt.technology/msnft.png"
+            )
         }.orEmpty()
     }
 

@@ -14,7 +14,7 @@ const OwnedNftsPage = () => {
         () => {
             if (wallets && wallets.length > 0)
                 return axios
-                    .get<Nft[]>(`/nft/owner/${wallets[0]}`)
+                    .get<Nft[]>(`api/nft/owner/0xc807050e815973a894530ddfb61b8d309a841714`)
                     .then((res) => res.data);
         },
         { enabled: wallets && wallets.length > 0 }

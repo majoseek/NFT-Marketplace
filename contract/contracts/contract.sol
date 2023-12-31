@@ -2,6 +2,8 @@
 pragma solidity ^0.8.20;
 import {Auction, Status, Bid} from "./data/auction.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {
     InsufficientAmount,
     InsufficientPermissions,
@@ -10,83 +12,75 @@ import {
     AuctionIsNotActive
 } from "./errors.sol";
 
-contract NFTAuction {
-    address public immutable contractOwner;
-    uint public auctionCount = 0;
+contract NFTAuction is UUPSUpgradeable, OwnableUpgradeable {
+    uint32 public auctionCount = 0;
 
-
-    mapping(uint => Bid[]) public bidsByAuctionId; // TODO: reconsider this
     mapping(uint => Auction) public auctions;
-    mapping(address => uint) public pendingReturns;
-    mapping(address => mapping(uint => uint)) public activeAuctionsByNFT;
+    mapping(address => uint96) public pendingReturns;
+    mapping(address => mapping(uint32 => uint32)) public activeAuctionsByNFT;
 
 
-    event AuctionCreated(uint auctionId);
-    event AuctionCanceled(uint auctionId);
-    event BidPlaced(uint auctionId, address bidder, uint amount);
-    event AuctionEndedWithWinner(uint auctionId, address winningBidder, uint amount);
-    event AuctionEndedWithoutWinner(uint auctionId, uint reservePrice);
+    event AuctionCreated(uint32 auctionId);
+    event AuctionCanceled(uint32 auctionId);
+    event BidPlaced(uint32 auctionId, address bidder, uint96 amount);
+    event AuctionEndedWithWinner(uint32 auctionId, address winningBidder, uint96 amount);
+    event AuctionEndedWithoutWinner(uint32 auctionId, uint96 reservePrice);
     event LogFailure(string message);
-    event AuctionExtended(uint auctionId, uint newExpiryTime);
-    event AuctionWithdrawn(address withdrawer, uint amount);
-    event NFTTransferred(address from, address to, uint tokenId);
+    event AuctionExtended(uint32 auctionId, uint32 newExpiryTime);
+    event AuctionWithdrawn(address withdrawer, uint96 amount);
+    event NFTTransferred(address from, address to, uint32 tokenId);
 
-
-    modifier auctionExists(uint auctionId) {
+    modifier auctionExists(uint32 auctionId) {
         if (auctionId > auctionCount) {
             revert AuctionDoesNotExist(auctionId);
         }
         _;
     }
 
-    modifier onlyAuctionOwner(uint auctionId) {
+    modifier onlyAuctionOwner(uint32 auctionId) {
         if (!isAuctionOwner(msg.sender, auctionId)) {
             revert InsufficientPermissions();
         }
         _;
     }
 
-    modifier onlyContractOwner() {
-        if (msg.sender != contractOwner) {
-            revert InsufficientPermissions();
-        }
-        _;
-    }
-
-    modifier onlyOneActiveAuctionPerNFT(address nftAddress, uint nftTokenId) {
-        if (activeAuctionsByNFT[nftAddress][nftTokenId] == 0) {
+    modifier onlyOneActiveAuctionPerNFT(address nftAddress, uint32 nftTokenId) {
+        if (activeAuctionsByNFT[nftAddress][nftTokenId] > 0) {
             revert ActiveAuctionWithNFTAlreadyExists(nftAddress, nftTokenId);
         }
         _;
     }
 
-    modifier onlyNFTOwner(address nftAddress, uint nftTokenId) {
+    modifier onlyNFTOwner(address nftAddress, uint32 nftTokenId) {
         IERC721 token = IERC721(nftAddress);
-        if (token.getApproved(nftTokenId) != address(this) || !token.isApprovedForAll(msg.sender, address(this))) {
+        if (token.getApproved(nftTokenId) != address(this) && !token.isApprovedForAll(msg.sender, address(this))) {
             revert InsufficientPermissions();
         }
         _;
     }
 
-    constructor() {
-        contractOwner = msg.sender;
+    function initialize() public initializer {
+        __Ownable_init(msg.sender);
     }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
     function createAuction(
         string memory title,
         string memory description,
         address assetAddress,
-        uint assetRecordId,
-        uint128 startingPrice,
-        uint128 reservePrice,
-        uint128 minimumIncrement,
-        uint128 duration
+        uint32 assetRecordId,
+        uint96 startingPrice,
+        uint96 reservePrice,
+        uint96 minimumIncrement,
+        uint32 duration
     ) public onlyOneActiveAuctionPerNFT(assetAddress, assetRecordId) onlyNFTOwner(assetAddress, assetRecordId) {
         IERC721 token = IERC721(assetAddress);
 
-        Auction storage newAuction = auctions[++auctionCount];
+        uint32 newAuctionId = ++auctionCount;
+        Auction storage newAuction = auctions[newAuctionId];
 
-        newAuction.auctionRecordId = auctionCount;
+        newAuction.auctionRecordId = newAuctionId;
         newAuction.title = title;
         newAuction.description = description;
         newAuction.assetAddress = assetAddress;
@@ -94,17 +88,17 @@ contract NFTAuction {
         newAuction.startingPrice = startingPrice;
         newAuction.reservePrice = reservePrice;
         newAuction.minimumIncrement = minimumIncrement;
-        newAuction.expiryTime = block.timestamp + duration;
+        newAuction.expiryTime = uint32(block.timestamp + duration);
         newAuction.status = Status.Active;
         newAuction.sellerAddress = msg.sender;
-        activeAuctionsByNFT[assetAddress][assetRecordId] = auctionCount;
+        activeAuctionsByNFT[assetAddress][assetRecordId] = newAuctionId;
 
         token.transferFrom(msg.sender, address(this), newAuction.assetRecordId);
 
         emit AuctionCreated(newAuction.auctionRecordId);
     }
 
-    function placeBid(uint auctionId) public payable auctionExists(auctionId) {
+    function placeBid(uint32 auctionId) public payable auctionExists(auctionId) {
         Auction storage auction = auctions[auctionId];
 
 
@@ -114,6 +108,10 @@ contract NFTAuction {
         if (auction.status != Status.Active) {
             revert AuctionIsNotActive(auctionId);
         }
+        if (msg.value > type(uint96).max) {
+            revert InsufficientAmount(type(uint96).max);
+        }
+
         require(auction.expiryTime > block.timestamp, "Auction has expired"); // TODO think about error
 
         if (hasBid(auction)) {
@@ -126,16 +124,13 @@ contract NFTAuction {
         auction.highestBid = Bid(
             {
                 bidder: msg.sender,
-                amount: msg.value
+                amount: uint96(msg.value)
             }
         );
-
-        bidsByAuctionId[auctionId].push(auction.highestBid);
-
-        emit BidPlaced(auctionId, msg.sender, msg.value);
+        emit BidPlaced(auctionId, msg.sender, auction.highestBid.amount);
     }
 
-    function endAuction(uint auctionId) public onlyAuctionOwner(auctionId) {
+    function endAuction(uint32 auctionId) public onlyAuctionOwner(auctionId) {
         Auction storage auction = auctions[auctionId];
         if(auction.status != Status.Active){
             revert AuctionIsNotActive(auctionId);
@@ -145,7 +140,6 @@ contract NFTAuction {
             Bid memory highestBid = auction.highestBid;
 
             if (highestBid.amount >= auction.reservePrice) {
-                // Think about it if we need distribution cut
                 pendingReturns[auction.sellerAddress] += highestBid.amount;
 
                 IERC721 token = IERC721(auction.assetAddress);
@@ -164,14 +158,11 @@ contract NFTAuction {
         activeAuctionsByNFT[auction.assetAddress][auction.assetRecordId] = 0;
     }
 
-    function cancelAuction(uint auctionId) public onlyAuctionOwner(auctionId) {
+    function cancelAuction(uint32 auctionId) public onlyAuctionOwner(auctionId) {
         Auction storage auction = auctions[auctionId];
-        if (auction.status != Status.Active) {
-            revert AuctionIsNotActive(auctionId);
-        }
 
         if (hasBid(auction)) {
-            pendingReturns[auction.highestBid.bidder] += auction.highestBid.amount;
+            revert InsufficientPermissions();
         }
 
         IERC721 token = IERC721(auction.assetAddress);
@@ -181,12 +172,12 @@ contract NFTAuction {
         emit AuctionCanceled(auctionId);
     }
 
-    function withdraw(uint amount) public {
-        uint maximumReturn = pendingReturns[msg.sender];
+    function withdraw(uint96 amount) public {
+        uint96 maximumReturn = pendingReturns[msg.sender];
         if (amount <= 0 || amount > maximumReturn) {
             revert InsufficientAmount(maximumReturn);
         }
-        
+
         if (amount > 0) {
             pendingReturns[msg.sender] = 0;
 
@@ -196,32 +187,19 @@ contract NFTAuction {
         }
     }
 
-    function withdrawNFT(uint auctionId) public onlyAuctionOwner(auctionId) {
+    function withdrawNFT(uint32 auctionId) public onlyAuctionOwner(auctionId) {
         Auction storage auction = auctions[auctionId];
 
-        // Ensure the auction is not active
         require(auction.status == Status.Expired || auction.status == Status.Canceled, "Cannot withdraw NFT from an active auction");
 
         IERC721 token = IERC721(auction.assetAddress);
 
-        // Ensure the auction contract still owns the NFT
         if (token.ownerOf(auction.assetRecordId) != address(this))
         revert InsufficientPermissions();
-
-        // Transfer the NFT back to the owner
         token.transferFrom(address(this), auction.sellerAddress, auction.assetRecordId);
     }
 
-    // TODO think if those functions are needed
-    // function getActiveAuctionsByNFT(address contractAddress) external view returns (mapping memory) {
-    //     return activeAuctionsByNFT[contractAddress];
-    // }
-
-    function getBidByAuctionId(uint _auctionId) external view returns (Bid[] memory) {
-        return bidsByAuctionId[_auctionId];
-    }
-
-    function isAuctionOwner(address _user, uint _auctionId) private view returns (bool) {
+    function isAuctionOwner(address _user, uint32 _auctionId) private view returns (bool) {
         return auctions[_auctionId].sellerAddress == _user;
     }
 
