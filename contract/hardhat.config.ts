@@ -6,12 +6,12 @@ import { HardhatUserConfig } from "hardhat/types";
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.20",
+    version: "0.8.22",
     settings: {
       viaIR: true,
       optimizer: {
         enabled: true,
-        runs: 600,
+        runs: 1000,
       },
     },
   },

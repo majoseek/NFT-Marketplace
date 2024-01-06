@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.22;
 
 import "./status.sol";
 
@@ -9,13 +9,13 @@ import "./status.sol";
     }
 
     struct Auction {
-        uint256 auctionRecordId;
-        uint256 assetRecordId;
-        uint256 expiryTime;
+        uint32 auctionRecordId;
+        uint32 assetRecordId;
+        uint32 expiryTime;
         Status status;
-        uint256 startingPrice;
-        uint256 reservePrice;
-        uint256 minimumIncrement;
+        uint96 startingPrice;
+        uint96 reservePrice;
+        uint96 minimumIncrement;
         address assetAddress;
         address sellerAddress;
         Bid highestBid;

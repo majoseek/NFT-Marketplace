@@ -19,60 +19,12 @@ describe("NFTAuction Contract", function () {
         testToken = await deployTestTokenContract(await owner.getAddress());
     });
 
-    async function deployNFTAuctionContract(): Promise<NFTAuction> {
-        const nftAuction = await ethers.deployContract("NFTAuction");
-        await nftAuction.waitForDeployment();
-
-        await nftAuction.initialize();
-
-        return nftAuction;
-    }
-
-    async function mintToken(to: string, tokenId: number) {
-        await testToken.safeMint(to, tokenId);
-        await testToken.setApprovalForAll(nftAuction.getAddress(), true);
-    }
-
-    async function deployTestTokenContract(initialOwner: string): Promise<TestToken> {
-        const nft = await ethers.deployContract("TestToken", [initialOwner])
-        await nft.waitForDeployment()
-
-        return nft;
-    }
-    //
-    // it("should mint a token", async function () {
-    //     await mintToken(await owner.getAddress(), 1);
-    //     const balance = await testToken.balanceOf(await owner.getAddress());
-    //     console.log("Balance:", balance.toString())
-    // });
-
     it("should create an auction", async function () {
-        await mintToken(await owner.getAddress(), 1);
-        const title = "Example Auction";
-        const description = "This is a test auction";
-        const assetAddress = testToken.getAddress();
-        const assetRecordId = "1";
-        const startingPrice = ethers.parseEther("1");
-        const reservePrice = ethers.parseEther("1");
-        const minimumIncrement = ethers.parseEther("0.1");
-        const duration = 86400; // 1 day in seconds
+        console.log(await nftAuction.auctionCount())
 
-        const tx = await nftAuction.connect(owner).createAuction(
-            title,
-            description,
-            assetAddress,
-            assetRecordId,
-            startingPrice,
-            reservePrice,
-            minimumIncrement,
-            duration,
-        );
-
-        // Create Auction
-        const auction = await nftAuction.auctions(1);
-        expect(auction.title).to.equal(title);
-
+        await createAuction();
         // Place bids
+        console.log(nftAuction.auctionCount)
         for (let i = 0; i < bidders.length; i++) {
             await placeBid(1, i + 1, bidders[i]);
             if (i > 0) {
@@ -92,6 +44,11 @@ describe("NFTAuction Contract", function () {
         await nftAuction.connect(owner).withdraw(3);
     });
 
+    it("Should cancel auction", async function () {
+            await createAuction();
+            await nftAuction.connect(owner).cancelAuction(1);
+    });
+
     async function placeBid(
         auctionId: number,
         bidAmount: number,
@@ -104,4 +61,47 @@ describe("NFTAuction Contract", function () {
         expect(auction.highestBid.amount).to.equal(ethers.parseEther(bidAmount.toString()));
     }
 
+
+    async function deployNFTAuctionContract(): Promise<NFTAuction> {
+        const nftAuction = await ethers.deployContract("NFTAuction");
+        await nftAuction.waitForDeployment();
+
+        await nftAuction.initialize();
+
+        return nftAuction;
+    }
+
+    async function mintToken(to: string, tokenId: number) {
+        await testToken.safeMint(to, tokenId);
+        await testToken.setApprovalForAll(nftAuction.getAddress(), true);
+    }
+
+    async function deployTestTokenContract(initialOwner: string): Promise<TestToken> {
+        const nft = await ethers.deployContract("TestToken", [initialOwner])
+        await nft.waitForDeployment()
+        return nft;
+    }
+
+    async function createAuction() {
+        await mintToken(await owner.getAddress(), 1);
+        const title = "Example Auction";
+        const description = "This is a test auction";
+        const assetAddress = testToken.getAddress();
+        const assetRecordId = "1";
+        const startingPrice = ethers.parseEther("1");
+        const reservePrice = ethers.parseEther("1");
+        const minimumIncrement = ethers.parseEther("0.1");
+        const duration = 86400; // 1 day in seconds
+
+        await nftAuction.connect(owner).createAuction(
+            title,
+            description,
+            assetAddress,
+            assetRecordId,
+            startingPrice,
+            reservePrice,
+            minimumIncrement,
+            duration,
+        );
+    }
 });

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.22;
 import {Auction, Status, Bid} from "./data/auction.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
@@ -15,7 +15,7 @@ import {
 contract NFTAuction is UUPSUpgradeable, OwnableUpgradeable {
     uint32 public auctionCount = 0;
 
-    mapping(uint => Auction) public auctions;
+    mapping(uint32 => Auction) public auctions;
     mapping(address => uint96) public pendingReturns;
     mapping(address => mapping(uint32 => uint32)) public activeAuctionsByNFT;
 
@@ -101,7 +101,6 @@ contract NFTAuction is UUPSUpgradeable, OwnableUpgradeable {
     function placeBid(uint32 auctionId) public payable auctionExists(auctionId) {
         Auction storage auction = auctions[auctionId];
 
-
         if (isAuctionOwner(msg.sender, auctionId)) {
             revert InsufficientPermissions();
         }
@@ -179,7 +178,7 @@ contract NFTAuction is UUPSUpgradeable, OwnableUpgradeable {
         }
 
         if (amount > 0) {
-            pendingReturns[msg.sender] = 0;
+            pendingReturns[msg.sender] -= amount;
 
             (bool success,) = msg.sender.call{value: amount}("");
             require(success, "Transfer failed.");
