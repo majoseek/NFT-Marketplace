@@ -23,12 +23,8 @@ contract NFTAuction is UUPSUpgradeable, OwnableUpgradeable {
     event AuctionCreated(uint32 auctionId);
     event AuctionCanceled(uint32 auctionId);
     event BidPlaced(uint32 auctionId, address bidder, uint96 amount);
-    event AuctionEndedWithWinner(uint32 auctionId, address winningBidder, uint96 amount);
-    event AuctionEndedWithoutWinner(uint32 auctionId, uint96 reservePrice);
-    event LogFailure(string message);
-    event AuctionExtended(uint32 auctionId, uint32 newExpiryTime);
-    event AuctionWithdrawn(address withdrawer, uint96 amount);
-    event NFTTransferred(address from, address to, uint32 tokenId);
+    event AuctionEndedWithWinner(uint32 auctionId);
+    event AuctionEndedWithoutWinner(uint32 auctionId);
 
     modifier auctionExists(uint32 auctionId) {
         if (auctionId > auctionCount) {
@@ -44,21 +40,6 @@ contract NFTAuction is UUPSUpgradeable, OwnableUpgradeable {
         _;
     }
 
-    modifier onlyOneActiveAuctionPerNFT(address nftAddress, uint32 nftTokenId) {
-        if (activeAuctionsByNFT[nftAddress][nftTokenId] > 0) {
-            revert ActiveAuctionWithNFTAlreadyExists(nftAddress, nftTokenId);
-        }
-        _;
-    }
-
-    modifier onlyNFTOwner(address nftAddress, uint32 nftTokenId) {
-        IERC721 token = IERC721(nftAddress);
-        if (token.getApproved(nftTokenId) != address(this) && !token.isApprovedForAll(msg.sender, address(this))) {
-            revert InsufficientPermissions();
-        }
-        _;
-    }
-
     function initialize() public initializer {
         __Ownable_init(msg.sender);
     }
@@ -66,16 +47,23 @@ contract NFTAuction is UUPSUpgradeable, OwnableUpgradeable {
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
     function createAuction(
-        string memory title,
-        string memory description,
+        string calldata title,
+        string calldata description,
         address assetAddress,
         uint32 assetRecordId,
         uint96 startingPrice,
         uint96 reservePrice,
         uint96 minimumIncrement,
         uint32 duration
-    ) public onlyOneActiveAuctionPerNFT(assetAddress, assetRecordId) onlyNFTOwner(assetAddress, assetRecordId) {
+    ) external {
+        if (activeAuctionsByNFT[assetAddress][assetRecordId] > 0) {
+            revert ActiveAuctionWithNFTAlreadyExists(assetAddress, assetRecordId);
+        }
+
         IERC721 token = IERC721(assetAddress);
+        if (token.getApproved(assetRecordId) != address(this) && !token.isApprovedForAll(msg.sender, address(this))) {
+            revert InsufficientPermissions();
+        }
 
         uint32 newAuctionId = ++auctionCount;
         Auction storage newAuction = auctions[newAuctionId];
@@ -98,20 +86,22 @@ contract NFTAuction is UUPSUpgradeable, OwnableUpgradeable {
         emit AuctionCreated(newAuction.auctionRecordId);
     }
 
-    function placeBid(uint32 auctionId) public payable auctionExists(auctionId) {
-        Auction storage auction = auctions[auctionId];
-
+    function placeBid(uint32 auctionId) external payable auctionExists(auctionId) {
         if (isAuctionOwner(msg.sender, auctionId)) {
             revert InsufficientPermissions();
-        }
-        if (auction.status != Status.Active) {
-            revert AuctionIsNotActive(auctionId);
         }
         if (msg.value > type(uint96).max) {
             revert InsufficientAmount(type(uint96).max);
         }
 
-        require(auction.expiryTime > block.timestamp, "Auction has expired"); // TODO think about error
+        Auction storage auction = auctions[auctionId];
+
+        if (auction.status != Status.Active) {
+            revert AuctionIsNotActive(auctionId);
+        }
+
+
+        require(auction.expiryTime > block.timestamp, "Auction has expired");
 
         if (hasBid(auction)) {
             require(msg.value >= auction.highestBid.amount + auction.minimumIncrement, "Must increment bid by the minimum amount");
@@ -129,35 +119,35 @@ contract NFTAuction is UUPSUpgradeable, OwnableUpgradeable {
         emit BidPlaced(auctionId, msg.sender, auction.highestBid.amount);
     }
 
-    function endAuction(uint32 auctionId) public onlyAuctionOwner(auctionId) {
+    function endAuction(uint32 auctionId) external onlyAuctionOwner(auctionId) {
         Auction storage auction = auctions[auctionId];
         if(auction.status != Status.Active){
             revert AuctionIsNotActive(auctionId);
         }
 
         if (hasBid(auction)) {
-            Bid memory highestBid = auction.highestBid;
+            Bid storage highestBid = auction.highestBid;
 
             if (highestBid.amount >= auction.reservePrice) {
                 pendingReturns[auction.sellerAddress] += highestBid.amount;
+                auction.status = Status.Won;
 
                 IERC721 token = IERC721(auction.assetAddress);
                 token.transferFrom(address(this), highestBid.bidder, auction.assetRecordId);
-                auction.status = Status.Won;
-                emit NFTTransferred(address(this), highestBid.bidder, auction.assetRecordId);
-                emit AuctionEndedWithWinner(auctionId, highestBid.bidder, highestBid.amount);
+                emit AuctionEndedWithWinner(auctionId);
             } else {
                 pendingReturns[highestBid.bidder] += highestBid.amount;
                 auction.status = Status.Expired;
-                emit AuctionEndedWithoutWinner(auctionId, auction.reservePrice);
+                emit AuctionEndedWithoutWinner(auctionId);
             }
         } else {
-            emit AuctionEndedWithoutWinner(auctionId, auction.reservePrice);
+            auction.status = Status.Expired;
+            emit AuctionEndedWithoutWinner(auctionId);
         }
         activeAuctionsByNFT[auction.assetAddress][auction.assetRecordId] = 0;
     }
 
-    function cancelAuction(uint32 auctionId) public onlyAuctionOwner(auctionId) {
+    function cancelAuction(uint32 auctionId) external onlyAuctionOwner(auctionId) {
         Auction storage auction = auctions[auctionId];
 
         if (hasBid(auction)) {
@@ -171,38 +161,24 @@ contract NFTAuction is UUPSUpgradeable, OwnableUpgradeable {
         emit AuctionCanceled(auctionId);
     }
 
-    function withdraw(uint96 amount) public {
+    function withdraw(uint96 amount) external {
         uint96 maximumReturn = pendingReturns[msg.sender];
         if (amount <= 0 || amount > maximumReturn) {
             revert InsufficientAmount(maximumReturn);
         }
 
-        if (amount > 0) {
+        unchecked {
             pendingReturns[msg.sender] -= amount;
-
-            (bool success,) = msg.sender.call{value: amount}("");
-            require(success, "Transfer failed.");
-            emit AuctionWithdrawn(msg.sender, amount);
         }
-    }
-
-    function withdrawNFT(uint32 auctionId) public onlyAuctionOwner(auctionId) {
-        Auction storage auction = auctions[auctionId];
-
-        require(auction.status == Status.Expired || auction.status == Status.Canceled, "Cannot withdraw NFT from an active auction");
-
-        IERC721 token = IERC721(auction.assetAddress);
-
-        if (token.ownerOf(auction.assetRecordId) != address(this))
-        revert InsufficientPermissions();
-        token.transferFrom(address(this), auction.sellerAddress, auction.assetRecordId);
+        (bool success,) = msg.sender.call{value: amount}("");
+        require(success, "Transfer failed.");
     }
 
     function isAuctionOwner(address _user, uint32 _auctionId) private view returns (bool) {
         return auctions[_auctionId].sellerAddress == _user;
     }
 
-    function hasBid(Auction memory auction) private pure returns (bool) {
+    function hasBid(Auction storage auction) private view returns (bool) {
         return auction.highestBid.bidder != address(0);
     }
 }
