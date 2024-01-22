@@ -2,10 +2,13 @@
     "name": "hardhat-project",
     "devDependencies": {
         "@nomicfoundation/hardhat-chai-matchers": "^2.0.3",
+        "@nomicfoundation/hardhat-ethers": "^3.0.5",
         "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+        "@openzeppelin/hardhat-upgrades": "^3.0.2",
         "@types/chai": "^4.3.4",
         "@types/mocha": "^10.0.6",
         "@types/node": "^20.8.9",
+        "ethers": "^6.10.0",
         "hardhat": "latest",
         "hardhat-gas-reporter": "^1.0.9",
         "mocha": "^10.2.0",

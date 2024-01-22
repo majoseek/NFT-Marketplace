@@ -1,5 +1,6 @@
 package com.example.nftmarketplace.events
 
+import com.example.nftmarketplace.common.EventPublisher
 import com.example.nftmarketplace.events.RabbitQueueConfiguration.Companion.AUCTION_BID_PLACED_QUEUE
 import com.example.nftmarketplace.events.RabbitQueueConfiguration.Companion.AUCTION_BID_PLACED_ROUTING_KEY
 import com.example.nftmarketplace.events.RabbitQueueConfiguration.Companion.AUCTION_COMPLETED_QUEUE
@@ -53,6 +54,12 @@ class RabbitQueueConfiguration {
         messageConverter = Jackson2JsonMessageConverter(objectMapper)
     }
 
+    @Bean
+    fun eventPublisher(
+        @Autowired rabbitTemplate: RabbitTemplate
+    ): EventPublisher = RabbitEventPublisher(rabbitTemplate)
+
+
     companion object {
         const val AUCTION_CREATED_ROUTING_KEY = "auctions.new"
         const val AUCTION_BID_PLACED_ROUTING_KEY = "auctions.bid-placed"
@@ -77,7 +84,7 @@ class RabbitInitializer(
 ) {
 
     @PostConstruct
-    private final fun rabbitInitializer() {
+    private fun rabbitInitializer() {
         val queues = listOf(
             AUCTION_CREATED_QUEUE to AUCTION_CREATED_ROUTING_KEY,
             AUCTION_BID_PLACED_QUEUE to AUCTION_BID_PLACED_ROUTING_KEY,
@@ -87,6 +94,8 @@ class RabbitInitializer(
             NFT_CREATED_QUEUE to NFT_CREATED_ROUTING_KEY,
             AUCTION_CREATED_PROJECTED_QUEUE to AUCTION_CREATED_ROUTING_KEY,
         )
+        // Check if exchange exists
+        amqpAdmin.declareQueue()
         with(amqpAdmin) {
             declareExchange(DirectExchange(EXCHANGE))
             queues.forEach {

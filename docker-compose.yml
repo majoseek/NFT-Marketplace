@@ -39,7 +39,6 @@ services:
       - '15672:15672' # HTTP management UI
     networks:
       - local-network
-
   backend:
     container_name: backend
     build:

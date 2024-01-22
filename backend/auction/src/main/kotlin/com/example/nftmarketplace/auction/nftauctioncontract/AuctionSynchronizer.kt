@@ -34,9 +34,10 @@ class AuctionSynchronizer(
     @Autowired private val placeBidRequestHandler: PlaceBidRequestHandler,
     @Autowired private val extendAuctionRequestHandler: ExtendAuctionRequestHandler,
     @Autowired private val completeAuctionRequestHandler: CompleteAuctionRequestHandler,
-    @Autowired private val cancelAuctionRequestHandler: CancelAuctionRequestHandler
+    @Autowired private val cancelAuctionRequestHandler: CancelAuctionRequestHandler,
+    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO) + SupervisorJob()
 ) {
-    private val coroutineScope = CoroutineScope(Dispatchers.IO) + SupervisorJob()
+
 
     @Scheduled(fixedRate = 3 * 60 * 60 * 1000)
     suspend fun synchronizeWithContract() {
@@ -102,6 +103,7 @@ class AuctionSynchronizer(
 
     @EventListener(ApplicationReadyEvent::class)
     fun afterInitialization() {
+        getLogger().info("Starting synchronizing with the contract...")
         coroutineScope.launch {
             initialSynchronize()
             startSynchronizing()

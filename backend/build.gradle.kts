@@ -30,11 +30,20 @@ subprojects {
     val implementation by configurations
 
     dependencies {
+        implementation(platform("org.testcontainers:testcontainers-bom:1.19.3"))
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3")
         implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
         implementation("org.jetbrains.kotlin:kotlin-reflect")
+        testImplementation("org.springframework.boot:spring-boot-starter-webflux")
+        testImplementation("org.testcontainers:testcontainers")
+        testImplementation("org.testcontainers:junit-jupiter")
+        testImplementation("org.testcontainers:mongodb")
+        testImplementation(kotlin("test"))
+        testImplementation("org.junit.jupiter:junit-jupiter-api")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+        testImplementation("org.springframework.boot:spring-boot-starter-test")
     }
 
     tasks.withType<KotlinCompile> {
@@ -42,6 +51,9 @@ subprojects {
             freeCompilerArgs = listOf("-Xjsr305=strict", "-Xcontext-receivers")
             jvmTarget = "19"
         }
+    }
+    tasks.test {
+        useJUnitPlatform()
     }
     java {
         toolchain {

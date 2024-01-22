@@ -10,11 +10,10 @@ import kotlinx.coroutines.launch
 import org.springframework.amqp.rabbit.annotation.RabbitHandler
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
 
 @Component
-@DependsOn("rabbitInitializer")
+// @DependsOn("RabbitInitializer")
 class AuctionCompletedEventListener(
     @Autowired private val dbAuctionProjectionRepository: DbAuctionProjectionRepository,
 ) {

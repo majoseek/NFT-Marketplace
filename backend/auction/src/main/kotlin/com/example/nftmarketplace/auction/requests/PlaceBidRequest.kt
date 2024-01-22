@@ -6,7 +6,7 @@ import com.example.nftmarketplace.auction.storage.db.DbAuctionRepository
 import org.springframework.stereotype.Component
 
 interface PlaceBidRequestHandler {
-    suspend fun handle(placeBidCommand: PlaceBidCommand)
+    suspend fun handle(command: PlaceBidCommand)
 }
 
 @Component
@@ -14,17 +14,17 @@ class PlaceBidRequestHandlerImpl(
     val dbAuctionRepository: DbAuctionRepository,
     val contractHelper: ContractHelper,
 ) : PlaceBidRequestHandler {
-    override suspend fun handle(placeBidCommand: PlaceBidCommand) {
-        dbAuctionRepository.get(placeBidCommand.auctionId)?.let { auction ->
+    override suspend fun handle(command: PlaceBidCommand) {
+        dbAuctionRepository.get(command.auctionId)?.let { auction ->
             auction.placeBid(
-                bidder = placeBidCommand.bidder,
-                amount = placeBidCommand.amount,
-                timestamp = placeBidCommand.timestamp
+                bidder = command.bidder,
+                amount = command.amount,
+                timestamp = command.timestamp
             )
             dbAuctionRepository.save(auction)
-        } ?: contractHelper.getAuctionById(placeBidCommand.auctionId)?.let {
+        } ?: contractHelper.getAuctionById(command.auctionId)?.let {
             dbAuctionRepository.save(it)
-        } ?: throw AuctionNotFound(placeBidCommand.auctionId)
+        } ?: throw AuctionNotFound(command.auctionId)
     }
 }
 

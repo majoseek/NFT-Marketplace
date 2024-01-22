@@ -1,1 +1,18 @@
-0x534ED011c1F3DdEe3585FB1583e3BfBabaA75BF0
+[
+    {
+        "name": "NFTAuction",
+        "address": "0xBC6386652f66d30Fd5fF39E14AE58FE3019B10Da"
+    },
+    {
+        "name": "NFTAuctionGovernor",
+        "address": "0x416f37AC89255b0D6d10884299f888D319a11f66"
+    },
+    {
+        "name": "NFTAuctionToken",
+        "address": "0x67957843791F4fE0E23995BaB2a04759c5e2F48D"
+    },
+    {
+        "name": "NFTAuctionTimelockController",
+        "address": "0x650d4ceB66e75f72E717Dc27798eaa5088A1A89E"
+    }
+]

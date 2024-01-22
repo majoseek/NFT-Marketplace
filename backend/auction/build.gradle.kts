@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.web3j.solidity.gradle.plugin.OutputComponent
 
 plugins {
@@ -17,7 +18,9 @@ solidity {
     } else {
         "./solc/solc-static-linux"
     }
-    version = "0.8.20"
+    version = "0.8.22"
+    optimize = true
+    optimizeRuns = 1000
 }
 
 web3j {
@@ -38,17 +41,16 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.7.3")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     implementation(project(":common"))
     implementation(project(":restapi"))
     implementation(project(":events"))
 }
-tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
-    isEnabled = false
+
+tasks.withType<BootJar>() {
+    mainClass.set("com.example.nftmarketplace.auction.AuctionApplicationKt")
 }
 
-tasks.named<Jar>("jar") {
-    enabled = true
-}
 
 
 val compileKotlin: KotlinCompile by tasks

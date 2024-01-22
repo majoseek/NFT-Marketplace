@@ -10,32 +10,35 @@ import org.web3j.tuples.generated.Tuple12
 import org.web3j.utils.Convert
 import java.math.BigInteger
 
-typealias NFTAuctionTuple = Tuple12<BigInteger, String, String, String, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, String, NFTAuction.Bid>
+typealias NFTAuctionTuple = Tuple12<BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, String, String, NFTAuction.Bid, String, String>
 
 fun NFTAuctionTuple.toAuction(bids: List<Auction.Bid>? = null): Auction {
     return Auction(
         auctionId = component1().toLong(),
-        title = component2(),
-        description = component3(),
+        title = component11(),
+        description = component12(),
         nft = Auction.NFT(
-            contractAddress = component4(),
-            tokenId = component5().toLong(),
+            contractAddress = component8(),
+            tokenId = component2().toLong(),
         ),
         startingPrice = Convert.fromWei(
+            component5().toBigDecimal(),
+            Convert.Unit.ETHER
+        ),
+        reservePrice = Convert.fromWei(
             component6().toBigDecimal(),
             Convert.Unit.ETHER
         ),
-        reservePrice = Convert.fromWei(component7().toBigDecimal(), Convert.Unit.ETHER),
         minimumIncrement = Convert.fromWei(
-            component8().toBigDecimal(),
+            component7().toBigDecimal(),
             Convert.Unit.ETHER
         ),
-        expiryTime = component9().toLong().let {
+        expiryTime = component3().toLong().let {
             Instant.fromEpochSeconds(it).toLocalDateTime(timeZone = kotlinx.datetime.TimeZone.UTC)
         },
-        status = component10().toStatus(),
+        status = component4().toStatus(),
         bids = bids?.sortedByDescending { it.timestamp }.orEmpty().toMutableList(),
-        ownerAddress = component11(),
+        ownerAddress = component9(),
     )
 }
 

@@ -24,7 +24,7 @@ interface DbAuctionRepository {
 @Component
 class MongoAuctionRepository(
     @Autowired private val auctionRepository: AuctionRepository,
-    private val createAuctionEventPublisher: EventPublisher,
+    @Autowired private val createAuctionEventPublisher: EventPublisher,
 ): DbAuctionRepository {
 
     override suspend fun create(auction: Auction): Long {

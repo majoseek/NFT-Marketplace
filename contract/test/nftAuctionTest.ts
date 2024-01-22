@@ -1,8 +1,9 @@
 import {BigNumberish, Contract, ContractFactory, ContractTransactionResponse, Signer} from "ethers";
 import {expect} from "chai";
-import {ethers} from "hardhat";
+import {ethers, upgrades} from "hardhat";
 import {NFTAuction, NFTAuction__factory, OwnableUpgradeable__factory, TestToken} from "../typechain-types";
 import {time} from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { deployUpgradableContract } from "../scripts/helpers";
 
 const Status = {
     Active: BigInt(0),
@@ -79,10 +80,11 @@ describe("NFTAuction Contract", function () {
     });
 
     it("testCreateAuction_RevertsOnInsufficientPermissions", async function () {
-        const unauthorizedBidder = bidders[0];
-        await mintToken(await owner.getAddress(), 1);
+        await testToken.safeMint(owner, "1");
+
+
         await expect(
-            nftAuction.connect(unauthorizedBidder).createAuction(
+            nftAuction.connect(owner).createAuction(
                 "Example Auction",
                 "This is a test auction",
                 testToken.getAddress(),
@@ -279,10 +281,17 @@ describe("NFTAuction Contract", function () {
         await createAuction();
         await placeBid(1, ethers.parseEther("1"), bidders[0]);
         await time.increase(86400 + 1);
-        await nftAuction.connect(owner).endAuction(1);
+        const tx = await nftAuction.connect(owner).endAuction(1);
+        const res = await tx.wait();
+        console.log("Gas Used" + res?.gasUsed)
+        console.log("CumulativeGasUsed", res?.cumulativeGasUsed)
         const bidderAddress = await bidders[0].getAddress();
 
-        await nftAuction.connect(owner).withdraw(ethers.parseEther("1"));
+        const tx_2 = await nftAuction.connect(owner).withdraw(ethers.parseEther("1"));
+        
+        const res2 = await tx_2.wait();
+        console.log("Gas Used Withdraw" + res2?.gasUsed)
+        console.log("CumulativeGasUsed Withdraw", res2?.cumulativeGasUsed)
 
         expect(await nftAuction.pendingReturns(bidderAddress)).to.equal(0);
     });
@@ -300,11 +309,6 @@ describe("NFTAuction Contract", function () {
             {interface: nftAuction.interface},
             "InsufficientAmount"
         );
-    });
-
-    it("testWithdraw_RevertsOnTransferFailure", async function () {
-        // This test requires a setup where the transfer will fail, such as a contract with no ETH.
-        // Specific implementation will depend on the testing framework and contract setup.
     });
 
     async function placeBid(
@@ -329,7 +333,7 @@ describe("NFTAuction Contract", function () {
 
     async function mintToken(to: string, tokenId: number) {
         await testToken.safeMint(to, tokenId);
-        await testToken.setApprovalForAll(nftAuction.getAddress(), true);
+        await testToken.approve(nftAuction.getAddress(), tokenId);
     }
 
     async function deployTestTokenContract(initialOwner: string): Promise<TestToken> {
