@@ -13,7 +13,7 @@ class SSEAuctionController(
     private val apiAdapter: AuctionQuery
 ) : SSEAuctionsAPI {
 
-    @GetMapping("/auction/{auctionId}/bids", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    @GetMapping("/bids/{auctionId}/", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
     override suspend fun subscribeToBids(@PathVariable("auctionId") auctionId: Long): Flow<List<BidElement>> {
         return apiAdapter.getAuctionsBids(auctionId)
     }

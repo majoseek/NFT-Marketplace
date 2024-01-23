@@ -21,6 +21,10 @@ solidity {
     version = "0.8.22"
     optimize = true
     optimizeRuns = 1000
+
+}
+node {
+    nodeProjectDir.set(file(path = "./"))
 }
 
 web3j {

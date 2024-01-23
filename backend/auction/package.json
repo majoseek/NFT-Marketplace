@@ -1,0 +1,10 @@
+{
+    "name": "auction",
+    "description": " ",
+    "repository": " ",
+    "license": "UNLICENSED",
+    "dependencies": {
+        "@openzeppelin/contracts": "latest",
+        "@openzeppelin/contracts-upgradeable": "latest"
+    }
+}

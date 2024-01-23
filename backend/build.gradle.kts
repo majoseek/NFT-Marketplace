@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id("java")
@@ -65,10 +64,6 @@ subprojects {
             force("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.3")
         }
     }
-}
-
-tasks.withType<BootJar>() {
-    mainClass.set("com.example.nftmarketplace.NftMarketplaceApplicationKt")
 }
 
 group = "com.example"

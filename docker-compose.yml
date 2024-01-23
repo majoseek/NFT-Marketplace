@@ -15,7 +15,9 @@ services:
     depends_on:
       - mongo
       - rabbitmq
-      - backend
+      - nft
+      - auction
+      - projection-service
     networks:
       - local-network
   mongo:
@@ -28,6 +30,7 @@ services:
       - '27017:27017'
     networks:
       - local-network
+
   rabbitmq:
     container_name: rabbitmq
     image: rabbitmq:3.11.2-management
@@ -39,19 +42,27 @@ services:
       - '15672:15672' # HTTP management UI
     networks:
       - local-network
-  backend:
-    container_name: backend
+  nft:
+    container_name: nft
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: ./nft/Dockerfile
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://admin:password@mongo:27017/admin
-      SPRING_DATA_MONGODB_DATABASE: admin
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: admin
-      SPRING_RABBITMQ_PASSWORD: password
-      GRADLE_OPTS: "-Dorg.gradle.vfs.watch=false" # Assuming your Dockerfile is named Dockerfile and located at the specified context
+      GRADLE_OPTS: "-Dorg.gradle.vfs.watch=false"
+    depends_on:
+      - mongo
+      - rabbitmq
+    ports:
+      - '8081:8081'
+    networks:
+      - local-network
+  auction:
+    container_name: auction
+    build:
+      context: backend
+      dockerfile: auction/Dockerfile
+    environment:
+      GRADLE_OPTS: "-Dorg.gradle.vfs.watch=false"
     depends_on:
       - mongo
       - rabbitmq
@@ -59,3 +70,29 @@ services:
       - '8080:8080'
     networks:
       - local-network
+  projection-service:
+    container_name: projection-service
+    build:
+      context: backend
+      dockerfile: projectionservice/Dockerfile
+    environment:
+      GRADLE_OPTS: "-Dorg.gradle.vfs.watch=false"
+    depends_on:
+      - mongo
+      - rabbitmq
+    ports:
+      - '8082:8082'
+    networks:
+      - local-network
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8083:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+    networks:
+      - local-network
+

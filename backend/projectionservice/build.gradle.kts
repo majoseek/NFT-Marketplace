@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -8,10 +10,7 @@ dependencies {
     implementation(project(":events"))
     implementation(project(":restapi"))
 }
-tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
-    isEnabled = false
-}
 
-tasks.named<Jar>("jar") {
-    enabled = true
+tasks.withType<BootJar>() {
+    mainClass.set("com.example.nftmarketplace.projectionservice.ProjectionServiceApplicationKt")
 }
