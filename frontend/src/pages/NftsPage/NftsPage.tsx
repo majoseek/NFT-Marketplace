@@ -18,7 +18,7 @@ const NftsPage = () => {
     );
     const { data: auctions } = useQuery(API_KEYS.AUCTIONS, () =>
         axios
-            .get<AuctionsResponse>('/api/auction?page=1&count=20')
+            .get<AuctionsResponse>('/api/projection/auction?page=1&count=20')
             .then((res) => res.data.auctions)
     );
 

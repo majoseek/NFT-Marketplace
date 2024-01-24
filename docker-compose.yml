@@ -30,7 +30,6 @@ services:
       - '27017:27017'
     networks:
       - local-network
-
   rabbitmq:
     container_name: rabbitmq
     image: rabbitmq:3.11.2-management
@@ -87,7 +86,7 @@ services:
   nginx:
     image: nginx:latest
     ports:
-      - "8083:80"
+      - "8080:80"
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
@@ -95,4 +94,3 @@ services:
       - frontend
     networks:
       - local-network
-

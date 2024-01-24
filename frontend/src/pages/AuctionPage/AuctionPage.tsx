@@ -18,7 +18,7 @@ const AuctionPage = () => {
         API_KEYS.AUCTION_DETAILS,
         () =>
             axios
-                .get<AuctionDetailsResponse>(`/api/auction/${auctionId}`)
+                .get<AuctionDetailsResponse>(`/api/projection/auction/${auctionId}`)
                 .then((res) => res.data),
         { enabled: auctionId !== undefined }
     );

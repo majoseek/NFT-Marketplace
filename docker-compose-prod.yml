@@ -26,7 +26,9 @@ services:
     depends_on:
       - mongo
       - rabbitmq
-      - backend
+      - nft
+      - auction
+      - projection-service
     networks:
       - local-network
   mongo:
@@ -54,12 +56,6 @@ services:
       context: ./backend
       dockerfile: ./nft/Dockerfile
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://nft:password@mongo:27017/admin
-      SPRING_DATA_MONGODB_DATABASE: nft
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: admin
-      SPRING_RABBITMQ_PASSWORD: password
       GRADLE_OPTS: "-Dorg.gradle.vfs.watch=false"
     depends_on:
       - mongo
@@ -68,18 +64,14 @@ services:
       - '8081:8081'
     networks:
       - local-network
+    restart:
+        on-failure
   auction:
     container_name: auction
     build:
       context: backend
       dockerfile: auction/Dockerfile
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://auction:password@mongo:27017/admin
-      SPRING_DATA_MONGODB_DATABASE: auction
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: admin
-      SPRING_RABBITMQ_PASSWORD: password
       GRADLE_OPTS: "-Dorg.gradle.vfs.watch=false"
     depends_on:
       - mongo
@@ -88,18 +80,14 @@ services:
       - '8080:8080'
     networks:
       - local-network
+    restart:
+      on-failure
   projection-service:
     container_name: projection-service
     build:
       context: backend
       dockerfile: projectionservice/Dockerfile
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://projectionservice:password@mongo:27017/admin
-      SPRING_DATA_MONGODB_DATABASE: projectionservice
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: admin
-      SPRING_RABBITMQ_PASSWORD: password
       GRADLE_OPTS: "-Dorg.gradle.vfs.watch=false"
     depends_on:
       - mongo
